@@ -191,3 +191,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Rama `evaluacion/pre-loop-core`. Nueva página [[Integración en main antes de loop_core]]; index actualizado.
 - Autenticación: núcleo verificado y registrado; MFA, D-21, D-12 y ASVS siguen bloqueados.
 - Antes del loop: publicar main (push sin credenciales en la sesión), CI en verde y aportar `loop_core.md`, que no existe.
+
+## [2026-10-21] decision | Plan de loops para todo el backlog (Propuesta)
+- Nuevos `PLAN-DE-LOOPS.md` (matriz de HU-001 a HU-056, conflictos compartidos, hitos M0 a M8, paralelismo, worktrees) y 9 `loop_*.md` en la raíz: core, personas, autorizaciones, accesos, integraciones, reporting, opcionales, sectorial y quality.
+- Todos los loops están **BLOQUEADOS**: `goal_authentication.md` no está completo (MFA, D-21, restablecimiento y ASVS). Se propone diferir esas casillas a integraciones y quality para alcanzar M0.
+- Regla nueva propuesta: «token de migración» (un solo loop genera migraciones a la vez, por el snapshot único de ADR-021).
+- No existen `AGENTS.md`, `wiki/vision-general.md` ni `wiki/pendientes.md`; se usaron CLAUDE.md, overview.md y Decisiones pendientes.md. D-20 debe resolverse antes de M1.

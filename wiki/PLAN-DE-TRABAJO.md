@@ -90,6 +90,9 @@ Una historia está **Terminada** solo cuando:
 
 **Siguiente paso propuesto:** crear el repositorio en GitHub y correr el CI; cerrar D-03 para HU-006; resolver D-20 (idioma de las rutas) antes de la segunda vertical.
 
+> [!note] Ejecución por loops (Propuesta, 2026-10-21)
+> El backlog se reparte en loops con propiedad de archivos y hitos de integración: ver `PLAN-DE-LOOPS.md` en la raíz del repositorio. Todos están bloqueados hasta cerrar o diferir `goal_authentication.md`.
+
 ## Ruta crítica
 HU-001 → HU-005 → HU-006/HU-007 → HU-008 → HU-009 → HU-013 → HU-016/HU-017 → HU-019 → HU-023 → HU-024/HU-027 → HU-032 → HU-033 → HU-034 → HU-037.
 
