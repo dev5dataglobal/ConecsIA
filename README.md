@@ -3,7 +3,7 @@
 Plataforma SaaS multi-organización de gestión de visitantes y control de accesos.
 Requisitos en [`PRD.md`](PRD.md). La documentación viva del proyecto (decisiones, backlog y estado) está en la bóveda Obsidian [`wiki/`](wiki/index.md).
 
-> Estado: fundaciones técnicas (F0) y **primera vertical funcional: gestión de sedes (HU-013)** con aislamiento por organización, contexto por membresía, permisos y auditoría. La autenticación es un **sustituto de desarrollo** mientras D-03 está abierta.
+> Estado: fundaciones técnicas (F0) y **primera vertical funcional: gestión de sedes (HU-013)** con aislamiento por organización, contexto por membresía, permisos y auditoría. Autenticación real con cookie y anti-CSRF (HU-006, ADR-006).
 
 ## Estructura
 
@@ -108,8 +108,10 @@ npm run api:generate
 
 Conjunto actual (identificadores fijos, idempotente): dos organizaciones (Los Pinos y Andes), tres sedes y tres usuarios: administradora de Los Pinos, operador limitado a la sede «Portería Norte» con solo consulta, y administrador de Andes.
 
-## Autenticación de desarrollo (provisional)
+## Autenticación
 
-Mientras D-03 (proveedor de identidad) esté abierta no hay inicio de sesión real (HU-006). En `Development` y en las pruebas, la API acepta la cabecera `X-Usuario-Desarrollo: <id de usuario>`; la SPA ofrece la página `/ingresar` para elegir un usuario sintético. Con `Autenticacion:Desarrollo:Habilitada=true` fuera de `Development`/`Testing` la API **no arranca**.
+El inicio de sesión es real: correo y contraseña, con una cookie `HttpOnly` y protección anti-CSRF (HU-006, ADR-006). Con Docker Compose, los usuarios sintéticos usan la contraseña de `SEMILLAS_CONTRASENA_USUARIOS` (`.env`): `admin.pinos@ejemplo.test`, `operador.pinos@ejemplo.test` y `admin.andes@ejemplo.test`.
+
+En `Development` y en las pruebas sigue disponible la cabecera `X-Usuario-Desarrollo` (ADR-022), y la pantalla `/ingresar` muestra un selector de usuario sintético. Si `Autenticacion:Desarrollo:Habilitada=true` está activo fuera de `Development`/`Testing`, la API **no arranca**.
 
 La organización, los permisos y el alcance por sede se derivan siempre en el servidor de la membresía (HU-007, ADR-005). `X-Organizacion-Id` solo selecciona entre membresías propias; una organización ajena responde 403 y queda auditada.

@@ -207,3 +207,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Se explicó el orden de los loops (core → personas → autorizaciones → accesos → integraciones → reporting → sectorial → opcionales → quality) y qué puede correr en paralelo, según `PLAN-DE-LOOPS.md`.
 - Comprobado: el stack de Docker Compose responde (SPA 200, API Healthy). Hoy se puede ver el inicio y cierre de sesión y la gestión de sedes.
 - Sin cambios en otras páginas de la wiki.
+
+## [2026-10-21] consulta | Guía de ejecución del proyecto
+- Se entregó la guía de ejecución, basada en README.md.
+- README.md corregido: decía que no había inicio de sesión real; ahora describe HU-006 y los usuarios sintéticos con contraseña.
+- Sin otras páginas de la wiki afectadas.
