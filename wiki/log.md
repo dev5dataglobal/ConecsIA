@@ -257,3 +257,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - `main` no tiene `PLAN-DE-LOOPS.md`, los `loop_*.md`, la aprobación de D-20 ni la de ADR-021 (allí sigue en Propuesta). Están solo en `evaluacion/pre-loop-core`, que va 12 commits por delante.
 - Fusionar esa rama en `main` daría conflictos en `wiki/consultas/Opciones para decidir D-20.md`, `wiki/index.md` y `wiki/log.md`; se resuelven conservando ambas versiones o entradas.
 - No se creó worktree ni código. Pendiente: integrar `evaluacion/pre-loop-core` en `main`.
+
+## [2026-10-19] revision | `evaluacion/pre-loop-core` rebasada sobre `origin/main`
+- 13 commits reaplicados sobre a9bd4d0 (CI en verde). Conflictos: `log.md` e `index.md` resueltos conservando ambas entradas; en `consultas/Opciones para decidir D-20.md` se conservó la versión aprobada.
+- Verificado: no hay entradas de la bitácora perdidas ni duplicadas. Fuera de la wiki, la rama solo difiere de antes en la corrección del CI que viene de `main`. Se quitó del índice la línea antigua de D-20, que estaba duplicada.
+- Respaldo local en `respaldo/pre-loop-core-antes-rebase`. Lista para abrir el PR (requiere force-push de la rama).
