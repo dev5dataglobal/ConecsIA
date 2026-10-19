@@ -251,3 +251,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - D-20 aprobada (cd68fe6) y ADR-021 aprobado (b7649d7): OK.
 - M0 falla: el último CI de `main` (023113b) terminó en failure. `fix/ci-main` está publicada, pero no se ha fusionado ni tiene un PR (el CI solo corre en push a `main` y en pull requests).
 - HU-005 no se empezó. Pendiente del responsable: abrir el PR `fix/ci-main` → `main`, verificar el CI y fusionar.
+
+## [2026-10-19] revision | loop_core detenido antes de HU-005: aprobaciones fuera de `main`
+- M0 cumplido: CI de `main` en verde (a9bd4d0, PR #1).
+- `main` no tiene `PLAN-DE-LOOPS.md`, los `loop_*.md`, la aprobación de D-20 ni la de ADR-021 (allí sigue en Propuesta). Están solo en `evaluacion/pre-loop-core`, que va 12 commits por delante.
+- Fusionar esa rama en `main` daría conflictos en `wiki/consultas/Opciones para decidir D-20.md`, `wiki/index.md` y `wiki/log.md`; se resuelven conservando ambas versiones o entradas.
+- No se creó worktree ni código. Pendiente: integrar `evaluacion/pre-loop-core` en `main`.
