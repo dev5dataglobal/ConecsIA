@@ -246,3 +246,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Aprobado por el responsable: opción A con 3 condiciones (regla de arquitectura por módulo en HU-005, token de migración, rollback hacia adelante con expandir/contraer).
 - Actualizados: ADR-021 (§ Aprobación), Registro de ADR, Estado de implementación, `loop_core.md`, `PLAN-DE-LOOPS.md` y la consulta de ADR-021.
 - Pendiente: la prueba de arquitectura (HU-005) y el procedimiento de producción (ADR-017/HU-053). `loop_core` solo espera ya M0 (CI de `main` en verde).
+
+## [2026-10-19] revision | loop_core no inicia: M0 sin cumplir
+- D-20 aprobada (cd68fe6) y ADR-021 aprobado (b7649d7): OK.
+- M0 falla: el último CI de `main` (023113b) terminó en failure. `fix/ci-main` está publicada, pero no se ha fusionado ni tiene un PR (el CI solo corre en push a `main` y en pull requests).
+- HU-005 no se empezó. Pendiente del responsable: abrir el PR `fix/ci-main` → `main`, verificar el CI y fusionar.
