@@ -224,3 +224,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Bloqueos: el último CI de `main` (run 39266546348, sha 85be740) terminó en **failure**, así que M0 no se cumple; **D-20** (idioma de rutas) sigue abierta; **ADR-021** (migraciones) y **ADR-019** (HU-015) siguen en Propuesta.
 - `AGENTS.md` no existe (se usa `CLAUDE.md`, como indica `PLAN-DE-LOOPS.md`).
 - No se creó worktree, rama ni código. Pendiente: arreglar el CI de `main`, resolver D-20 y aprobar ADR-021.
+
+## [2026-10-19] revision | Causa del CI rojo en `main` (run 39266546348)
+- Fallan 2 pasos; el frontend, la compilación y las pruebas pasan.
+- **backend / Script de migraciones idempotente:** `dotnet ef ... -c Release` usa `-c` como `--context`, por eso sale «No DbContext named 'Release'». Con `--configuration Release` se genera bien en local (261 líneas).
+- **secretos / gitleaks:** no hay logs sin autenticación ni binario local. Probable: los valores ficticios de `RedactorDatosSensiblesTests.cs` (JWT de ejemplo, `api-key`). En `main` las contraseñas reales vienen de `${...}` o son de ejemplo. Propuesta: `.gitleaks.toml` con allowlist para esa ruta, pendiente de confirmar con el log del run.
+- Sin cambios de código todavía (solo propuesta).
