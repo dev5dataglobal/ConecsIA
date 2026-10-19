@@ -47,7 +47,7 @@ tags: [conecsia, loop]
 ## Tareas (en orden)
 - [x] **HU-005** Aislamiento por organización en persistencia. — *Cerrar la DoD con una prueba negativa de dos organizaciones para cada entidad existente y documentar el spike de RLS (ADR-004).*
 - [x] **HU-007** Contexto de organización y sede derivado de membresía. — *Selección de organización con multi-membresía (D-03b aprobada). El `organizationId` que envía el cliente se verifica contra la membresía.*
-- [ ] **HU-008** Registro de auditoría append-only. — *Cerrar la DoD verificando el append-only en la base de datos. La retención sigue pendiente (D-14).*
+- [x] **HU-008** Registro de auditoría append-only. — *Cerrar la DoD verificando el append-only en la base de datos. La retención sigue pendiente (D-14).*
 - [ ] **HU-017** Roles configurables y catálogo de permisos. — *Catálogo de permisos, roles por organización y plantillas. Nunca se otorgan permisos por el nombre del rol.*
 - [ ] **HU-010** Tipos de organización y plantilla básica de catálogos. — *Plantilla sembrable. Se coordina con HU-020: los catálogos de persona y documento los crea `loop_personas`.*
 - [ ] **HU-015** Gestionar zonas y puntos de acceso. — *ZONA con `es_punto_acceso`. ⏸ si ADR-019 sigue en Propuesta: pedir confirmación.*
@@ -71,5 +71,6 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-008 | 217 pruebas en verde: `MinimizadorValoresAuditoriaTests` (10), rollback y atomicidad en `AislamientoYAuditoriaTests`; append-only ya verificado. ⏸ La lectura aislada por organización pasa a HU-046. IP sin registrar (requiere migración). |
 | 2026-10-19 | HU-007 | Backend: 205 pruebas en verde (`ContextoOrganizacionTests`: multi-membresía, `GET /api/v1/me/membresias`, cambio de permisos, denegación auditada, contexto de proceso; prueba de endpoints anónimos). Frontend: 31/31, `tsc` y `build` OK (`SeleccionOrganizacion.test.tsx`). OpenAPI y `schema.d.ts` regenerados. |
 | 2026-10-19 | HU-005 | `dotnet test`: 196/196 (unit 60, arquitectura 68, integración 68). Nuevas pruebas: `PersistenciaPorModuloTests`, `SuiteAislamientoTests`, convenciones de índices y FK, y escritura cruzada auditada (`AislamientoYAuditoriaTests`). Spike RLS en ADR-004; adopción en D-22. |

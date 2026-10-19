@@ -26,7 +26,7 @@ Garantizar desde la base que ninguna operación cruza la frontera de [[Organizac
 | HU-005 | Aislamiento por organización en persistencia | L | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | RLS: D-22 |
 | HU-006 | Autenticación y sesión de usuario | L | **Goal cerrado** 2026-10-21; el restablecimiento va a loop_integraciones y MFA, D-21 y ASVS a loop_quality | — |
 | HU-007 | Contexto de organización y sede derivado de membresía | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Sin caché de permisos (se leen en cada petición) |
-| HU-008 | Registro de auditoría append-only | M | **En curso** (base implementada con HU-013) | Retención (D-14) |
+| HU-008 | Registro de auditoría append-only | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Retención (D-14); IP sin registrar |
 
 ---
 
@@ -245,27 +245,27 @@ Sistema; cualquier actor que ejecute operaciones críticas; auditor (consulta en
 - **Endpoints:** no hay endpoints de escritura; ninguno de modificación o borrado.
 
 ### Criterios de aceptación
-- [ ] **Dado** una operación crítica confirmada **cuando** se consulta la tabla **entonces** existe el evento con actor, organización, instante, acción y objeto (CA-20).
-- [ ] **Dado** el rol de base de datos de la aplicación **cuando** intenta `UPDATE` o `DELETE` sobre auditoría **entonces** PostgreSQL lo rechaza (CA-20).
-- [ ] **Dado** una operación que falla y hace rollback **cuando** se revisa auditoría **entonces** no hay evento de éxito.
+- [x] **Dado** una operación crítica confirmada **cuando** se consulta la tabla **entonces** existe el evento con actor, organización, instante, acción y objeto (CA-20).
+- [x] **Dado** el rol de base de datos de la aplicación **cuando** intenta `UPDATE` o `DELETE` sobre auditoría **entonces** PostgreSQL lo rechaza (CA-20).
+- [x] **Dado** una operación que falla y hace rollback **cuando** se revisa auditoría **entonces** no hay evento de éxito. — *`AislamientoYAuditoriaTests`: operación rechazada y auditoría que falla.*
 
 ### Tareas backend
-- [ ] Tabla, índices (organización, instante, objeto) y `GRANT` solo `INSERT, SELECT` al rol de aplicación en migración.
-- [ ] Servicio `IAuditLog` transaccional y serialización minimizada de valores.
-- [ ] Prueba de cobertura: casos de uso críticos deben auditar.
+- [x] Tabla, índices (organización, instante, objeto) y `GRANT` solo `INSERT, SELECT` al rol de aplicación en migración.
+- [x] Servicio `IAuditLog` transaccional y serialización minimizada de valores. (`MinimizadorValoresAuditoria`)
+- [x] Prueba de cobertura: casos de uso críticos deben auditar. *(Por caso de uso: `SedesTests` crear, modificar e inactivar. Cada historia nueva agrega la suya; no hay una prueba genérica.)*
 
 ### Tareas frontend
 - No aplica (consulta en HU-046).
 
 ### Pruebas
-- [ ] Unitarias: minimización/enmascarado de valores.
-- [ ] Integración (PostgreSQL real): permisos `GRANT` y atomicidad con rollback.
-- [ ] Aislamiento / permisos negativos: eventos de A no visibles en contexto de B.
+- [x] Unitarias: minimización/enmascarado de valores.
+- [x] Integración (PostgreSQL real): permisos `GRANT` y atomicidad con rollback.
+- [ ] Aislamiento / permisos negativos: eventos de A no visibles en contexto de B. — ⏸ *Todavía no hay ruta de lectura (la consulta es HU-046). `EventoAuditoria` está exento del filtro global, así que HU-046 debe filtrar explícitamente y traer esta prueba.*
 - [ ] E2E / UI: no aplica.
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Separación de roles de BD (migraciones vs aplicación) documentada y verificada.
+- [x] Separación de roles de BD (migraciones vs aplicación) documentada y verificada. (`PersistenciaTests`, ADR-003)
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-14 — retención y volumen de auditoría; particionado por fecha a evaluar con D-15.

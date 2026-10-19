@@ -273,3 +273,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: `ContextoOrganizacionTests` (8), `SeleccionOrganizacion.test.tsx` (3) y prueba de endpoints anónimos. Backend 205 en verde, frontend 31/31, build OK.
 - Nuevo: `GET /api/v1/me/membresias`, auditoría de denegaciones de permiso, contexto de proceso y selector de organización en la SPA. OpenAPI y `schema.d.ts` regenerados.
 - Wiki: EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-008 Auditoría append-only (cierre, loop_core)
+- Pruebas primero: minimización de secretos (unitarias), rollback y atomicidad (integración). 217 pruebas en verde.
+- Nuevo `MinimizadorValoresAuditoria`. ⏸ Aislamiento de lectura en HU-046; IP sin registrar.
+- Wiki: EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

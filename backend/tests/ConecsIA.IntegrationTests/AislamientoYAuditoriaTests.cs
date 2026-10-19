@@ -177,6 +177,38 @@ public sealed class AislamientoYAuditoriaTests(BaseDatosFixture baseDatos) : IAs
         Assert.Empty(await contexto.Set<Sede>().Where(s => s.Nombre == "Inyectada por soporte").ToListAsync());
     }
 
+    [Fact]
+    public async Task Si_la_auditoria_no_se_puede_escribir_la_operacion_completa_falla()
+    {
+        var respuesta = await fabrica.Como(e.AdminA).PostAsync("/api/v1/soporte-pruebas/auditoria-que-falla", null);
+
+        Assert.Equal(System.Net.HttpStatusCode.InternalServerError, respuesta.StatusCode);
+        await using var ambito = fabrica.Services.CreateAsyncScope();
+        ambito.ServiceProvider.GetRequiredService<ContextoSolicitud>().ComoSistema();
+        var contexto = ambito.ServiceProvider.GetRequiredService<ConecsIADbContext>();
+        Assert.False(await contexto.Set<Sede>().AnyAsync(s => s.OrganizacionId == e.OrgA && s.Nombre == "Sin auditoría"));
+    }
+
+    [Fact]
+    public async Task Una_operacion_rechazada_no_deja_evento_de_exito()
+    {
+        var antes = await EventosExitososAsync(e.AdminA);
+
+        var respuesta = await fabrica.Como(e.AdminA).PostAsync("/api/v1/sedes",
+            System.Net.Http.Json.JsonContent.Create(new { nombre = "SEDE A1", zonaHoraria = "UTC" }));
+
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, respuesta.StatusCode);
+        Assert.Equal(antes, await EventosExitososAsync(e.AdminA));
+    }
+
+    private async Task<int> EventosExitososAsync(Guid actor)
+    {
+        await using var ambito = fabrica.Services.CreateAsyncScope();
+        ambito.ServiceProvider.GetRequiredService<ContextoSolicitud>().ComoSistema();
+        return await ambito.ServiceProvider.GetRequiredService<ConecsIADbContext>().Set<EventoAuditoria>()
+            .CountAsync(a => a.ActorUsuarioId == actor && a.Resultado == ResultadoAuditoria.Exitoso);
+    }
+
     private Microsoft.EntityFrameworkCore.Metadata.IModel Modelo()
     {
         using var ambito = fabrica.Services.CreateScope();

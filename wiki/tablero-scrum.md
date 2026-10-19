@@ -24,7 +24,7 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 ## En curso
 - [x] HU-005 Aislamiento por organización en persistencia — implementada 2026-10-19 en `loop/core` (commit local, sin PR); RLS en D-22
 - [x] HU-007 Contexto de organización y sede derivado de membresía — implementada 2026-10-19 en `loop/core` (sin PR)
-- [ ] HU-008 Registro de auditoría append-only — base implementada; falta auditar denegaciones de permiso
+- [x] HU-008 Registro de auditoría append-only — base implementada; falta auditar denegaciones de permiso
 
 ## En revisión (verificadas localmente; falta CI en GitHub y revisión del PO)
 - [ ] HU-001 Solución backend modular y pipeline CI

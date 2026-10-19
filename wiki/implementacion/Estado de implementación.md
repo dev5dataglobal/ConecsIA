@@ -133,3 +133,8 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Backend:** `GET /api/v1/me/membresias` con `[SinOrganizacionResuelta]` (solo exige usuario activo). Denegaciones de permiso o alcance auditadas como `seguridad.acceso_denegado` con código, método y plantilla de ruta, sin IDs (`AuditoriaDenegaciones`, que reemplaza a `AuditoriaEscrituraEntreOrganizaciones`). `ContextoSolicitud.ComoProceso(organizacion, permisos)` para procesos de fondo.
 - **Frontend:** con varias membresías se muestra `ElegirOrganizacion`; la selección viaja en `X-Organizacion-Id` (sessionStorage) y se cambia desde la cabecera. Una selección rechazada (`ORGANIZACION_NO_PERMITIDA`) se olvida.
 - **Limitaciones:** no hay caché de permisos (se leen en cada petición; rendimiento por evaluar en D-15). No hay selector de sede. El OpenAPI se regeneró con la API local en Development.
+
+## HU-008 cerrada en `loop/core` (2026-10-19)
+- `MinimizadorValoresAuditoria` enmascara las propiedades con nombre de secreto (contraseña, hash, token, sello, clave, cookie), también anidadas. `RegistroAuditoria` lo usa.
+- Verificado: una operación rechazada (409) no deja evento de éxito, y si la auditoría no se puede escribir la operación completa falla (500, sin cambio).
+- **Pendiente:** la IP del cliente no se registra (requiere migración y definir su tratamiento como dato personal, D-14). La lectura de auditoría aislada por organización es HU-046.

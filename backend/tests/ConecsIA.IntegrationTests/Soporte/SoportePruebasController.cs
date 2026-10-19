@@ -51,4 +51,22 @@ public sealed class SoportePruebasAutenticadoController : ControllerBase
         await contexto.SaveChangesAsync();
         return NoContent();
     }
+
+    /// <summary>
+    /// HU-008: crea una sede y un evento de auditoría inválido (acción de más de 100 caracteres).
+    /// La transacción completa debe fallar: sin auditoría no hay cambio.
+    /// </summary>
+    [HttpPost("auditoria-que-falla")]
+    public async Task<IActionResult> AuditoriaQueFalla(
+        [FromServices] ConecsIADbContext contexto,
+        [FromServices] ConecsIA.SharedKernel.Auditoria.IRegistroAuditoria auditoria,
+        [FromServices] ConecsIA.SharedKernel.Seguridad.IContextoSolicitud solicitud)
+    {
+        var sede = Sede.Crear(solicitud.OrganizacionId!.Value, "Sin auditoría", null, null, null, "UTC", DateTimeOffset.UtcNow);
+        contexto.Add(sede);
+        auditoria.Registrar(new ConecsIA.SharedKernel.Auditoria.EntradaAuditoria(
+            new string('x', 101), "Sede", sede.Id, ConecsIA.SharedKernel.Auditoria.ResultadoAuditoria.Exitoso));
+        await contexto.SaveChangesAsync();
+        return NoContent();
+    }
 }
