@@ -1,0 +1,59 @@
+# Entorno local (ADR-017). Solo datos sintéticos (D-14). Contraseñas desde .env (ver .env.example).
+name: conecsia
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: conecsia
+      POSTGRES_USER: conecsia_admin
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?Define POSTGRES_ADMIN_PASSWORD en .env}
+      CONECSIA_MIGRATOR_PASSWORD: ${CONECSIA_MIGRATOR_PASSWORD:?Define CONECSIA_MIGRATOR_PASSWORD en .env}
+      CONECSIA_APP_PASSWORD: ${CONECSIA_APP_PASSWORD:?Define CONECSIA_APP_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conecsia_admin -d conecsia"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailpit:
+    # Captura local de correo (HU-042 lo usará). Interfaz web en http://localhost:8025
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/ConecsIA.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__ConecsIA: Host=postgres;Database=conecsia;Username=conecsia_app;Password=${CONECSIA_APP_PASSWORD}
+      ConnectionStrings__ConecsIAMigraciones: Host=postgres;Database=conecsia;Username=conecsia_migrator;Password=${CONECSIA_MIGRATOR_PASSWORD}
+      # Solo local: identidad por cabecera además de la sesión real (ADR-022) y datos sintéticos.
+      Autenticacion__Desarrollo__Habilitada: "true"
+      Semillas__SembrarAlIniciar: "true"
+      # Contraseña local de los usuarios sintéticos (HU-006). Opcional; mínimo 12 caracteres.
+      Semillas__ContrasenaUsuarios: ${SEMILLAS_CONTRASENA_USUARIOS:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5080:8080"
+
+  web:
+    build:
+      context: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  postgres-data:

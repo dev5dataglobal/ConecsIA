@@ -1,0 +1,38 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.{cs,csproj,props,targets}]
+indent_size = 4
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+csharp_prefer_braces = when_multiline:suggestion
+dotnet_style_qualification_for_field = false:warning
+csharp_style_var_for_built_in_types = true:suggestion
+dotnet_diagnostic.CA1707.severity = none   # nombres de pruebas con guiones bajos
+dotnet_diagnostic.CA1515.severity = none   # tipos públicos en ejecutables (Program, controladores)
+dotnet_diagnostic.CA1848.severity = warning
+
+[backend/tests/**.cs]
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.CA1001.severity = none   # xUnit libera recursos con IAsyncLifetime
+dotnet_diagnostic.CA1861.severity = none
+dotnet_diagnostic.CA1822.severity = none   # acciones de controlador de soporte
+
+[*.md]
+trim_trailing_whitespace = false
+
+# Migraciones generadas por EF Core
+[backend/src/ConecsIA.Migrations/Migraciones/**.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

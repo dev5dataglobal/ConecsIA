@@ -1,0 +1,69 @@
+# ADR-017: compilación, análisis, pruebas (incluida integración con PostgreSQL real) y build del frontend.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: backend/global.json
+      - run: dotnet restore
+      - name: Formato y análisis
+        run: dotnet format --verify-no-changes --no-restore
+      - name: Compilar (advertencias como errores)
+        run: dotnet build --no-restore -c Release
+      - name: Pruebas de arquitectura y unitarias
+        run: dotnet test --no-build -c Release --filter "FullyQualifiedName!~IntegrationTests"
+      - name: Pruebas de integración (Testcontainers + PostgreSQL)
+        run: dotnet test --no-build -c Release tests/ConecsIA.IntegrationTests
+      - name: Script de migraciones idempotente
+        run: |
+          dotnet tool restore
+          dotnet ef migrations script --idempotent --no-build -c Release \
+            -p src/ConecsIA.Migrations -s src/ConecsIA.Migrations -o artifacts/migraciones.sql
+      - uses: actions/upload-artifact@v4
+        with:
+          name: migraciones-sql
+          path: backend/artifacts/migraciones.sql
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  secretos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

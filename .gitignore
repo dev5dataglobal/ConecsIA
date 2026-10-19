@@ -1,0 +1,22 @@
+# Secretos locales
+.env
+*.local.json
+
+# .NET
+bin/
+obj/
+TestResults/
+*.user
+.vs/
+
+# Node
+node_modules/
+dist/
+
+# Obsidian (estado del espacio de trabajo por usuario)
+wiki/.obsidian/workspace*.json
+wiki/.obsidian/cache
+
+# Sistema
+.DS_Store
+Thumbs.db
