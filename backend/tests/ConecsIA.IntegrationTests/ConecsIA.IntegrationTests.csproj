@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ConecsIA.Api\ConecsIA.Api.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Mismo script de roles que el entorno local (database/init). -->
+    <None Include="..\..\..\database\init\*.sh" LinkBase="init" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

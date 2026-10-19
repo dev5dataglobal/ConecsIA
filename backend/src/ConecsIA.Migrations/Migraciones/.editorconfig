@@ -1,0 +1,5 @@
+# Migraciones generadas por EF Core. Repite la regla del .editorconfig raíz porque la imagen
+# Docker se construye con el contexto backend/ y no ve el archivo de la raíz.
+[*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

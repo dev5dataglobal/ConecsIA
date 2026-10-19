@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Único ensamblado que conoce a todos los módulos: aloja las migraciones (ADR-003). -->
+  <ItemGroup>
+    <ProjectReference Include="..\ConecsIA.Infrastructure\ConecsIA.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Organizaciones\ConecsIA.Modules.Organizaciones.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Identidad\ConecsIA.Modules.Identidad.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Estructura\ConecsIA.Modules.Estructura.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Personas\ConecsIA.Modules.Personas.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Autorizaciones\ConecsIA.Modules.Autorizaciones.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Accesos\ConecsIA.Modules.Accesos.csproj" />
+    <ProjectReference Include="..\Modules\ConecsIA.Modules.Auditoria\ConecsIA.Modules.Auditoria.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

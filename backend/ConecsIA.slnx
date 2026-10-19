@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ConecsIA.Api/ConecsIA.Api.csproj" />
+    <Project Path="src/ConecsIA.Infrastructure/ConecsIA.Infrastructure.csproj" />
+    <Project Path="src/ConecsIA.Migrations/ConecsIA.Migrations.csproj" />
+    <Project Path="src/ConecsIA.SharedKernel/ConecsIA.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/ConecsIA.Modules.Accesos/ConecsIA.Modules.Accesos.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Auditoria/ConecsIA.Modules.Auditoria.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Autorizaciones/ConecsIA.Modules.Autorizaciones.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Estructura/ConecsIA.Modules.Estructura.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Identidad/ConecsIA.Modules.Identidad.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Organizaciones/ConecsIA.Modules.Organizaciones.csproj" />
+    <Project Path="src/Modules/ConecsIA.Modules.Personas/ConecsIA.Modules.Personas.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ConecsIA.ArchitectureTests/ConecsIA.ArchitectureTests.csproj" />
+    <Project Path="tests/ConecsIA.IntegrationTests/ConecsIA.IntegrationTests.csproj" />
+    <Project Path="tests/ConecsIA.UnitTests/ConecsIA.UnitTests.csproj" />
+  </Folder>
+</Solution>
