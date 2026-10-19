@@ -177,3 +177,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Por pedido del responsable, los 19 commits locales (`main`, `evaluacion/pre-loop-core`, `fix/ci-main`) pasan de la identidad personal a `dev5dataglobal` con el correo corporativo (`git filter-branch --env-filter`).
 - Verificado: los árboles de las tres ramas son idénticos a los de antes; solo cambian los hashes. Respaldo previo en un bundle del scratchpad de la sesión.
 - Pendiente: force-push de `main` y `fix/ci-main` por el responsable. `evaluacion/pre-loop-core` no está publicada.
+
+## [2026-10-19] revision | /loop (una iteración) detenido: M0 sigue sin cumplirse
+- El force-push ya está hecho: `main` (023113b) y `fix/ci-main` (816adbc) coinciden con `origin`.
+- El CI de `main` está en cola con el `ci.yml` antiguo; sin fusionar `fix/ci-main` volverá a fallar. Siguen abiertas D-20 y ADR-021 (Propuesta).
+- No se implementó ninguna historia ni se creó worktree.
