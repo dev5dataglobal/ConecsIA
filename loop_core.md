@@ -18,7 +18,7 @@ tags: [conecsia, loop]
 
 ## Condiciones de inicio
 - [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
-- [ ] Resolver **D-20** (idioma de las rutas) antes de M1.
+- [x] Resolver **D-20** (idioma de las rutas) antes de M1. — *2026-10-19: aprobada opción A (español con excepciones técnicas); ADR-020 § Convención de idioma.*
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/core -b loop/core main`.
 
 ## Propiedad de archivos
@@ -39,7 +39,7 @@ tags: [conecsia, loop]
 9. **Detente** en la parte que dependa de una decisión abierta: márcala con ⏸, regístrala como D-xx y sigue con la siguiente tarea independiente.
 
 ## Condiciones de bloqueo
-- Decisiones abiertas: D-01, D-04 (HU-014), D-16 y D-20; ADR-019 (HU-015) y ADR-021.
+- Decisiones abiertas: D-01, D-04 (HU-014) y D-16; ADR-019 (HU-015) y ADR-021.
 - Un ADR del loop que siga en Propuesta y cambie el modelo.
 - Otro loop tiene el token de migración y la tarea necesita una migración.
 - El CI de `main` está en rojo.

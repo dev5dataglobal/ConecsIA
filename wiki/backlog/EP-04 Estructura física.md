@@ -41,7 +41,7 @@ Modelar la jerarquía física Organización → [[Sede]] → [[Área o destino]]
 | Estado | **En revisión** — implementada y verificada localmente el 2026-10-17 ([[Sedes]]); falta CI en GitHub, revisión de código y del PO |
 
 > [!note] Implementación 2026-10-17 — primera vertical
-> Detalle y limitaciones en [[Sedes]]; evidencia en [[Estado de implementación]]. Desviaciones: rutas en español (`/api/v1/sedes`, D-20); autenticación por esquema de desarrollo ([[ADR-022 Autenticación de desarrollo provisional]]) porque HU-006 está bloqueada por D-03; organizaciones y usuarios por semillas porque HU-009/HU-016 no existen.
+> Detalle y limitaciones en [[Sedes]]; evidencia en [[Estado de implementación]]. Desviaciones: autenticación por esquema de desarrollo ([[ADR-022 Autenticación de desarrollo provisional]]) porque HU-006 está bloqueada por D-03; organizaciones y usuarios por semillas porque HU-009/HU-016 no existen.
 
 ### Objetivo
 Entidad [[Sede]] por organización con nombre, dirección, zona horaria IANA obligatoria, estado y datos de contacto.
@@ -60,7 +60,7 @@ Administrador de organización (crea/inactiva); Administrador de sede (edita la 
 - **Efectos persistidos:** `site` con `organization_id`, `time_zone`, estado, versión.
 - **Errores:** 409 nombre duplicado/concurrencia; 422 inactivar sede con permanencias abiertas (Propuesta: rechazar hasta definir regla); 404 sede de otra organización; 403 fuera de alcance.
 - **Auditoría:** alta, cambios (anterior/nuevo), inactivación.
-- **Endpoints indicativos:** `GET/POST /api/v1/sites`, `PUT /api/v1/sites/{id}`, `POST /api/v1/sites/{id}/deactivate`.
+- **Endpoints indicativos:** `GET/POST /api/v1/sedes`, `PUT /api/v1/sedes/{id}`, `POST /api/v1/sedes/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [x] **Dado** una organización con varias sedes **cuando** un operador asignado a S1 lista sedes **entonces** solo ve S1, y el backend rechaza operar en S2 (CA-02). *Verificado 2026-10-17: integración + Docker (403 `FUERA_DE_ALCANCE`).*
@@ -117,7 +117,7 @@ Administrador de organización; Administrador de sede; Autorizador (consumidor).
 - **Efectos persistidos:** `area_destination`, `area_responsible`, `area_authorizer` con vigencia (alta/baja) para conservar historial.
 - **Errores:** 409 duplicado; 404 sede/usuario de otra organización; 422 asignar usuario inactivo.
 - **Auditoría:** alta, cambios, asignación/retiro de responsables y autorizadores.
-- **Endpoints indicativos:** `GET/POST /api/v1/sites/{siteId}/areas`, `PUT /api/v1/areas/{id}`, `PUT /api/v1/areas/{id}/authorizers`.
+- **Endpoints indicativos:** `GET/POST /api/v1/sedes/{sedeId}/areas`, `PUT /api/v1/areas/{id}`, `PUT /api/v1/areas/{id}/autorizadores`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un área con responsables **cuando** se inactiva **entonces** autorizaciones e historiales previos conservan área y responsables (CA-03, CA-15).
@@ -173,7 +173,7 @@ Administrador de organización; Administrador de sede.
 - **Efectos persistidos:** `zone` con `organization_id`, `site_id`, `is_access_point`, `access_mode`, estado.
 - **Errores:** 400 modo inconsistente; 409 duplicado; 404 sede de otra organización.
 - **Auditoría:** alta, cambios (anterior/nuevo), inactivación.
-- **Endpoints indicativos:** `GET/POST /api/v1/sites/{siteId}/zones`, `PUT /api/v1/zones/{id}`, `POST /api/v1/zones/{id}/deactivate`.
+- **Endpoints indicativos:** `GET/POST /api/v1/sedes/{sedeId}/zonas`, `PUT /api/v1/zonas/{id}`, `POST /api/v1/zonas/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una zona marcada como punto de acceso de entrada **cuando** se consulta para operar **entonces** solo se ofrece para entradas.

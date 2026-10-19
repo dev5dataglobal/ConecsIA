@@ -59,7 +59,7 @@ Superadministrador SaaS; Administrador de organización (lectura/edición de su 
 - **Inactivación (Pendiente D-16):** hasta decidir, inactivar **bloquea nuevas operaciones** y sesiones de usuarios de esa organización; no se define acceso de consulta histórica ni reactivación automática.
 - **Errores:** 409 nombre duplicado o versión concurrente; 403 sin permiso SaaS; 404 para usuarios de otra organización.
 - **Auditoría:** alta, cambios (anterior/nuevo), inactivación/reactivación.
-- **Endpoints indicativos:** `POST/GET /api/v1/saas/organizations`, `PUT /api/v1/saas/organizations/{id}`, `POST /api/v1/saas/organizations/{id}/deactivate`.
+- **Endpoints indicativos:** `POST/GET /api/v1/saas/organizaciones`, `PUT /api/v1/saas/organizaciones/{id}`, `POST /api/v1/saas/organizaciones/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un superadministrador **cuando** crea una organización **entonces** queda activa, auditada y con invitación al primer administrador.
@@ -117,7 +117,7 @@ Superadministrador SaaS; Administrador de organización (ajusta catálogos).
 - **Efectos persistidos:** catálogos de la organización con `origen` (`plantilla:vX` / `personalizado`) y registro de aplicación de plantilla.
 - **Errores:** 409 si hay aplicación de plantilla concurrente; 404 tipo inexistente.
 - **Auditoría:** aplicación/cambio de plantilla con resumen de elementos agregados.
-- **Endpoints indicativos:** `GET /api/v1/saas/organization-types`, `POST /api/v1/saas/organizations/{id}/apply-template`.
+- **Endpoints indicativos:** `GET /api/v1/saas/tipos-organizacion`, `POST /api/v1/saas/organizaciones/{id}/aplicar-plantilla`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una organización con catálogos personalizados **cuando** se cambia su plantilla **entonces** no se modifican permisos ni se eliminan personalizaciones o históricos (CA-26).
@@ -174,7 +174,7 @@ Superadministrador SaaS; sistema (guardas de módulo).
 - **Efectos persistidos:** `organization_module` con estado, fecha y actor; plan asignado.
 - **Errores:** operación de módulo deshabilitado ⇒ 403 con código `MODULO_NO_HABILITADO`.
 - **Auditoría:** cambio de plan y de habilitación (anterior/nuevo).
-- **Endpoints indicativos:** `GET /api/v1/saas/plans`, `PUT /api/v1/saas/organizations/{id}/modules`, `GET /api/v1/me/modules`.
+- **Endpoints indicativos:** `GET /api/v1/saas/planes`, `PUT /api/v1/saas/organizaciones/{id}/modulos`, `GET /api/v1/me/modulos`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un módulo deshabilitado **cuando** se invoca una operación nueva del módulo por API **entonces** se rechaza con `MODULO_NO_HABILITADO` (CA-23).
@@ -230,7 +230,7 @@ Administrador de organización; todos los usuarios (consumo).
 - **Efectos persistidos:** `organization_vocabulary` con versión.
 - **Errores:** 400 clave desconocida o valor inválido; 403 sin permiso `configuracion.modificar`.
 - **Auditoría:** cambios con valores anterior/nuevo.
-- **Endpoints indicativos:** `GET /api/v1/vocabulary`, `PUT /api/v1/vocabulary`.
+- **Endpoints indicativos:** `GET /api/v1/vocabulario`, `PUT /api/v1/vocabulario`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una etiqueta personalizada **cuando** un usuario de la organización abre la SPA **entonces** ve el término personalizado y la API conserva sus nombres de núcleo (RN-11).

@@ -1,6 +1,6 @@
 ---
 tipo: consulta
-estado: propuesta
+estado: aprobado
 fuentes: [PRD v0.1, código en main 023113b, backend/openapi/ConecsIA.Api.json, wiki/backlog]
 relacionados: [D-20, ADR-020, HU-013, EP-03, EP-04, EP-05, EP-06]
 actualizado: 2026-10-19
@@ -9,8 +9,8 @@ tags: [conecsia, api, decision]
 
 # Opciones para decidir D-20 (idioma de rutas y contratos)
 
-> [!note] Análisis, no decisión
-> [[Decisiones pendientes|D-20]] sigue **pendiente** hasta que la cierre el responsable. Este análisis solo propone una opción.
+> [!success] Decisión aprobada 2026-10-19
+> El responsable aprobó la **opción A**. La regla vigente está en [[ADR-020 Contratos API y formato de errores]] § Convención de idioma.
 
 ## Estado actual (verificado 2026-10-19)
 

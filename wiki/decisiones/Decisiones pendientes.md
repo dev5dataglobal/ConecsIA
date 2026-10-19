@@ -33,7 +33,7 @@ Al resolver una: marcarla **Aprobada (ADR-xxx)**, crear el ADR en esta carpeta y
 | D-17 | Normalizar placa y serial y definir su ámbito de unicidad (vehículos y equipos) — *nueva 2026-10-17, surgió del backlog* | Antes de RF-16/RF-17 |
 | D-18 | Política de la modalidad Permanente: quién la permite y bajo qué condiciones — *nueva 2026-10-17* | Antes de HU-024 |
 | D-19 | Umbrales de alertas (próximo vencimiento, permanencia prolongada) y definición de "persona sin salida" — *nueva 2026-10-17; el backlog los asociaba a D-12* | Antes de HU-040/HU-044 |
-| D-20 | Convención de idioma en rutas y contratos de la API: español (`/api/v1/sedes`, implementado provisionalmente en HU-013) o inglés (`/sites`, indicativo en el backlog) — *nueva 2026-10-17* | Antes de la segunda vertical |
+| D-20 | ~~Convención de idioma en rutas y contratos de la API~~ — **Aprobada 2026-10-19: opción A, español con excepciones técnicas** ([[ADR-020 Contratos API y formato de errores]] § Convención de idioma; análisis en [[Opciones para decidir D-20]]) | Antes de la segunda vertical |
 | D-21 | Límite de intentos de inicio de sesión por IP (aprobado en D-03d sin valor): intentos por ventana de tiempo y proxies de confianza para obtener la IP real detrás de nginx — *nueva 2026-10-19* | Antes de exponer el inicio de sesión fuera de la red local |
 
 **Riesgos principales:** alcance sectorial sin detalle, confusión entre visita y autorización, duplicación por concurrencia, filtros de tenant incompletos, horarios ambiguos, presencia desactualizada, fallos de correo y retención indefinida de datos personales. Cada riesgo se aborda con una decisión identificada, controles en servidor y criterios de aceptación; no se declara resuelto hasta verificarlos.

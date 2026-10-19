@@ -88,7 +88,7 @@ Una historia está **Terminada** solo cuando:
 > [!note] Desviación del plan
 > La primera vertical adelanta HU-013 (S3) antes de cerrar S2. Para no esperar a D-03 se usó autenticación provisional ([[ADR-022 Autenticación de desarrollo provisional]], Propuesta) y semillas en lugar de HU-009/HU-016. La DoR no se cumplía formalmente (D-03 abierta, ADR-008 en Propuesta): la parte bloqueada quedó aislada en el esquema de autenticación y en la regla de cambio de zona horaria (D-06).
 
-**Siguiente paso propuesto:** crear el repositorio en GitHub y correr el CI; cerrar D-03 para HU-006; resolver D-20 (idioma de las rutas) antes de la segunda vertical.
+**Siguiente paso propuesto:** crear el repositorio en GitHub y correr el CI; cerrar D-03 para HU-006; ~~resolver D-20~~ (aprobada 2026-10-19: rutas en español, ADR-020).
 
 > [!note] Ejecución por loops (Propuesta, 2026-10-21)
 > El backlog se reparte en loops con propiedad de archivos y hitos de integración: ver `PLAN-DE-LOOPS.md` en la raíz del repositorio. Todos están bloqueados hasta cerrar o diferir `goal_authentication.md`.

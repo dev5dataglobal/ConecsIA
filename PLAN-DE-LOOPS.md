@@ -10,7 +10,7 @@ tags: [conecsia, loops, plan]
 # Plan de loops
 
 > [!success] Autenticación cerrada (2026-10-21)
-> El responsable cerró `goal_authentication.md` y difirió lo que quedaba: el restablecimiento va a `loop_integraciones`, y MFA, D-21 y ASVS a `loop_quality`. **Ningún loop está en ejecución todavía.** Para alcanzar M0 falta publicar `main` y tener el CI en verde. `loop_core` necesita además D-20 resuelta antes de M1.
+> El responsable cerró `goal_authentication.md` y difirió lo que quedaba: el restablecimiento va a `loop_integraciones`, y MFA, D-21 y ASVS a `loop_quality`. **Ningún loop está en ejecución todavía.** Para alcanzar M0 falta publicar `main` y tener el CI en verde. D-20 quedó aprobada el 2026-10-19 (opción A: rutas en español).
 
 > [!note] Fuentes que no existen
 > Se pidieron `AGENTS.md`, `wiki/vision-general.md` y `wiki/pendientes.md`, pero no existen en el repositorio. Se usaron sus equivalentes: `CLAUDE.md`, `wiki/overview.md` y `wiki/decisiones/Decisiones pendientes.md`. Las historias y dependencias salen de `wiki/backlog/EP-*.md`, y ninguna se inventó.
@@ -225,7 +225,7 @@ git worktree add ../ConecsIA-wt/core -b loop/core main
 | Decisión | Loop afectado | Efecto |
 |---|---|---|
 | ~~Cierre del goal~~ cerrado 2026-10-21; MFA, D-21 y ASVS van a quality y el restablecimiento a integraciones | quality, integraciones | ya no bloquea M0 |
-| D-20 idioma de rutas | todos desde personas | Debe resolverse **antes de M1**. Si se cambia después, hay que renombrar las rutas ya implementadas. |
+| ~~D-20 idioma de rutas~~ aprobada 2026-10-19 (opción A, español; ADR-020) | todos | Las rutas nuevas siguen la convención de ADR-020. |
 | D-01, D-16 | core | Vocabulario e inactivación de organización. |
 | D-04 | core (HU-014), autorizaciones | Quién autoriza y decide. |
 | D-09 | personas | Clave única de persona. |

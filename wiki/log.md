@@ -230,3 +230,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - **backend / Script de migraciones idempotente:** `dotnet ef ... -c Release` usa `-c` como `--context`, por eso sale «No DbContext named 'Release'». Con `--configuration Release` se genera bien en local (261 líneas).
 - **secretos / gitleaks:** no hay logs sin autenticación ni binario local. Probable: los valores ficticios de `RedactorDatosSensiblesTests.cs` (JWT de ejemplo, `api-key`). En `main` las contraseñas reales vienen de `${...}` o son de ejemplo. Propuesta: `.gitleaks.toml` con allowlist para esa ruta, pendiente de confirmar con el log del run.
 - Sin cambios de código todavía (solo propuesta).
+
+## [2026-10-19] decision | D-20 aprobada: rutas y contratos en español (opción A)
+- `Decisiones pendientes.md`: D-20 aprobada. `ADR-020`: nueva sección «Convención de idioma» (español, plural, kebab-case; excepciones `auth/login|logout|csrf`, `me`, `health`, `saas` y claves de RFC 9457).
+- Rutas indicativas traducidas en EP-03, EP-04, EP-05 y EP-06. Se quitó la nota de desviación en `Sedes` y en EP-04.
+- Actualizados `PLAN-DE-LOOPS.md`, `loop_core.md`, `PLAN-DE-TRABAJO.md` e `index.md`. Nueva página `consultas/Opciones para decidir D-20` (el análisis también está en `fix/ci-main`, commit d1421b0).
+- Sin cambios de código: lo implementado ya cumple la convención. `loop_core` sigue esperando M0 (CI de `main`) y ADR-021.

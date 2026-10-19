@@ -61,7 +61,7 @@ Operador de acceso; Administrador de organización/sede; Autorizador (búsqueda 
 - **Errores:** 400 validación; 409 documento existente en edición; 404 persona de otra organización; 403 sin permiso `personas.crear`.
 - **Auditoría:** alta y modificación (anterior/nuevo minimizado); búsquedas no se auditan individualmente salvo decisión D-14.
 - **Logs:** documento enmascarado (ADR-018).
-- **Endpoints indicativos:** `GET /api/v1/persons/lookup?documentTypeId=&number=`, `GET /api/v1/persons?q=`, `POST /api/v1/persons`, `PUT /api/v1/persons/{id}`.
+- **Endpoints indicativos:** `GET /api/v1/personas/buscar-por-documento?tipoDocumentoId=&numero=`, `GET /api/v1/personas?q=`, `POST /api/v1/personas`, `PUT /api/v1/personas/{id}`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una persona registrada **cuando** busco su tipo y documento **entonces** recupero el registro existente (CA-04).
@@ -119,7 +119,7 @@ Administrador de organización.
 - **Efectos persistidos:** `person_type`, `document_type` por organización con `origen`.
 - **Errores:** 409 código duplicado; 422 usar tipo inactivo en alta.
 - **Auditoría:** alta, cambio, inactivación.
-- **Endpoints indicativos:** `GET/POST /api/v1/person-types`, `GET/POST /api/v1/document-types`, `POST …/{id}/deactivate`.
+- **Endpoints indicativos:** `GET/POST /api/v1/tipos-persona`, `GET/POST /api/v1/tipos-documento`, `POST …/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un tipo de persona inactivado **cuando** se consulta una persona/historial que lo usa **entonces** conserva la referencia (CA-03, CA-15).
@@ -174,7 +174,7 @@ Operador de acceso; Administrador; cualquier usuario con permiso de consulta de 
 - **Efectos persistidos:** `file_object` (organización, dueño, tipo, tamaño, hash, fecha, actor) y referencia en `person`.
 - **Errores:** 413 tamaño excedido; 415 formato no permitido; 404 persona/archivo de otra organización.
 - **Auditoría:** subida, reemplazo; descarga (Propuesta).
-- **Endpoints indicativos:** `PUT /api/v1/persons/{id}/photo`, `GET /api/v1/persons/{id}/photo`.
+- **Endpoints indicativos:** `PUT /api/v1/personas/{id}/foto`, `GET /api/v1/personas/{id}/foto`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un usuario de A **cuando** solicita la foto de una persona de B conociendo su ID o clave **entonces** recibe 404 (CA-01).
@@ -230,7 +230,7 @@ Administrador de organización/sede con permiso `personas.inactivar`.
 - **Efectos persistidos:** estado, motivo, actor, instante.
 - **Errores:** 409 concurrencia; 422 transición inválida; 404 otra organización.
 - **Auditoría:** inactivación/reactivación con motivo.
-- **Endpoints indicativos:** `POST /api/v1/persons/{id}/deactivate`, `POST /api/v1/persons/{id}/reactivate`.
+- **Endpoints indicativos:** `POST /api/v1/personas/{id}/inactivar`, `POST /api/v1/personas/{id}/reactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una persona inactivada **cuando** se consulta su historial **entonces** conserva autorizaciones, autorizadores y movimientos (CA-15).

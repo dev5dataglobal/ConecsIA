@@ -47,7 +47,6 @@ Respuestas de error en Problem Details con `traceId` y `code` ([[ADR-020 Contrat
 > - Permisos y alcance se guardan directamente en `membresia` (`text[]`, `uuid[]`). **Provisional** hasta HU-017 (roles) y HU-018 (alcance administrable).
 > - Organizaciones y usuarios solo existen por semillas: HU-009 y HU-016 no están implementadas.
 > - Denegaciones por permiso (403) se registran en log pero **no** en la auditoría; solo se audita la selección de organización ajena.
-> - Rutas en español (`/api/v1/sedes`) frente a las indicativas del backlog (`/sites`): ver **D-20**.
 > - Reactivar una sede: no está en el alcance de HU-013.
 
 ## Diseño (Implementado)

@@ -57,7 +57,7 @@ Administrador de organización; Administrador de sede (si tiene permiso de invit
 - **Efectos persistidos:** `user`, `membership` (estado, roles, fechas, actor), `invitation` (hash, expiración, estado).
 - **Errores:** 409 invitación duplicada/correo existente; 410 invitación expirada o usada; 403 escalamiento de privilegios.
 - **Auditoría:** invitación, aceptación, cambios de roles (anterior/nuevo), inactivación/reactivación.
-- **Endpoints indicativos:** `POST /api/v1/users/invitations`, `POST /api/v1/invitations/{token}/accept`, `GET /api/v1/users`, `PUT /api/v1/users/{id}/roles`, `POST /api/v1/users/{id}/deactivate`.
+- **Endpoints indicativos:** `POST /api/v1/usuarios/invitaciones`, `POST /api/v1/invitaciones/{token}/aceptar`, `GET /api/v1/usuarios`, `PUT /api/v1/usuarios/{id}/roles`, `POST /api/v1/usuarios/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** una persona visitante y un usuario autenticado **cuando** se administran **entonces** inactivar uno no afecta al otro (CA-05).
@@ -115,7 +115,7 @@ Administrador de organización; sistema (evaluación de políticas).
 - **Efectos persistidos:** `role`, `role_permission` por organización; catálogo `permission` global y versionado.
 - **Errores:** 400 permiso desconocido; 409 nombre duplicado; 422 quitar último administrador; 403 escalamiento.
 - **Auditoría:** alta/cambio/inactivación de rol con permisos anterior/nuevo.
-- **Endpoints indicativos:** `GET /api/v1/permissions`, `GET/POST /api/v1/roles`, `PUT /api/v1/roles/{id}`, `POST /api/v1/roles/{id}/deactivate`.
+- **Endpoints indicativos:** `GET /api/v1/permisos`, `GET/POST /api/v1/roles`, `PUT /api/v1/roles/{id}`, `POST /api/v1/roles/{id}/inactivar`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un rol llamado "Administrador" sin permisos **cuando** su usuario invoca un endpoint administrativo **entonces** se rechaza (RN-10).
@@ -174,7 +174,7 @@ Administrador de organización; Administrador de sede (dentro de su sede); todos
 - **Efectos persistidos:** `membership_scope` (tipo, objetivo, vigencia).
 - **Errores:** 403 fuera de alcance; 404 objetivo de otra organización; 422 destino fuera de sede asignada.
 - **Auditoría:** cambios de alcance (anterior/nuevo).
-- **Endpoints indicativos:** `GET/PUT /api/v1/users/{id}/scope`.
+- **Endpoints indicativos:** `GET/PUT /api/v1/usuarios/{id}/alcance`.
 
 ### Criterios de aceptación
 - [ ] **Dado** un operador asignado solo a S1 **cuando** registra o consulta en S2 por API **entonces** el backend lo rechaza (CA-02).

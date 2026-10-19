@@ -4,8 +4,8 @@ estado: aprobado
 area: backend
 origen: PRD §15, §12.7
 fuentes: [PRD v0.1]
-relacionados: [CA-09, CA-12]
-actualizado: 2026-10-17
+relacionados: [CA-09, CA-12, D-20]
+actualizado: 2026-10-19
 tags: [conecsia, adr, backend]
 ---
 
@@ -45,3 +45,17 @@ Ninguna bloqueante.
 - Aprobado con las precisiones de la revisión.
 - **Entrada denegada: `200` con `resultado: "Denegada"` y código de motivo** (decisión del usuario). Se audita.
 - `409` para conflictos de concurrencia o versión, `422` para reglas violadas, `404` para recursos de otra organización. Las claves de idempotencia se conservan al menos 24 h.
+
+## Convención de idioma (D-20, aprobada 2026-10-19)
+
+**Aprobado** por el responsable: opción A de [[Opciones para decidir D-20]].
+
+| Elemento | Regla | Ejemplo |
+|---|---|---|
+| Recursos y acciones | Español, plural, minúsculas, kebab-case | `/api/v1/sedes`, `/api/v1/tipos-documento`, `POST …/{id}/inactivar` |
+| Excepciones técnicas | Se mantienen en inglés | `auth/login`, `auth/logout`, `auth/csrf`, `me`, `health`, prefijo `saas` |
+| Campos JSON | camelCase en español | `creadaEn`, `alcanceTotalSedes` |
+| Errores | Claves estándar de RFC 9457 (`type`, `title`, `status`, `detail`, `code`, `errors`); valores de `code` en español, MAYÚSCULAS_CON_GUIONES | `FUERA_DE_ALCANCE` |
+| Vocabulario sectorial (HU-012) | Solo cambia etiquetas de la UI, nunca rutas ni contratos | — |
+
+Consecuencia: lo implementado (HU-006, HU-013) ya cumple la regla; las rutas indicativas de EP-03 a EP-06 se tradujeron el 2026-10-19.
