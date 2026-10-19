@@ -170,7 +170,7 @@ public sealed class AislamientoYAuditoriaTests(BaseDatosFixture baseDatos) : IAs
         ambito.ServiceProvider.GetRequiredService<ContextoSolicitud>().ComoSistema();
         var contexto = ambito.ServiceProvider.GetRequiredService<ConecsIADbContext>();
         var evento = await contexto.Set<EventoAuditoria>()
-            .SingleAsync(a => a.ActorUsuarioId == e.AdminA && a.Accion == AuditoriaEscrituraEntreOrganizaciones.Accion);
+            .SingleAsync(a => a.ActorUsuarioId == e.AdminA && a.Accion == AuditoriaDenegaciones.AccionEscrituraEntreOrganizaciones);
         Assert.Equal(e.OrgA, evento.OrganizacionId);
         Assert.Equal(ResultadoAuditoria.Denegado, evento.Resultado);
         Assert.Equal("Sede", evento.TipoObjeto);

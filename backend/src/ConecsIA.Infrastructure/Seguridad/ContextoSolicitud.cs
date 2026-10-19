@@ -36,4 +36,15 @@ public sealed class ContextoSolicitud : IContextoSolicitud
     public void EstablecerUsuario(Guid usuarioId) => UsuarioId = usuarioId;
 
     public void ComoSistema() => EsSistema = true;
+
+    /// <summary>
+    /// Proceso de fondo (HU-007): opera en una organización explícita, sin usuario y solo con los
+    /// permisos indicados. El filtro global y la verificación al guardar siguen activos.
+    /// </summary>
+    public void ComoProceso(Guid organizacionId, IEnumerable<string> permisos)
+    {
+        OrganizacionId = organizacionId;
+        Permisos = permisos.ToHashSet(StringComparer.Ordinal);
+        AlcanceTotalSedes = true;
+    }
 }

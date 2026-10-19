@@ -15,8 +15,11 @@ namespace ConecsIA.Modules.Identidad.Api;
 public sealed class MeController(
     IContextoSolicitud contexto,
     IRepositorioIdentidad repositorio,
-    IConsultaOrganizaciones organizaciones) : ControllerBase
+    IConsultaOrganizaciones organizaciones,
+    ResolvedorContexto resolvedor) : ControllerBase
 {
+    public sealed record MembresiaDto(Guid OrganizacionId, string Nombre);
+
     public sealed record UsuarioDto(Guid Id, string Nombre, string Correo);
 
     public sealed record OrganizacionDto(Guid Id, string Nombre);
@@ -44,6 +47,20 @@ public sealed class MeController(
             contexto.AlcanceTotalSedes,
             contexto.SedesAsignadas.ToList());
     }
+
+    /// <summary>
+    /// Organizaciones donde el usuario tiene membresía vigente (D-03b). Responde aunque no haya
+    /// organización seleccionada: la SPA lo usa para pedir la selección, que el servidor vuelve a verificar.
+    /// </summary>
+    [HttpGet("membresias")]
+    [SinOrganizacionResuelta]
+    [ProducesResponseType<IReadOnlyList<MembresiaDto>>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IReadOnlyList<MembresiaDto>> Membresias(CancellationToken cancelacion) =>
+        (await resolvedor.MembresiasVigentesAsync(contexto.UsuarioId!.Value, cancelacion))
+            .Select(m => new MembresiaDto(m.Membresia.OrganizacionId, m.NombreOrganizacion))
+            .OrderBy(m => m.Nombre, StringComparer.CurrentCulture)
+            .ToList();
 }
 
 /// <summary>

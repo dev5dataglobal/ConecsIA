@@ -39,6 +39,20 @@ public sealed class MiddlewareContextoOrganizacion(RequestDelegate siguiente)
             return;
         }
 
+        if (endpoint.Metadata.GetMetadata<SinOrganizacionResueltaAttribute>() is not null)
+        {
+            if (!await resolvedor.UsuarioActivoAsync(usuarioId, http.RequestAborted))
+            {
+                await EscribirAsync(http, problemas, StatusCodes.Status401Unauthorized, "No autenticado",
+                    "La sesión no corresponde a un usuario activo.", codigo: null);
+                return;
+            }
+
+            contexto.EstablecerUsuario(usuarioId);
+            await siguiente(http);
+            return;
+        }
+
         Guid? seleccion = null;
         if (http.Request.Headers.TryGetValue(CabecerasSeguridad.Organizacion, out var valor))
         {

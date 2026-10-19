@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConecsIA.ArchitectureTests;
@@ -59,5 +60,32 @@ public class ConvencionesApiTests
             .ToList();
 
         Assert.True(indebidos.Count == 0, $"Controladores que reciben un DbContext: {string.Join(", ", indebidos)}");
+    }
+
+    /// <summary>
+    /// HU-007 (DoD): todo endpoint exige autenticación por el filtro global; los anónimos son una lista
+    /// cerrada y revisada. Los permisos se exigen en los casos de uso (<c>AccesoDenegadoException.ExigirPermiso</c>).
+    /// </summary>
+    [Fact]
+    public void Solo_los_endpoints_revisados_admiten_acceso_anonimo()
+    {
+        string[] revisados =
+        [
+            "AutenticacionController.Cerrar",   // cerrar sesión funciona aunque la sesión ya no sea válida
+            "AutenticacionController.Ingresar",
+            "CsrfController.Obtener",
+            "DesarrolloController.Usuarios",    // responde 404 fuera de Development/Testing
+            "SistemaController.ObtenerVersion",
+        ];
+
+        var anonimos = Controladores()
+            .SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => c.GetCustomAttribute<AllowAnonymousAttribute>() is not null
+                            || m.GetCustomAttribute<AllowAnonymousAttribute>() is not null)
+                .Select(m => $"{c.Name}.{m.Name}"))
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        Assert.Equal(revisados.Order(StringComparer.Ordinal), anonimos);
     }
 }

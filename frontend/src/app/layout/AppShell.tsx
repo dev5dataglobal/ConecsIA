@@ -2,7 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { cerrarSesion as cerrarSesionApi } from '../../features/sesion/apiSesion'
-import { useContexto } from '../../features/sesion/useContexto'
+import { guardarOrganizacionSeleccionada } from '../../features/sesion/organizacionSeleccionada'
+import { useContexto, useMembresias } from '../../features/sesion/useContexto'
 import { IndicadorConexion } from '../../features/sistema/IndicadorConexion'
 import type { ClaveTexto } from '../../shared/i18n/es'
 import { useT } from '../../shared/i18n/traductor'
@@ -26,16 +27,22 @@ function iniciales(nombre: string) {
 
 /**
  * Estructura base según el mockup de Figma: barra lateral oscura, cabecera clara con la
- * organización derivada por el servidor (HU-007) y el usuario. El selector entre varias
- * organizaciones o sedes depende de D-03 (multi-membresía) y aún no se ofrece.
+ * organización derivada por el servidor (HU-007) y el usuario. Con varias membresías (D-03b) la
+ * cabecera ofrece un selector; el servidor verifica la elección en cada petición.
  */
 export function AppShell() {
   const t = useT()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [colapsado, setColapsado] = useState(false)
   const { data: contexto } = useContexto()
+  const { data: membresias } = useMembresias(contexto !== undefined)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+
+  function cambiarOrganizacion(organizacionId: string) {
+    guardarOrganizacionSeleccionada(organizacionId)
+    void queryClient.invalidateQueries()
+  }
 
   async function cerrarSesion() {
     await cerrarSesionApi()
@@ -144,9 +151,24 @@ export function AppShell() {
                       <span className="block text-[10px] font-medium uppercase tracking-wide text-tinta-suave">
                         {t('contexto.organizacion')}
                       </span>
-                      <span className="block truncate text-xs font-semibold">
-                        {contexto.organizacion.nombre}
-                      </span>
+                      {membresias && membresias.length > 1 ? (
+                        <select
+                          aria-label={t('contexto.organizacion')}
+                          value={contexto.organizacion.id}
+                          onChange={(ev) => cambiarOrganizacion(ev.target.value)}
+                          className="block max-w-48 truncate bg-transparent text-xs font-semibold focus-visible:outline-2 focus-visible:outline-acento"
+                        >
+                          {membresias.map((m) => (
+                            <option key={m.organizacionId} value={m.organizacionId}>
+                              {m.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="block truncate text-xs font-semibold">
+                          {contexto.organizacion.nombre}
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div

@@ -41,6 +41,43 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/auth/csrf': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['TokenCsrf']
+            'application/json': components['schemas']['TokenCsrf']
+            'text/json': components['schemas']['TokenCsrf']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/sedes': {
     parameters: {
       query?: never
@@ -425,6 +462,196 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/auth/login': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudIngreso']
+          'text/json': components['schemas']['SolicitudIngreso']
+          'application/*+json': components['schemas']['SolicitudIngreso']
+        }
+      }
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Locked */
+        423: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/logout': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Anónimo a propósito: cerrar sesión no exige membresía activa. */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/sesiones': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Sesiones vigentes del usuario autenticado (D-03c: simultáneas y revocables). */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['SesionDto'][]
+            'application/json': components['schemas']['SesionDto'][]
+            'text/json': components['schemas']['SesionDto'][]
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/auth/sesiones/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/me': {
     parameters: {
       query?: never
@@ -465,6 +692,58 @@ export interface paths {
         }
         /** @description Forbidden */
         403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/me/membresias': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Organizaciones donde el usuario tiene membresía vigente (D-03b). Responde aunque no haya
+     *     organización seleccionada: la SPA lo usa para pedir la selección, que el servidor vuelve a verificar.
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['MembresiaDto'][]
+            'application/json': components['schemas']['MembresiaDto'][]
+            'text/json': components['schemas']['MembresiaDto'][]
+          }
+        }
+        /** @description Unauthorized */
+        401: {
           headers: {
             [name: string]: unknown
           }
@@ -548,6 +827,11 @@ export interface components {
       version: string
       modulos: string[]
     }
+    MembresiaDto: {
+      /** Format: uuid */
+      organizacionId: string
+      nombre: string
+    }
     OrganizacionDto: {
       /** Format: uuid */
       id: string
@@ -588,12 +872,25 @@ export interface components {
       /** Format: date-time */
       inactivadaEn: null | string
     }
+    SesionDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: date-time */
+      iniciadaEn: string
+      /** Format: date-time */
+      expiraEn: string
+      actual: boolean
+    }
     SolicitudCrearSede: {
       nombre: null | string
       direccion: null | string
       ciudad: null | string
       pais: null | string
       zonaHoraria: null | string
+    }
+    SolicitudIngreso: {
+      correo: null | string
+      contrasena: null | string
     }
     SolicitudModificarSede: {
       nombre: null | string
@@ -603,6 +900,10 @@ export interface components {
       zonaHoraria: null | string
       /** Format: uint32 */
       version: number | string
+    }
+    TokenCsrf: {
+      token: string
+      cabecera: string
     }
     UsuarioDesarrolloDto: {
       /** Format: uuid */

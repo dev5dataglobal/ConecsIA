@@ -1,3 +1,7 @@
+import {
+  CABECERA_ORGANIZACION,
+  leerOrganizacionSeleccionada,
+} from '../../features/sesion/organizacionSeleccionada'
 import { EVENTO_SESION_EXPIRADA, olvidarSesion } from '../../features/sesion/sesion'
 import {
   CABECERA_USUARIO_DESARROLLO,
@@ -48,6 +52,10 @@ export async function apiFetch<T>(
   const usuario = leerSesionDesarrollo()
   if (usuario && !headers.has(CABECERA_USUARIO_DESARROLLO)) {
     headers.set(CABECERA_USUARIO_DESARROLLO, usuario)
+  }
+  const organizacion = leerOrganizacionSeleccionada()
+  if (organizacion && !headers.has(CABECERA_ORGANIZACION)) {
+    headers.set(CABECERA_ORGANIZACION, organizacion)
   }
   // El modo desarrollo no usa cookie de sesión y la API no le exige el token.
   if (!usuario && !METODOS_SEGUROS.has(metodo) && !headers.has(CABECERA_CSRF)) {

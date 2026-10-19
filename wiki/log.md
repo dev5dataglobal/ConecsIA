@@ -268,3 +268,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: regla por módulo de ADR-021, convenciones de índice y FK, suite Org A/B reutilizable y auditoría `Denegado` de la escritura cruzada (estaba en rojo y pasó a verde). `dotnet test` 196/196.
 - Wiki: ADR-004 (§ Spike RLS), `Decisiones pendientes` (nueva D-22), EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
 - Pendiente: PR `loop/core` → `main` (no se hizo push) y D-22.
+
+## [2026-10-19] implementacion | HU-007 Contexto de organización derivado de membresía (loop_core)
+- Pruebas primero: `ContextoOrganizacionTests` (8), `SeleccionOrganizacion.test.tsx` (3) y prueba de endpoints anónimos. Backend 205 en verde, frontend 31/31, build OK.
+- Nuevo: `GET /api/v1/me/membresias`, auditoría de denegaciones de permiso, contexto de proceso y selector de organización en la SPA. OpenAPI y `schema.d.ts` regenerados.
+- Wiki: EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

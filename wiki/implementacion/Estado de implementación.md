@@ -128,3 +128,8 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Implementado:** auditoría `Denegado` de las escrituras entre organizaciones (`AuditoriaEscrituraEntreOrganizaciones`, invocada por `ManejadorExcepciones`; responde 404 sin datos ajenos). `EscrituraEntreOrganizacionesException.Entidad` expone solo el tipo.
 - **Pruebas:** `PersistenciaPorModuloTests` (regla de ADR-021 condición 1, con prueba de control), `SuiteAislamientoTests` (suite parametrizada Org A/B reutilizable; registrar cada recurso nuevo), convenciones de índices únicos y FK con organización, y escritura cruzada auditada. `dotnet test`: 196/196.
 - **Limitaciones:** aún no hay FK compuestas porque no existen entidades hijas (la convención fallará cuando aparezcan). El spike RLS es documental (ADR-004) y la adopción queda en D-22. Sin migración y sin cambios de frontend.
+
+## HU-007 cerrada en `loop/core` (2026-10-19)
+- **Backend:** `GET /api/v1/me/membresias` con `[SinOrganizacionResuelta]` (solo exige usuario activo). Denegaciones de permiso o alcance auditadas como `seguridad.acceso_denegado` con código, método y plantilla de ruta, sin IDs (`AuditoriaDenegaciones`, que reemplaza a `AuditoriaEscrituraEntreOrganizaciones`). `ContextoSolicitud.ComoProceso(organizacion, permisos)` para procesos de fondo.
+- **Frontend:** con varias membresías se muestra `ElegirOrganizacion`; la selección viaja en `X-Organizacion-Id` (sessionStorage) y se cambia desde la cabecera. Una selección rechazada (`ORGANIZACION_NO_PERMITIDA`) se olvida.
+- **Limitaciones:** no hay caché de permisos (se leen en cada petición; rendimiento por evaluar en D-15). No hay selector de sede. El OpenAPI se regeneró con la API local en Development.

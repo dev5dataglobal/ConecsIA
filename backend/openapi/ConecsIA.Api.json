@@ -39,6 +39,35 @@
         }
       }
     },
+    "/api/v1/auth/csrf": {
+      "get": {
+        "tags": [
+          "Csrf"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenCsrf"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenCsrf"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenCsrf"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sedes": {
       "get": {
         "tags": [
@@ -666,6 +695,193 @@
         }
       }
     },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudIngreso"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudIngreso"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudIngreso"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "Locked",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "summary": "Anónimo a propósito: cerrar sesión no exige membresía activa.",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sesiones": {
+      "get": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "summary": "Sesiones vigentes del usuario autenticado (D-03c: simultáneas y revocables).",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SesionDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SesionDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SesionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sesiones/{id}": {
+      "delete": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me": {
       "get": {
         "tags": [
@@ -714,6 +930,65 @@
           },
           "403": {
             "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/membresias": {
+      "get": {
+        "tags": [
+          "Me"
+        ],
+        "summary": "Organizaciones donde el usuario tiene membresía vigente (D-03b). Responde aunque no haya\r\norganización seleccionada: la SPA lo usa para pedir la selección, que el servidor vuelve a verificar.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MembresiaDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MembresiaDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MembresiaDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "text/plain": {
                 "schema": {
@@ -848,6 +1123,22 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "MembresiaDto": {
+        "required": [
+          "organizacionId",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "organizacionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
           }
         }
       },
@@ -1018,6 +1309,32 @@
           }
         }
       },
+      "SesionDto": {
+        "required": [
+          "id",
+          "iniciadaEn",
+          "expiraEn",
+          "actual"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "iniciadaEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiraEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actual": {
+            "type": "boolean"
+          }
+        }
+      },
       "SolicitudCrearSede": {
         "required": [
           "nombre",
@@ -1053,6 +1370,27 @@
             ]
           },
           "zonaHoraria": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SolicitudIngreso": {
+        "required": [
+          "correo",
+          "contrasena"
+        ],
+        "type": "object",
+        "properties": {
+          "correo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "contrasena": {
             "type": [
               "null",
               "string"
@@ -1108,6 +1446,21 @@
               "string"
             ],
             "format": "uint32"
+          }
+        }
+      },
+      "TokenCsrf": {
+        "required": [
+          "token",
+          "cabecera"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "cabecera": {
+            "type": "string"
           }
         }
       },
@@ -1212,7 +1565,13 @@
       "name": "Sistema"
     },
     {
+      "name": "Csrf"
+    },
+    {
       "name": "Sedes"
+    },
+    {
+      "name": "Autenticacion"
     },
     {
       "name": "Me"

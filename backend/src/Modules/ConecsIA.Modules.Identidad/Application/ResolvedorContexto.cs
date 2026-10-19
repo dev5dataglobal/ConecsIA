@@ -59,13 +59,7 @@ public sealed class ResolvedorContexto(IRepositorioIdentidad repositorio, IConsu
             return new ResultadoResolucion(EstadoResolucion.UsuarioNoValido);
         }
 
-        var vigentes = new List<Membresia>();
-        foreach (var membresia in await repositorio.MembresiasActivasAsync(usuarioId, cancelacion))
-        {
-            var organizacion = await organizaciones.ObtenerAsync(membresia.OrganizacionId, cancelacion);
-            // Organización inactiva: sin operaciones nuevas hasta que D-16 defina sus efectos.
-            if (organizacion is { Activa: true }) vigentes.Add(membresia);
-        }
+        var vigentes = (await MembresiasVigentesAsync(usuarioId, cancelacion)).Select(m => m.Membresia).ToList();
 
         if (organizacionSeleccionada is { } seleccionada)
         {
@@ -81,5 +75,24 @@ public sealed class ResolvedorContexto(IRepositorioIdentidad repositorio, IConsu
             1 => new ResultadoResolucion(EstadoResolucion.Resuelto, usuario, vigentes[0]),
             _ => new ResultadoResolucion(EstadoResolucion.OrganizacionNoSeleccionada, usuario),
         };
+    }
+
+    /// <summary>Usuario activo (para endpoints <c>[SinOrganizacionResuelta]</c>).</summary>
+    public async Task<bool> UsuarioActivoAsync(Guid usuarioId, CancellationToken cancelacion) =>
+        await repositorio.ObtenerUsuarioAsync(usuarioId, cancelacion) is { Activo: true };
+
+    /// <summary>Membresías activas del usuario en organizaciones activas, con el nombre de la organización.</summary>
+    public async Task<IReadOnlyList<(Membresia Membresia, string NombreOrganizacion)>> MembresiasVigentesAsync(
+        Guid usuarioId, CancellationToken cancelacion)
+    {
+        var vigentes = new List<(Membresia, string)>();
+        foreach (var membresia in await repositorio.MembresiasActivasAsync(usuarioId, cancelacion))
+        {
+            var organizacion = await organizaciones.ObtenerAsync(membresia.OrganizacionId, cancelacion);
+            // Organización inactiva: sin operaciones nuevas hasta que D-16 defina sus efectos.
+            if (organizacion is { Activa: true }) vigentes.Add((membresia, organizacion.Nombre));
+        }
+
+        return vigentes;
     }
 }

@@ -25,7 +25,7 @@ Garantizar desde la base que ninguna operación cruza la frontera de [[Organizac
 |---|---|---|---|---|
 | HU-005 | Aislamiento por organización en persistencia | L | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | RLS: D-22 |
 | HU-006 | Autenticación y sesión de usuario | L | **Goal cerrado** 2026-10-21; el restablecimiento va a loop_integraciones y MFA, D-21 y ASVS a loop_quality | — |
-| HU-007 | Contexto de organización y sede derivado de membresía | M | **En curso** (base implementada con HU-013) | Selección multi-membresía y caché dependen de D-03; autenticación provisional (ADR-022) |
+| HU-007 | Contexto de organización y sede derivado de membresía | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Sin caché de permisos (se leen en cada petición) |
 | HU-008 | Registro de auditoría append-only | M | **En curso** (base implementada con HU-013) | Retención (D-14) |
 
 ---
@@ -187,27 +187,27 @@ Todo usuario autenticado; procesos de fondo (contexto explícito).
 - **Endpoints indicativos:** `GET /api/v1/me/memberships`, `POST /api/v1/me/context` (si D-03 permite multi-membresía).
 
 ### Criterios de aceptación
-- [ ] **Dado** un usuario con membresía solo en A **cuando** envía `X-Organization-Id` de B **entonces** se rechaza y se audita (CA-01).
-- [ ] **Dado** un operador asignado a la sede S1 **cuando** opera sobre S2 **entonces** el backend lo rechaza aunque la UI no lo impida (CA-02).
-- [ ] **Dado** un cambio de permisos de la membresía **cuando** se hace la siguiente petición **entonces** se aplican los permisos nuevos (invalidación de caché).
+- [x] **Dado** un usuario con membresía solo en A **cuando** envía `X-Organization-Id` de B **entonces** se rechaza y se audita (CA-01). — *`SedesTests.Seleccionar_organizacion_ajena...`*
+- [x] **Dado** un operador asignado a la sede S1 **cuando** opera sobre S2 **entonces** el backend lo rechaza aunque la UI no lo impida (CA-02).
+- [x] **Dado** un cambio de permisos de la membresía **cuando** se hace la siguiente petición **entonces** se aplican los permisos nuevos (invalidación de caché). — *No hay caché: el contexto se lee en cada petición (`ContextoOrganizacionTests`).*
 
 ### Tareas backend
-- [ ] Middleware de resolución de contexto; `ITenantContext` inyectable.
-- [ ] Políticas ASP.NET Core basadas en permiso (`RequirePermission("personas.crear")`) + evaluador de alcance.
-- [ ] Contexto explícito para procesos de fondo.
+- [x] Middleware de resolución de contexto; `ITenantContext` inyectable.
+- [x] Políticas ASP.NET Core basadas en permiso (`RequirePermission("personas.crear")`) + evaluador de alcance. *(Implementado en los casos de uso con `ExigirPermiso`/`ExigirSede`; filtro global de autenticación.)*
+- [x] Contexto explícito para procesos de fondo. (`ContextoSolicitud.ComoProceso`)
 
 ### Tareas frontend
-- [ ] Selector de organización/sede (solo si D-03 permite varias membresías); el selector **no** es control de seguridad.
+- [x] Selector de organización/sede (solo si D-03 permite varias membresías); el selector **no** es control de seguridad. *(Organización: `ElegirOrganizacion` y selector en `AppShell`. No hay selector de sede.)*
 
 ### Pruebas
-- [ ] Unitarias: evaluador permiso + alcance.
-- [ ] Integración (PostgreSQL real): resolución con membresías activas/inactivas.
-- [ ] Aislamiento / permisos negativos: cabecera manipulada, sede no asignada, membresía inactiva, rol con nombre "Administrador" sin permisos.
-- [ ] E2E / UI: cambio de contexto (si aplica).
+- [x] Unitarias: evaluador permiso + alcance.
+- [x] Integración (PostgreSQL real): resolución con membresías activas/inactivas.
+- [x] Aislamiento / permisos negativos: cabecera manipulada, sede no asignada, membresía inactiva, rol con nombre "Administrador" sin permisos.
+- [x] E2E / UI: cambio de contexto (si aplica). *(Vitest: `SeleccionOrganizacion.test.tsx`; sin E2E con navegador.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Ningún endpoint de cliente sin política de permiso (prueba que recorre endpoints).
+- [x] Ningún endpoint de cliente sin política de permiso (prueba que recorre endpoints). — *`ConvencionesApiTests.Solo_los_endpoints_revisados_admiten_acceso_anonimo`.*
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-03 — multi-membresía. D-16 — efectos operativos de organización inactiva.

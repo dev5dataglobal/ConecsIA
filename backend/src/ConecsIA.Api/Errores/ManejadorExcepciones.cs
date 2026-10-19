@@ -29,9 +29,9 @@ public sealed partial class ManejadorExcepciones(
     {
         var problema = Clasificar(exception);
 
-        if (exception is EscrituraEntreOrganizacionesException escritura)
+        if (exception is EscrituraEntreOrganizacionesException or AccesoDenegadoException)
         {
-            await AuditarEscrituraEntreOrganizacionesAsync(httpContext, escritura, cancellationToken);
+            await AuditarDenegacionAsync(httpContext, exception, cancellationToken);
         }
 
         if (problema.Status >= StatusCodes.Status500InternalServerError)
@@ -71,12 +71,11 @@ public sealed partial class ManejadorExcepciones(
         _ => Crear(StatusCodes.Status500InternalServerError, "Error interno", detalle: null),
     };
 
-    private async Task AuditarEscrituraEntreOrganizacionesAsync(
-        HttpContext httpContext, EscrituraEntreOrganizacionesException escritura, CancellationToken cancellationToken)
+    private async Task AuditarDenegacionAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         try
         {
-            await AuditoriaEscrituraEntreOrganizaciones.RegistrarAsync(httpContext.RequestServices, escritura, cancellationToken);
+            await AuditoriaDenegaciones.RegistrarAsync(httpContext, exception, cancellationToken);
         }
         catch (Exception fallo)
         {
@@ -99,6 +98,6 @@ public sealed partial class ManejadorExcepciones(
     [LoggerMessage(Level = LogLevel.Error, Message = "Excepción no controlada de tipo {TipoExcepcion}")]
     private static partial void RegistrarErrorNoControlado(ILogger logger, string tipoExcepcion);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo auditar una escritura entre organizaciones: {TipoExcepcion}")]
+    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo auditar una denegación: {TipoExcepcion}")]
     private static partial void RegistrarFalloAuditoria(ILogger logger, string tipoExcepcion);
 }

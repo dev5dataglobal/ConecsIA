@@ -80,6 +80,10 @@ export const es = {
   'error.sinConexion': 'No hay conexión con el servidor. La operación no se guardó.',
   'error.referencia': 'Referencia para soporte: {traceId}',
   'error.revisarCampos': 'Revisa los campos marcados.',
+  'organizacion.elegirTitulo': 'Elige la organización',
+  'organizacion.elegirAviso':
+    'Tienes acceso a varias organizaciones. Elige con cuál vas a trabajar; puedes cambiarla desde la cabecera.',
+  'organizacion.cargando': 'Cargando organizaciones…',
 } as const
 
 export type ClaveTexto = keyof typeof es

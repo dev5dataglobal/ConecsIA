@@ -1,3 +1,4 @@
+import { olvidarOrganizacionSeleccionada } from './organizacionSeleccionada'
 import { cerrarSesionDesarrollo, leerSesionDesarrollo } from './sesionDesarrollo'
 
 /**
@@ -30,6 +31,7 @@ export function haySesion(): boolean {
 /** Olvida cualquier sesión local (real o de desarrollo). */
 export function olvidarSesion() {
   cerrarSesionDesarrollo()
+  olvidarOrganizacionSeleccionada()
   try {
     sessionStorage.removeItem(CLAVE_SESION)
   } catch {
