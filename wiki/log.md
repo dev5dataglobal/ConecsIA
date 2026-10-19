@@ -262,3 +262,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - 13 commits reaplicados sobre a9bd4d0 (CI en verde). Conflictos: `log.md` e `index.md` resueltos conservando ambas entradas; en `consultas/Opciones para decidir D-20.md` se conservó la versión aprobada.
 - Verificado: no hay entradas de la bitácora perdidas ni duplicadas. Fuera de la wiki, la rama solo difiere de antes en la corrección del CI que viene de `main`. Se quitó del índice la línea antigua de D-20, que estaba duplicada.
 - Respaldo local en `respaldo/pre-loop-core-antes-rebase`. Lista para abrir el PR (requiere force-push de la rama).
+
+## [2026-10-19] implementacion | HU-005 Aislamiento por organización en persistencia (loop_core)
+- Verificado: `main` (55cbd4f) integra D-20, ADR-021 y `loop_core.md`; los checks `frontend` y `secretos` en verde; `backend` aún en curso al iniciar. Worktree `../ConecsIA-wt/core`, rama `loop/core`. Sin token de migración (no hubo migración).
+- Pruebas primero: regla por módulo de ADR-021, convenciones de índice y FK, suite Org A/B reutilizable y auditoría `Denegado` de la escritura cruzada (estaba en rojo y pasó a verde). `dotnet test` 196/196.
+- Wiki: ADR-004 (§ Spike RLS), `Decisiones pendientes` (nueva D-22), EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+- Pendiente: PR `loop/core` → `main` (no se hizo push) y D-22.

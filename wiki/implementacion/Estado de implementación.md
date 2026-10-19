@@ -118,8 +118,13 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **CI sin ejecutar:** repositorio git inicializado el 2026-10-17 (sin commit inicial), aún no está en GitHub. El workflow existe pero no se ha corrido.
 - Defecto corregido en integración: el filtro de validación perdía `errors` en el 400; ahora usa la `ProblemDetailsFactory` de MVC.
 - En esta máquina el puerto 5432 está ocupado; el compose admite `POSTGRES_HOST_PORT` en `.env`.
-- [[ADR-021 DbContext compartido y ensamblado de migraciones]] está implementado y **aprobado 2026-10-19**; falta la prueba de arquitectura de acceso por módulo (condición 1, en HU-005).
+- [[ADR-021 DbContext compartido y ensamblado de migraciones]] está implementado y **aprobado 2026-10-19**; la condición 1 se verifica con `PersistenciaPorModuloTests` desde HU-005 (2026-10-19, `loop/core`).
 - El enmascarado de logs también oculta las IPv4: es preferible a filtrar documentos con puntos.
 - Falta E2E (Playwright), almacenamiento de objetos emulado (ADR-013 en Propuesta) y semillas con datos (depende de HU-009).
 - El contrato OpenAPI se exporta a mano desde la API en ejecución; falta automatizarlo en CI.
 - `openapi-typescript` declara compatibilidad con TypeScript 5; se ejecuta con `npx` fuera de las dependencias del proyecto, que usa TypeScript 6.
+
+## HU-005 cerrada en `loop/core` (2026-10-19)
+- **Implementado:** auditoría `Denegado` de las escrituras entre organizaciones (`AuditoriaEscrituraEntreOrganizaciones`, invocada por `ManejadorExcepciones`; responde 404 sin datos ajenos). `EscrituraEntreOrganizacionesException.Entidad` expone solo el tipo.
+- **Pruebas:** `PersistenciaPorModuloTests` (regla de ADR-021 condición 1, con prueba de control), `SuiteAislamientoTests` (suite parametrizada Org A/B reutilizable; registrar cada recurso nuevo), convenciones de índices únicos y FK con organización, y escritura cruzada auditada. `dotnet test`: 196/196.
+- **Limitaciones:** aún no hay FK compuestas porque no existen entidades hijas (la convención fallará cuando aparezcan). El spike RLS es documental (ADR-004) y la adopción queda en D-22. Sin migración y sin cambios de frontend.

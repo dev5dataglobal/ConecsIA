@@ -23,7 +23,7 @@ Garantizar desde la base que ninguna operación cruza la frontera de [[Organizac
 ## Historias
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
-| HU-005 | Aislamiento por organización en persistencia | L | **En curso** (base implementada con HU-013) | Spike RLS pendiente |
+| HU-005 | Aislamiento por organización en persistencia | L | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | RLS: D-22 |
 | HU-006 | Autenticación y sesión de usuario | L | **Goal cerrado** 2026-10-21; el restablecimiento va a loop_integraciones y MFA, D-21 y ASVS a loop_quality | — |
 | HU-007 | Contexto de organización y sede derivado de membresía | M | **En curso** (base implementada con HU-013) | Selección multi-membresía y caché dependen de D-03; autenticación provisional (ADR-022) |
 | HU-008 | Registro de auditoría append-only | M | **En curso** (base implementada con HU-013) | Retención (D-14) |
@@ -66,28 +66,28 @@ Sistema (todas las operaciones); desarrolladores (convención obligatoria).
 - **Endpoints:** transversal; endpoint de prueba interno solo en `Development`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un usuario de Org A que conoce el ID de un recurso de Org B **cuando** intenta listarlo, leerlo o modificarlo **entonces** recibe 404 y no se revela su existencia (CA-01).
-- [ ] **Dado** un intento de relacionar una entidad de A con otra de B **cuando** se persiste **entonces** la FK compuesta lo rechaza en PostgreSQL (CA-01).
-- [ ] **Dado** un nuevo `DbSet` de cliente sin filtro de organización **cuando** corre la suite **entonces** la prueba de convención falla.
+- [x] **Dado** un usuario de Org A que conoce el ID de un recurso de Org B **cuando** intenta listarlo, leerlo o modificarlo **entonces** recibe 404 y no se revela su existencia (CA-01). — *`SuiteAislamientoTests` (Sede).*
+- [ ] **Dado** un intento de relacionar una entidad de A con otra de B **cuando** se persiste **entonces** la FK compuesta lo rechaza en PostgreSQL (CA-01). — *No aplica aún: no hay relaciones entre entidades de organización. La prueba de convención `Toda_relacion_entre_entidades_de_organizacion_usa_una_clave_compuesta...` hará fallar la suite cuando aparezca una sin `organizacion_id`.*
+- [x] **Dado** un nuevo `DbSet` de cliente sin filtro de organización **cuando** corre la suite **entonces** la prueba de convención falla.
 
 ### Tareas backend
-- [ ] `TenantEntity`, interceptor de `SaveChanges`, filtro global de consulta.
-- [ ] Convención de FKs compuestas e índices únicos con `organization_id`.
-- [ ] Prueba de convención que recorre el modelo EF y exige filtro + `organization_id`.
-- [ ] Spike RLS con pool de conexiones y tareas de fondo; resultado documentado en ADR-004.
+- [x] `TenantEntity`, interceptor de `SaveChanges`, filtro global de consulta. (`IEntidadDeOrganizacion`, `ConecsIADbContext`)
+- [x] Convención de FKs compuestas e índices únicos con `organization_id`. (pruebas de convención sobre el modelo)
+- [x] Prueba de convención que recorre el modelo EF y exige filtro + `organization_id`.
+- [x] Spike RLS con pool de conexiones y tareas de fondo; resultado documentado en ADR-004. (documental; la adopción queda en D-22)
 
 ### Tareas frontend
 - No aplica (la SPA nunca envía `organizationId` como fuente de verdad).
 
 ### Pruebas
-- [ ] Unitarias: interceptor rechaza `organization_id` distinto.
-- [ ] Integración (PostgreSQL real): FK compuesta y unicidad por organización.
-- [ ] Aislamiento / permisos negativos: suite parametrizada Org A vs Org B (listar, leer, modificar, inactivar) reutilizable por todas las historias.
+- [x] Unitarias: interceptor rechaza `organization_id` distinto.
+- [x] Integración (PostgreSQL real): FK compuesta y unicidad por organización. (FK a `organizacion` y unicidad; la FK compuesta entre hijas aún no existe)
+- [x] Aislamiento / permisos negativos: suite parametrizada Org A vs Org B (listar, leer, modificar, inactivar) reutilizable por todas las historias.
 - [ ] E2E / UI: no aplica.
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Suite de aislamiento obligatoria en CI; ningún `IgnoreQueryFilters` sin justificación revisada.
+- [x] Suite de aislamiento obligatoria en CI; ningún `IgnoreQueryFilters` sin justificación revisada.
 
 ### Riesgos y decisiones pendientes
 > [!todo] Riesgo — filtros de tenant incompletos (PRD, riesgos). RLS: adoptar o descartar con evidencia del spike.

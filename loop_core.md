@@ -17,9 +17,9 @@ tags: [conecsia, loop]
 **Objetivo:** Cerrar la base multi-organización que consumen todas las verticales: aislamiento, contexto multi-membresía, auditoría, plano SaaS, estructura física completa, usuarios, roles configurables y alcance por sede, destino y punto de acceso.
 
 ## Condiciones de inicio
-- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [x] M0: `main` con las aprobaciones integradas (55cbd4f).
 - [x] Resolver **D-20** (idioma de las rutas) antes de M1. — *2026-10-19: aprobada opción A (español con excepciones técnicas); ADR-020 § Convención de idioma.*
-- [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/core -b loop/core main`.
+- [x] Rama creada desde un `main` actualizado (2026-10-19, 55cbd4f): `git worktree add ../ConecsIA-wt/core -b loop/core main`.
 
 ## Propiedad de archivos
 - **Backend:** `Modules.Organizaciones`, `Modules.Identidad`, `Modules.Estructura`, `Modules.Auditoria` (escritura), `ConecsIA.Api/Seguridad`, `Infrastructure/Persistencia`, `SharedKernel/Seguridad` (`Permisos.cs`).
@@ -45,7 +45,7 @@ tags: [conecsia, loop]
 - El CI de `main` está en rojo.
 
 ## Tareas (en orden)
-- [ ] **HU-005** Aislamiento por organización en persistencia. — *Cerrar la DoD con una prueba negativa de dos organizaciones para cada entidad existente y documentar el spike de RLS (ADR-004).*
+- [x] **HU-005** Aislamiento por organización en persistencia. — *Cerrar la DoD con una prueba negativa de dos organizaciones para cada entidad existente y documentar el spike de RLS (ADR-004).*
 - [ ] **HU-007** Contexto de organización y sede derivado de membresía. — *Selección de organización con multi-membresía (D-03b aprobada). El `organizationId` que envía el cliente se verifica contra la membresía.*
 - [ ] **HU-008** Registro de auditoría append-only. — *Cerrar la DoD verificando el append-only en la base de datos. La retención sigue pendiente (D-14).*
 - [ ] **HU-017** Roles configurables y catálogo de permisos. — *Catálogo de permisos, roles por organización y plantillas. Nunca se otorgan permisos por el nombre del rol.*
@@ -71,3 +71,4 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-005 | `dotnet test`: 196/196 (unit 60, arquitectura 68, integración 68). Nuevas pruebas: `PersistenciaPorModuloTests`, `SuiteAislamientoTests`, convenciones de índices y FK, y escritura cruzada auditada (`AislamientoYAuditoriaTests`). Spike RLS en ADR-004; adopción en D-22. |

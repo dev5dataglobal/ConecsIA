@@ -5,7 +5,7 @@ area: seguridad
 origen: PRD §12.2
 fuentes: [PRD v0.1]
 relacionados: [RN-01, CA-01, D-16]
-actualizado: 2026-10-17
+actualizado: 2026-10-19
 tags: [conecsia, adr, seguridad]
 ---
 
@@ -45,3 +45,18 @@ Adopción de RLS (requiere prueba técnica); efectos de inactivar una organizaci
 ## Aprobación 2026-10-17
 - Aprobados la base compartida, `organization_id`, las FKs compuestas, los índices por organización, el filtro global y la lista cerrada de excepciones.
 - **RLS no adoptado:** queda como spike de evaluación con su propio ADR futuro.
+
+## Spike RLS (HU-005, 2026-10-19)
+> [!note] Evaluación documental. No hay prototipo con RLS en el código ni una decisión de adoptarla. La decisión es la [[Decisiones pendientes|D-22]].
+
+**Defensa vigente (implementada y verificada):** filtro global de EF Core, rechazo al guardar (`EscrituraEntreOrganizacionesException` → 404 auditado como `Denegado`), FK a `organizacion`, índices únicos con `organizacion_id`, pruebas de convención sobre el modelo y la suite parametrizada Org A/B.
+
+| Aspecto | Hallazgo con el stack actual (EF Core + Npgsql, pool de conexiones) |
+|---|---|
+| Propagar la organización | Exige `SET LOCAL app.organizacion_id` en cada transacción, o `set_config(..., true)` con un interceptor de conexión. Con el pool, un `SET` de sesión se filtraría entre peticiones: solo es seguro el de transacción. |
+| Lecturas sin transacción explícita | EF Core no abre una transacción para las consultas, así que habría que forzarla en todas las peticiones o fijar la variable al abrir cada conexión y limpiarla al devolverla. |
+| Procesos de fondo y plano SaaS | Necesitan un rol con `BYPASSRLS` o políticas con un modo sistema: es el mismo punto débil que `EsSistema` del filtro de EF. |
+| Auditoría y membresías | Ya son excepciones justificadas (`[SinFiltroDeOrganizacion]`): requerirían políticas propias. |
+| Beneficio | Una segunda barrera ante SQL crudo o un defecto del filtro global, que hoy cubren las pruebas de convención. |
+
+**Propuesta:** no adoptar RLS en el MVP. Reevaluar cuando haya SQL crudo en producción (reportes HU-046, exportaciones) o antes de la salida a producción, con un prototipo medido (latencia y pool) dentro de EP-19.
