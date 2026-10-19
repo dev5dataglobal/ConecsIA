@@ -1,6 +1,6 @@
 ---
 tipo: consulta
-estado: propuesta
+estado: aprobado
 fuentes: [ADR-021, ADR-003, ADR-017, código en evaluacion/pre-loop-core]
 relacionados: [ADR-021, ADR-001, ADR-003, ADR-007, ADR-017, HU-001, HU-005]
 actualizado: 2026-10-19
@@ -9,8 +9,8 @@ tags: [conecsia, persistencia, migraciones, decision]
 
 # Opciones para decidir ADR-021 (DbContext y migraciones)
 
-> [!note] Análisis, no decisión
-> [[ADR-021 DbContext compartido y ensamblado de migraciones]] sigue en **Propuesta** hasta que lo apruebe el responsable.
+> [!success] Decisión aprobada 2026-10-19
+> El responsable aprobó la **opción A** con las tres condiciones. La regla vigente está en [[ADR-021 DbContext compartido y ensamblado de migraciones]] § Aprobación.
 
 ## Propuesta vigente (ya implementada de forma provisional en HU-001)
 

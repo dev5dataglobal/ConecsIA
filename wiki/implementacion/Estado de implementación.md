@@ -118,7 +118,7 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **CI sin ejecutar:** repositorio git inicializado el 2026-10-17 (sin commit inicial), aún no está en GitHub. El workflow existe pero no se ha corrido.
 - Defecto corregido en integración: el filtro de validación perdía `errors` en el 400; ahora usa la `ProblemDetailsFactory` de MVC.
 - En esta máquina el puerto 5432 está ocupado; el compose admite `POSTGRES_HOST_PORT` en `.env`.
-- [[ADR-021 DbContext compartido y ensamblado de migraciones]] está implementado de forma provisional y sigue en Propuesta.
+- [[ADR-021 DbContext compartido y ensamblado de migraciones]] está implementado y **aprobado 2026-10-19**; falta la prueba de arquitectura de acceso por módulo (condición 1, en HU-005).
 - El enmascarado de logs también oculta las IPv4: es preferible a filtrar documentos con puntos.
 - Falta E2E (Playwright), almacenamiento de objetos emulado (ADR-013 en Propuesta) y semillas con datos (depende de HU-009).
 - El contrato OpenAPI se exporta a mano desde la API en ejecución; falta automatizarlo en CI.

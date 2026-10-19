@@ -32,7 +32,7 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-018 Observabilidad sin datos sensibles]] | despliegue | **Aprobado 2026-10-17** | D-13 |
 | [[ADR-019 Zona única con atributo de punto de acceso]] | persistencia | Propuesta | Confirmación de producto |
 | [[ADR-020 Contratos API y formato de errores]] | backend | **Aprobado 2026-10-17** | — |
-| [[ADR-021 DbContext compartido y ensamblado de migraciones]] | persistencia | Propuesta (implementada provisionalmente) | — |
+| [[ADR-021 DbContext compartido y ensamblado de migraciones]] | persistencia | **Aprobado 2026-10-19** (con 3 condiciones) | — |
 | [[ADR-022 Autenticación de desarrollo provisional]] | seguridad | **Aprobado 2026-10-19** (solo Development/pruebas) | — |
 
 ## Origen de cada propuesta

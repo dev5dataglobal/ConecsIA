@@ -1,17 +1,17 @@
 ---
 tipo: adr
-estado: propuesta
+estado: aprobado
 area: persistencia
 origen: Implementación de HU-001 (2026-10-17)
 fuentes: [PRD v0.1]
-relacionados: [ADR-001, ADR-003, ADR-007, HU-001]
-actualizado: 2026-10-17
+relacionados: [ADR-001, ADR-003, ADR-007, ADR-017, HU-001, HU-005]
+actualizado: 2026-10-19
 tags: [conecsia, adr, persistencia]
 ---
 
 # ADR-021 DbContext compartido y ensamblado de migraciones
 
-> [!warning] Estado: **Propuesta**. Ya está implementada de forma provisional en HU-001 porque HU-001 dejaba la decisión "para refinamiento". Si se rechaza, hay que reestructurar la persistencia antes de crear la primera entidad (HU-005/HU-009).
+> [!success] Estado: **Aprobado 2026-10-19** por el responsable (opción A, con tres condiciones; ver § Aprobación). Análisis en [[Opciones para decidir ADR-021]].
 > Área: persistencia · Origen: implementación de HU-001
 
 ## Contexto
@@ -32,5 +32,16 @@ HU-001 pedía decidir entre un `DbContext` por módulo o uno compartido. [[ADR-0
 - Las transacciones locales entre módulos son directas.
 
 ## Pendientes
-- Aprobar o rechazar.
-- Regla de arquitectura de acceso a entidades por módulo (al crear las primeras entidades).
+- ~~Aprobar o rechazar.~~ Aprobado 2026-10-19.
+- Implementar la regla de arquitectura de la condición 1 (en HU-005).
+- Procedimiento concreto de aplicación en producción (quién, cuándo, respaldo previo): se detalla con ADR-017 y HU-053.
+
+## Aprobación 2026-10-19
+
+**Aprobado** por el responsable: opción A (un `ConecsIADbContext` compartido y un ensamblado `ConecsIA.Migrations`), con estas condiciones obligatorias:
+
+1. **Regla de arquitectura por módulo:** cada módulo solo configura y usa entidades de su propio espacio de nombres. Se hace cumplir con una prueba de arquitectura, que se implementa en la primera historia de `loop_core` que toque persistencia (HU-005). Hasta entonces es una regla de revisión.
+2. **Token de migración:** solo un loop a la vez genera una migración. Se rebasa sobre `main` antes de generarla y se fusiona en un PR propio y pequeño (`PLAN-DE-LOOPS.md` §2.1). Quien toma el token y quien lo libera se anota en `wiki/log.md`.
+3. **Rollback hacia adelante:** en entornos compartidos no se revierte con `Down`; se corrige con una migración nueva. Los cambios destructivos siguen el patrón expandir/contraer y requieren respaldo previo (D-14, HU-053). `Down` se admite solo en local.
+
+Sin cambios en lo ya implementado: Docker y desarrollo local migran al arrancar (solo en Development); el CI genera el script idempotente; en producción se aplica ese script con el rol migrador en un paso controlado del despliegue (ADR-003).

@@ -39,7 +39,7 @@ tags: [conecsia, loop]
 9. **Detente** en la parte que dependa de una decisión abierta: márcala con ⏸, regístrala como D-xx y sigue con la siguiente tarea independiente.
 
 ## Condiciones de bloqueo
-- Decisiones abiertas: D-01, D-04 (HU-014) y D-16; ADR-019 (HU-015) y ADR-021.
+- Decisiones abiertas: D-01, D-04 (HU-014) y D-16; ADR-019 (HU-015). ADR-021 aprobado 2026-10-19: aplicar sus condiciones (regla por módulo en HU-005, token de migración, rollback hacia adelante).
 - Un ADR del loop que siga en Propuesta y cambie el modelo.
 - Otro loop tiene el token de migración y la tarea necesita una migración.
 - El CI de `main` está en rojo.

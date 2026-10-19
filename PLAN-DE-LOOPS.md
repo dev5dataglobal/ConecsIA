@@ -236,4 +236,4 @@ git worktree add ../ConecsIA-wt/core -b loop/core main
 | D-02, D-10, D-17 | opcionales | Alcance, custodia y unicidad. |
 | D-11 | sectorial | HU-052. |
 | D-15 | accesos (HU-037), quality | Frescura y carga. |
-| ADR en Propuesta: 007, 008, 009, 010, 011, 012, 013, 015, 016, 019, 021 | según el loop | Aprobarlos antes de la historia que los implementa. |
+| ADR en Propuesta: 007, 008, 009, 010, 011, 012, 013, 015, 016, 019 (ADR-021 aprobado 2026-10-19) | según el loop | Aprobarlos antes de la historia que los implementa. |

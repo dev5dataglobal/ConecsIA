@@ -241,3 +241,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Nueva página `consultas/Opciones para decidir ADR-021`: propuesta vigente, alternativas (contexto por módulo, migraciones en la API) e impacto en Docker, desarrollo local, CI, producción, rollback y pruebas.
 - Recomendación (propuesta): aprobar A con tres condiciones: regla de arquitectura por módulo, token de migración y rollback hacia adelante.
 - ADR-021 sigue en Propuesta. `index.md` actualizado. Sin cambios de código.
+
+## [2026-10-19] decision | ADR-021 aprobado (contexto compartido y ensamblado de migraciones)
+- Aprobado por el responsable: opción A con 3 condiciones (regla de arquitectura por módulo en HU-005, token de migración, rollback hacia adelante con expandir/contraer).
+- Actualizados: ADR-021 (§ Aprobación), Registro de ADR, Estado de implementación, `loop_core.md`, `PLAN-DE-LOOPS.md` y la consulta de ADR-021.
+- Pendiente: la prueba de arquitectura (HU-005) y el procedimiento de producción (ADR-017/HU-053). `loop_core` solo espera ya M0 (CI de `main` en verde).
