@@ -202,3 +202,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - El responsable cerró el goal: el restablecimiento (solicitud, confirmación, expiración del token y su auditoría) pasa a `loop_integraciones.md`; MFA, D-21 y la revisión OWASP ASVS pasan a `loop_quality.md`.
 - HU-006 queda como «goal cerrado (piezas diferidas)» en el tablero y en EP-02.
 - Los loops ya no están bloqueados por la autenticación. M0 sigue pendiente porque falta publicar `main` y tener el CI en verde; core necesita además D-20.
+
+## [2026-10-21] consulta | Orden de ejecución de los loops y estado ejecutable
+- Se explicó el orden de los loops (core → personas → autorizaciones → accesos → integraciones → reporting → sectorial → opcionales → quality) y qué puede correr en paralelo, según `PLAN-DE-LOOPS.md`.
+- Comprobado: el stack de Docker Compose responde (SPA 200, API Healthy). Hoy se puede ver el inicio y cierre de sesión y la gestión de sedes.
+- Sin cambios en otras páginas de la wiki.
