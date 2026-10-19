@@ -212,3 +212,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Se entregó la guía de ejecución, basada en README.md.
 - README.md corregido: decía que no había inicio de sesión real; ahora describe HU-006 y los usuarios sintéticos con contraseña.
 - Sin otras páginas de la wiki afectadas.
+
+## [2026-10-21] revision | Arranque local: 502 por puerto y credenciales
+- Causas: el puerto 5432 no estaba disponible, el volumen de PostgreSQL tenía contraseñas de roles distintas a las de `.env` y las semillas no reasignan contraseña a usuarios que ya tienen una.
+- Solución aplicada en local: `POSTGRES_HOST_PORT=5434`, `ALTER ROLE` de migrator/app y reasignación de la contraseña de los usuarios sintéticos. El inicio de sesión responde 204.
+- README.md: nueva sección «Problemas frecuentes».
+- Pendiente (propuesta): que las semillas actualicen la contraseña en Development cuando cambie el valor.

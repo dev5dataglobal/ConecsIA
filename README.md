@@ -115,3 +115,11 @@ El inicio de sesión es real: correo y contraseña, con una cookie `HttpOnly` y 
 En `Development` y en las pruebas sigue disponible la cabecera `X-Usuario-Desarrollo` (ADR-022), y la pantalla `/ingresar` muestra un selector de usuario sintético. Si `Autenticacion:Desarrollo:Habilitada=true` está activo fuera de `Development`/`Testing`, la API **no arranca**.
 
 La organización, los permisos y el alcance por sede se derivan siempre en el servidor de la membresía (HU-007, ADR-005). `X-Organizacion-Id` solo selecciona entre membresías propias; una organización ajena responde 403 y queda auditada.
+
+## Problemas frecuentes
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| `Ports are not available ... 5432` | Windows reserva el puerto o ya está en uso | Cambia `POSTGRES_HOST_PORT` en `.env` (por ejemplo, a 5434) |
+| La SPA responde 502 y la API registra `password authentication failed` | El volumen de PostgreSQL se creó con otras contraseñas: el script de roles solo se ejecuta la primera vez | Iguala las contraseñas con `ALTER ROLE ... PASSWORD`, o recrea el volumen con `docker compose down -v` (borra los datos locales) |
+| El inicio de sesión responde 401 después de cambiar `SEMILLAS_CONTRASENA_USUARIOS` | Las semillas solo asignan contraseña a los usuarios que todavía no tienen una | Pon `hash_contrasena` en NULL para los usuarios `@ejemplo.test` y reinicia la API |
