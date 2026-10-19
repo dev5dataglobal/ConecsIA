@@ -218,3 +218,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Solución aplicada en local: `POSTGRES_HOST_PORT=5434`, `ALTER ROLE` de migrator/app y reasignación de la contraseña de los usuarios sintéticos. El inicio de sesión responde 204.
 - README.md: nueva sección «Problemas frecuentes».
 - Pendiente (propuesta): que las semillas actualicen la contraseña en Development cuando cambie el valor.
+
+## [2026-10-19] revision | /loop detenido antes de la primera iteración: M0 no alcanzado
+- Verificado: goal de autenticación cerrado; stack Docker arriba (postgres healthy, api, web, mailpit); `main` local = `origin/main` (85be740); ADR-004 aprobado.
+- Bloqueos: el último CI de `main` (run 39266546348, sha 85be740) terminó en **failure**, así que M0 no se cumple; **D-20** (idioma de rutas) sigue abierta; **ADR-021** (migraciones) y **ADR-019** (HU-015) siguen en Propuesta.
+- `AGENTS.md` no existe (se usa `CLAUDE.md`, como indica `PLAN-DE-LOOPS.md`).
+- No se creó worktree, rama ni código. Pendiente: arreglar el CI de `main`, resolver D-20 y aprobar ADR-021.
