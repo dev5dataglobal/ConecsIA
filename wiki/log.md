@@ -187,3 +187,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Nueva página `wiki/consultas/Opciones para decidir D-20.md`: inventario del código y del OpenAPI (todo en español, salvo login/logout/csrf/me/health) y del backlog (EP-03 a EP-06 en inglés, EP-07 en adelante en español).
 - Recomendación (propuesta): opción A, español con excepciones técnicas estándar. D-20 sigue pendiente hasta que la apruebe el responsable.
 - `index.md` actualizado. Sin cambios de código.
+## [2026-10-21] consulta | Integración en main antes de loop_core
+- Rama `evaluacion/pre-loop-core`. Nueva página [[Integración en main antes de loop_core]]; index actualizado.
+- Autenticación: núcleo verificado y registrado; MFA, D-21, D-12 y ASVS siguen bloqueados.
+- Antes del loop: publicar main (push sin credenciales en la sesión), CI en verde y aportar `loop_core.md`, que no existe.
