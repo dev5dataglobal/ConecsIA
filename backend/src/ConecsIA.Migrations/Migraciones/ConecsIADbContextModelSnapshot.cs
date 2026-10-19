@@ -191,6 +191,11 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasColumnType("text[]")
                         .HasColumnName("permisos");
 
+                    b.PrimitiveCollection<List<Guid>>("Roles")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("roles");
+
                     b.PrimitiveCollection<List<Guid>>("SedesAsignadas")
                         .IsRequired()
                         .HasColumnType("uuid[]")
@@ -211,6 +216,78 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasDatabaseName("ix_membresia_usuario_id_organizacion_id");
 
                     b.ToTable("membresia", (string)null);
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Rol", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<DateTimeOffset?>("InactivadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("inactivado_en");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("NombreNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre_normalizado");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.PrimitiveCollection<List<string>>("Permisos")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("permisos");
+
+                    b.Property<string>("Plantilla")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("plantilla");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_rol");
+
+                    b.HasAlternateKey("OrganizacionId", "Id")
+                        .HasName("ak_rol_organizacion_id_id");
+
+                    b.HasIndex("OrganizacionId", "NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("ix_rol_organizacion_id_nombre_normalizado");
+
+                    b.ToTable("rol", (string)null);
                 });
 
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.SesionUsuario", b =>

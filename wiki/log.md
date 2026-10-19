@@ -278,3 +278,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: minimización de secretos (unitarias), rollback y atomicidad (integración). 217 pruebas en verde.
 - Nuevo `MinimizadorValoresAuditoria`. ⏸ Aislamiento de lectura en HU-046; IP sin registrar.
 - Wiki: EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-017 Roles configurables y catálogo de permisos (loop_core)
+- **Token de migración tomado por loop_core** para `RolesConfigurables`. Sigue tomado mientras dure este loop, porque las historias siguientes también migran; se libera al fusionar.
+- Pruebas primero: `RolTests`, `RolesTests` (matriz plantilla × endpoint) y `RolesPage.test.tsx`. Backend 260 y frontend 35 en verde.
+- Nuevo: catálogo, roles, plantillas propuestas, anti-escalamiento, último administrador (propuesta), pantalla `/roles` y semillas de roles.
+- Wiki: nueva página [[Roles y permisos]], EP-05, `tablero-scrum`, `index`, `Estado de implementación`, `loop_core.md`. ⏸ CA-07 a EP-07 (D-04).

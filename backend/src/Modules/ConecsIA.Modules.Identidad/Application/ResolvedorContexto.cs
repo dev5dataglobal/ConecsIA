@@ -20,13 +20,20 @@ public enum EstadoResolucion
     OrganizacionNoSeleccionada,
 }
 
-public sealed record ResultadoResolucion(EstadoResolucion Estado, Usuario? Usuario = null, Membresia? Membresia = null);
+public sealed record ResultadoResolucion(
+    EstadoResolucion Estado,
+    Usuario? Usuario = null,
+    Membresia? Membresia = null,
+    IReadOnlySet<string>? PermisosEfectivos = null);
 
 public interface IRepositorioIdentidad
 {
     Task<Usuario?> ObtenerUsuarioAsync(Guid id, CancellationToken cancelacion);
 
     Task<IReadOnlyList<Membresia>> MembresiasActivasAsync(Guid usuarioId, CancellationToken cancelacion);
+
+    /// <summary>Roles activos de una organización explícita (se consulta antes de resolver el contexto).</summary>
+    Task<IReadOnlyList<Rol>> RolesActivosAsync(Guid organizacionId, IReadOnlyCollection<Guid> ids, CancellationToken cancelacion);
 
     Task<IReadOnlyList<Usuario>> UsuariosActivosAsync(CancellationToken cancelacion);
 
@@ -66,15 +73,33 @@ public sealed class ResolvedorContexto(IRepositorioIdentidad repositorio, IConsu
             var elegida = vigentes.SingleOrDefault(m => m.OrganizacionId == seleccionada);
             return elegida is null
                 ? new ResultadoResolucion(EstadoResolucion.OrganizacionNoPermitida, usuario)
-                : new ResultadoResolucion(EstadoResolucion.Resuelto, usuario, elegida);
+                : await ResueltoAsync(usuario, elegida, cancelacion);
         }
 
         return vigentes.Count switch
         {
             0 => new ResultadoResolucion(EstadoResolucion.SinMembresia, usuario),
-            1 => new ResultadoResolucion(EstadoResolucion.Resuelto, usuario, vigentes[0]),
+            1 => await ResueltoAsync(usuario, vigentes[0], cancelacion),
             _ => new ResultadoResolucion(EstadoResolucion.OrganizacionNoSeleccionada, usuario),
         };
+    }
+
+    /// <summary>
+    /// HU-017: permisos efectivos = claves de los roles activos asignados ∪ claves directas. Se leen en
+    /// cada petición, así que un cambio de rol rige en la siguiente (sin caché que invalidar).
+    /// </summary>
+    private async Task<ResultadoResolucion> ResueltoAsync(Usuario usuario, Membresia membresia, CancellationToken cancelacion)
+    {
+        var permisos = membresia.Permisos.ToHashSet(StringComparer.Ordinal);
+        if (membresia.Roles.Count > 0)
+        {
+            foreach (var rol in await repositorio.RolesActivosAsync(membresia.OrganizacionId, membresia.Roles, cancelacion))
+            {
+                permisos.UnionWith(rol.Permisos);
+            }
+        }
+
+        return new ResultadoResolucion(EstadoResolucion.Resuelto, usuario, membresia, permisos);
     }
 
     /// <summary>Usuario activo (para endpoints <c>[SinOrganizacionResuelta]</c>).</summary>

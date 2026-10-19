@@ -22,11 +22,14 @@ public sealed record Escenario(
     Guid UsuarioInactivo,
     Guid SedeA1,
     Guid SedeA2,
-    Guid SedeB1)
+    Guid SedeB1,
+    Guid RolA1,
+    Guid RolB1)
 {
     public static readonly string[] PermisosAdmin =
     [
         Permisos.SedesConsultar, Permisos.SedesCrear, Permisos.SedesModificar, Permisos.SedesInactivar,
+        Permisos.RolesConsultar, Permisos.RolesAdministrar,
     ];
 
     public static async Task<Escenario> CrearAsync(FabricaApi fabrica)
@@ -43,6 +46,9 @@ public sealed record Escenario(
         var sedeA2 = Sede.Crear(orgA.Id, "Sede A2", null, "Medellín", "Colombia", "America/Bogota", ahora);
         var sedeB1 = Sede.Crear(orgB.Id, "Sede B1", null, "Lima", "Perú", "America/Lima", ahora);
 
+        var rolA1 = Rol.Crear(orgA.Id, "Portería A", null, [Permisos.SedesConsultar], null, ahora);
+        var rolB1 = Rol.Crear(orgB.Id, "Portería B", null, [Permisos.SedesConsultar], null, ahora);
+
         var adminA = Usuario.Crear($"admin.a.{sufijo}@ejemplo.test", "Admin A");
         var operadorA = Usuario.Crear($"operador.a.{sufijo}@ejemplo.test", "Operador A");
         var adminB = Usuario.Crear($"admin.b.{sufijo}@ejemplo.test", "Admin B");
@@ -52,6 +58,7 @@ public sealed record Escenario(
 
         contexto.AddRange(orgA, orgB);
         contexto.AddRange(sedeA1, sedeA2, sedeB1);
+        contexto.AddRange(rolA1, rolB1);
         contexto.AddRange(adminA, operadorA, adminB, sinPermisosA, inactivo);
         contexto.AddRange(
             Membresia.Crear(adminA.Id, orgA.Id, PermisosAdmin, alcanceTotalSedes: true, sedesAsignadas: []),
@@ -62,7 +69,7 @@ public sealed record Escenario(
             Membresia.Crear(inactivo.Id, orgA.Id, PermisosAdmin, alcanceTotalSedes: true, sedesAsignadas: []));
         await contexto.SaveChangesAsync();
 
-        return new Escenario(orgA.Id, orgB.Id, adminA.Id, operadorA.Id, adminB.Id, sinPermisosA.Id, inactivo.Id, sedeA1.Id, sedeA2.Id, sedeB1.Id);
+        return new Escenario(orgA.Id, orgB.Id, adminA.Id, operadorA.Id, adminB.Id, sinPermisosA.Id, inactivo.Id, sedeA1.Id, sedeA2.Id, sedeB1.Id, rolA1.Id, rolB1.Id);
     }
 }
 

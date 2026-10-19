@@ -138,3 +138,8 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - `MinimizadorValoresAuditoria` enmascara las propiedades con nombre de secreto (contraseña, hash, token, sello, clave, cookie), también anidadas. `RegistroAuditoria` lo usa.
 - Verificado: una operación rechazada (409) no deja evento de éxito, y si la auditoría no se puede escribir la operación completa falla (500, sin cambio).
 - **Pendiente:** la IP del cliente no se registra (requiere migración y definir su tratamiento como dato personal, D-14). La lectura de auditoría aislada por organización es HU-046.
+
+## HU-017 cerrada en `loop/core` (2026-10-19)
+- Detalle en [[Roles y permisos]]. Migración `20261019*_RolesConfigurables` (tabla `rol` con FK a `organizacion`; `membresia.roles uuid[]` con default `{}`).
+- La prueba de arquitectura de espacios de nombres ahora excluye los tipos generados por el compilador y sus anidados (expresiones de colección y `GeneratedRegex`).
+- `Dialogo` pasó de `features/sedes` a `shared/ui`.

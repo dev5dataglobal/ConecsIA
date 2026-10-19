@@ -84,6 +84,36 @@ export const es = {
   'organizacion.elegirAviso':
     'Tienes acceso a varias organizaciones. Elige con cuál vas a trabajar; puedes cambiarla desde la cabecera.',
   'organizacion.cargando': 'Cargando organizaciones…',
+  'nav.roles': 'Roles',
+  'roles.titulo': 'Roles y permisos',
+  'roles.descripcion':
+    'Agrupa permisos del catálogo en roles de tu organización. El nombre del rol no concede nada por sí mismo.',
+  'roles.nuevo': 'Nuevo rol',
+  'roles.cargando': 'Cargando roles…',
+  'roles.tabla': 'Roles de la organización',
+  'roles.vacio': 'Todavía no hay roles.',
+  'roles.col.nombre': 'Rol',
+  'roles.col.permisos': 'Permisos',
+  'roles.col.estado': 'Estado',
+  'roles.col.acciones': 'Acciones',
+  'roles.cantidadPermisos': '{cantidad} permisos',
+  'roles.estado.Activo': 'Activo',
+  'roles.estado.Inactivo': 'Inactivo',
+  'roles.editar': 'Editar {nombre}',
+  'roles.inactivar': 'Inactivar {nombre}',
+  'roles.inactivar.titulo': 'Inactivar rol',
+  'roles.inactivar.texto':
+    'El rol {nombre} dejará de conceder permisos a quienes lo tengan. Se conserva en el historial.',
+  'roles.inactivar.confirmar': 'Inactivar',
+  'roles.form.nuevo': 'Nuevo rol',
+  'roles.form.editar': 'Editar rol',
+  'roles.form.plantilla': 'Partir de una plantilla',
+  'roles.form.sinPlantilla': 'Sin plantilla (rol personalizado)',
+  'roles.form.nombre': 'Nombre',
+  'roles.form.descripcion': 'Descripción',
+  'roles.form.permisos': 'Permisos',
+  'roles.form.cancelar': 'Cancelar',
+  'roles.form.guardar': 'Guardar',
 } as const
 
 export type ClaveTexto = keyof typeof es

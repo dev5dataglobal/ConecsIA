@@ -14,7 +14,7 @@ import {
   type EstadoSede,
   type Sede,
 } from './apiSedes'
-import { Dialogo } from './Dialogo'
+import { Dialogo } from '../../shared/ui/Dialogo'
 import { FormularioSede } from './FormularioSede'
 
 type Edicion = { modo: 'crear' } | { modo: 'editar'; sede: Sede } | null

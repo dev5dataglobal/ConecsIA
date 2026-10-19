@@ -18,5 +18,7 @@ public sealed class IdentidadModulo : IModulo
         servicios.AddScoped<ConsultaUsuariosDesarrollo>();
         servicios.AddSingleton<IHasherContrasenas, HasherContrasenas>();
         servicios.AddScoped<ServicioIngreso>();
+        servicios.AddScoped<IRepositorioRoles, RepositorioRoles>();
+        servicios.AddScoped<ServicioRoles>();
     }
 }

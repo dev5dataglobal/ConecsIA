@@ -42,6 +42,7 @@ public static class ExtensionesServicios
         servicios.AddScoped<IUnidadDeTrabajo, UnidadDeTrabajo>();
         servicios.AddScoped<IConjuntoSemillas, SemillasPrimeraVertical>();
         servicios.AddScoped<IConjuntoSemillas, SemillasContrasenas>();
+        servicios.AddScoped<IConjuntoSemillas, SemillasRoles>();
         servicios.AddHealthChecks().AddDbContextCheck<ConecsIADbContext>("postgresql", tags: ["ready"]);
 
         // ADR-003: en producción las migraciones las aplica el pipeline con un script revisado.

@@ -77,13 +77,23 @@ public class FronterasDeModulosTests
     [MemberData(nameof(Modulos))]
     public void Los_tipos_de_un_modulo_viven_bajo_su_espacio_de_nombres(string nombreModulo)
     {
-        var resultado = Types.InAssembly(Assembly.Load(nombreModulo))
-            .That()
-            .DoNotHaveNameStartingWith("<") // tipos generados por el compilador
-            .Should()
-            .ResideInNamespaceStartingWith(nombreModulo)
-            .GetResult();
+        // Se excluyen los tipos generados por el compilador y sus anidados (p. ej. <>z__...+Enumerator).
+        var fuera = Assembly.Load(nombreModulo).GetTypes()
+            .Where(t => !EsGeneradoPorElCompilador(t))
+            .Where(t => t.Namespace is null || !t.Namespace.StartsWith(nombreModulo, StringComparison.Ordinal))
+            .Select(t => t.FullName)
+            .ToList();
 
-        Assert.True(resultado.IsSuccessful, Fallos.Describir(resultado));
+        Assert.True(fuera.Count == 0, $"Tipos fuera del espacio de nombres del módulo: {string.Join(", ", fuera)}");
+    }
+
+    private static bool EsGeneradoPorElCompilador(Type tipo)
+    {
+        for (var t = tipo; t is not null; t = t.DeclaringType)
+        {
+            if (t.Name.StartsWith('<')) return true;
+        }
+
+        return false;
     }
 }

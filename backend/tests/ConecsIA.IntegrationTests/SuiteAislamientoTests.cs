@@ -37,6 +37,12 @@ public sealed class SuiteAislamientoTests(BaseDatosFixture baseDatos) : IAsyncLi
             e => e.SedeB1,
             () => new { nombre = "Robada", ciudad = "Lima", pais = "Perú", zonaHoraria = "America/Lima", version = 1u },
             "inactivar"),
+        new RecursoDeOrganizacion(
+            "Rol",
+            "/api/v1/roles",
+            e => e.RolB1,
+            () => new { nombre = "Robado", permisos = Array.Empty<string>(), version = 1u },
+            "inactivar"),
     ];
 
     public async Task InitializeAsync()
@@ -53,7 +59,9 @@ public sealed class SuiteAislamientoTests(BaseDatosFixture baseDatos) : IAsyncLi
     {
         var cuerpo = await fabrica.Como(e.AdminA).GetFromJsonAsync<JsonElement>($"{recurso.Ruta}?tamano=100");
 
-        var ids = cuerpo.GetProperty("elementos").EnumerateArray().Select(x => x.GetProperty("id").GetGuid()).ToList();
+        // Listados paginados ({ elementos }) o listas simples.
+        var lista = cuerpo.ValueKind == JsonValueKind.Array ? cuerpo : cuerpo.GetProperty("elementos");
+        var ids = lista.EnumerateArray().Select(x => x.GetProperty("id").GetGuid()).ToList();
         Assert.NotEmpty(ids);
         Assert.DoesNotContain(recurso.RecursoDeB(e), ids);
     }

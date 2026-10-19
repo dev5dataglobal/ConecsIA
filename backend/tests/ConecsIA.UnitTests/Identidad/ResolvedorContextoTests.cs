@@ -123,6 +123,25 @@ public class ResolvedorContextoTests
         Assert.False(membresia.TienePermiso("sedes.crear"));
     }
 
+    [Fact]
+    public async Task Los_permisos_efectivos_unen_los_roles_activos_asignados_y_las_claves_directas()
+    {
+        var usuario = AgregarUsuario();
+        var ahora = DateTimeOffset.UtcNow;
+        var activo = Rol.Crear(OrgA, "Consulta", null, ["roles.consultar"], null, ahora);
+        var inactivo = Rol.Crear(OrgA, "Viejo", null, ["sedes.crear"], null, ahora);
+        inactivo.Inactivar(ahora);
+        var deOtraOrganizacion = Rol.Crear(OrgB, "Ajeno", null, ["sedes.inactivar"], null, ahora);
+        repositorio.Roles.AddRange([activo, inactivo, deOtraOrganizacion]);
+        repositorio.Membresias.Add(Membresia.Crear(
+            usuario.Id, OrgA, ["sedes.consultar"], alcanceTotalSedes: true, sedesAsignadas: [],
+            roles: [activo.Id, inactivo.Id, deOtraOrganizacion.Id]));
+
+        var resultado = await Resolvedor.ResolverAsync(usuario.Id, null, CancellationToken.None);
+
+        Assert.Equal(["roles.consultar", "sedes.consultar"], resultado.PermisosEfectivos!.Order());
+    }
+
     private sealed class RepositorioFalso : IRepositorioIdentidad
     {
         public List<Usuario> Usuarios { get; } = [];
@@ -133,6 +152,11 @@ public class ResolvedorContextoTests
 
         public Task<IReadOnlyList<Membresia>> MembresiasActivasAsync(Guid usuarioId, CancellationToken cancelacion) =>
             Task.FromResult<IReadOnlyList<Membresia>>(Membresias.Where(m => m.UsuarioId == usuarioId && m.Activa).ToList());
+
+        public List<Rol> Roles { get; } = [];
+
+        public Task<IReadOnlyList<Rol>> RolesActivosAsync(Guid organizacionId, IReadOnlyCollection<Guid> ids, CancellationToken cancelacion) =>
+            Task.FromResult<IReadOnlyList<Rol>>(Roles.Where(r => r.OrganizacionId == organizacionId && r.Activo && ids.Contains(r.Id)).ToList());
 
         public Task<IReadOnlyList<Usuario>> UsuariosActivosAsync(CancellationToken cancelacion) =>
             Task.FromResult<IReadOnlyList<Usuario>>(Usuarios.Where(u => u.Activo).ToList());

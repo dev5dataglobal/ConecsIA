@@ -31,6 +31,7 @@ internal sealed class ConfiguracionMembresia : IEntityTypeConfiguration<Membresi
         builder.Property(m => m.Id).ValueGeneratedNever();
         builder.Property(m => m.Permisos).HasColumnType("text[]");
         builder.Property(m => m.SedesAsignadas).HasColumnType("uuid[]");
+        builder.Property(m => m.Roles).HasColumnType("uuid[]");
         builder.HasOne<Usuario>().WithMany().HasForeignKey(m => m.UsuarioId).OnDelete(DeleteBehavior.Restrict);
         // La FK a organizacion se crea en la migración: la entidad vive en otro módulo (ADR-001).
         builder.HasIndex(m => new { m.UsuarioId, m.OrganizacionId }).IsUnique();
@@ -59,6 +60,17 @@ internal sealed class RepositorioIdentidad(ConecsIADbContext contexto) : IReposi
         await contexto.Set<Membresia>().AsNoTracking()
             .Where(m => m.UsuarioId == usuarioId && m.Activa)
             .ToListAsync(cancelacion);
+
+    public async Task<IReadOnlyList<Rol>> RolesActivosAsync(
+        Guid organizacionId, IReadOnlyCollection<Guid> ids, CancellationToken cancelacion)
+    {
+        var lista = ids.ToList();
+        // Excepción revisada al filtro global (HU-005): el contexto aún no está resuelto, así que la
+        // organización se fija explícitamente con la de la membresía verificada.
+        return await contexto.Set<Rol>().IgnoreQueryFilters().AsNoTracking()
+            .Where(r => r.OrganizacionId == organizacionId && r.Activo && lista.Contains(r.Id))
+            .ToListAsync(cancelacion);
+    }
 
     public async Task<IReadOnlyList<Usuario>> UsuariosActivosAsync(CancellationToken cancelacion) =>
         await contexto.Set<Usuario>().AsNoTracking()

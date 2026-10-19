@@ -4,7 +4,7 @@ import type { ClaveTexto } from '../../shared/i18n/es'
 import { useT } from '../../shared/i18n/traductor'
 import { ProblemDetailsAlert } from '../../shared/ui/ProblemDetailsAlert'
 import { useGuardarSede, type DatosSede, type Sede } from './apiSedes'
-import { Dialogo } from './Dialogo'
+import { Dialogo } from '../../shared/ui/Dialogo'
 
 const ZONA_POR_DEFECTO = 'America/Bogota'
 

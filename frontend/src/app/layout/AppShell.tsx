@@ -13,6 +13,7 @@ import { Icono, type NombreIcono } from '../../shared/ui/Icono'
 const enlaces: { to: string; clave: ClaveTexto; icono: NombreIcono }[] = [
   { to: '/', clave: 'nav.inicio', icono: 'inicio' },
   { to: '/sedes', clave: 'nav.sedes', icono: 'sede' },
+  { to: '/roles', clave: 'nav.roles', icono: 'escudo' },
 ]
 
 function iniciales(nombre: string) {

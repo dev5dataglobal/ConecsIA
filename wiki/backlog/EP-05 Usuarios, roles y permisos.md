@@ -24,7 +24,7 @@ Administrar [[Usuarios, roles y permisos|usuarios, roles configurables y alcance
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
 | HU-016 | Invitar y administrar usuarios | M | Lista para refinar | D-03 y HU-006 resueltos (2026-10-19/20); envío de la invitación: D-12 |
-| HU-017 | Roles configurables y catálogo de permisos | L | Lista para refinar | — |
+| HU-017 | Roles configurables y catálogo de permisos | L | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | CA-07 ⏸ (EP-07, D-04) |
 | HU-018 | Alcance por sede, destino y punto de acceso | M | Lista para refinar | — |
 
 ---
@@ -118,28 +118,28 @@ Administrador de organización; sistema (evaluación de políticas).
 - **Endpoints indicativos:** `GET /api/v1/permisos`, `GET/POST /api/v1/roles`, `PUT /api/v1/roles/{id}`, `POST /api/v1/roles/{id}/inactivar`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un rol llamado "Administrador" sin permisos **cuando** su usuario invoca un endpoint administrativo **entonces** se rechaza (RN-10).
-- [ ] **Dado** un operador sin `autorizaciones.decidir` **cuando** intenta aprobar por API **entonces** recibe 403 (CA-07).
-- [ ] **Dado** un cambio de permisos de un rol **cuando** sus usuarios hacen la siguiente petición **entonces** rige el nuevo conjunto.
-- [ ] **Dado** roles de A **cuando** un administrador de B lista roles **entonces** no los ve (CA-01).
+- [x] **Dado** un rol llamado "Administrador" sin permisos **cuando** su usuario invoca un endpoint administrativo **entonces** se rechaza (RN-10).
+- [ ] **Dado** un operador sin `autorizaciones.decidir` **cuando** intenta aprobar por API **entonces** recibe 403 (CA-07). — ⏸ *Aún no existe el endpoint de decisión (EP-07); los permisos de decisión dependen de D-04.*
+- [x] **Dado** un cambio de permisos de un rol **cuando** sus usuarios hacen la siguiente petición **entonces** rige el nuevo conjunto.
+- [x] **Dado** roles de A **cuando** un administrador de B lista roles **entonces** no los ve (CA-01).
 
 ### Tareas backend
-- [ ] Catálogo de permisos como constantes + semilla; políticas por permiso.
-- [ ] CRUD de roles, invariante de último administrador, invalidación de caché.
-- [ ] Prueba que recorre endpoints y exige permiso declarado.
+- [x] Catálogo de permisos como constantes + semilla; políticas por permiso.
+- [x] CRUD de roles, invariante de último administrador, invalidación de caché. *(Sin caché: permisos leídos por petición.)*
+- [x] Prueba que recorre endpoints y exige permiso declarado. *(Matriz plantilla × endpoint y prueba de endpoints anónimos.)*
 
 ### Tareas frontend
-- [ ] Editor de roles con permisos agrupados por recurso; ocultar acciones sin permiso (solo UX).
+- [x] Editor de roles con permisos agrupados por recurso; ocultar acciones sin permiso (solo UX).
 
 ### Pruebas
-- [ ] Unitarias: evaluación de permisos e invariantes.
-- [ ] Integración (PostgreSQL real): roles y caché.
-- [ ] Aislamiento / permisos negativos: matriz endpoint × rol plantilla con casos negativos.
-- [ ] E2E / UI: crear rol personalizado y verificar acceso.
+- [x] Unitarias: evaluación de permisos e invariantes.
+- [x] Integración (PostgreSQL real): roles y caché.
+- [x] Aislamiento / permisos negativos: matriz endpoint × rol plantilla con casos negativos.
+- [x] E2E / UI: crear rol personalizado y verificar acceso. *(Vitest de la UI e integración de acceso; sin E2E con navegador.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Matriz de permisos documentada en wiki y verificada por prueba automatizada.
+- [x] Matriz de permisos documentada en wiki y verificada por prueba automatizada. — [[Roles y permisos]]
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-04 — permisos de decisión, revocación y cancelación por tipo de autorización.
