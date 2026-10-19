@@ -167,3 +167,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - `.github/workflows/ci.yml`: `dotnet ef migrations script` usa `--configuration Release` (antes `-c`, que es `--context`). Verificado en local: el script se genera.
 - `.gitleaks.toml` nuevo: reglas por defecto + allowlist para `RedactorDatosSensiblesTests.cs` (valores ficticios). Sin verificar: falta ejecutar gitleaks (en CI o en local).
 - Sin push. Pendiente: publicar la rama, ver el CI en verde y fusionar para alcanzar M0.
+
+## [2026-10-19] revision | Identidad de git corregida a la cuenta empresarial
+- Repo configurado con `user.name=dev5dataglobal` y el correo corporativo (config local; la global no cambia).
+- Reescritos con el nuevo autor los 2 commits de `fix/ci-main` (sin cambios de contenido). `main` conserva su historia con la identidad personal, por decisión del responsable.
+- Pendiente: force-push de `fix/ci-main` por el responsable.
