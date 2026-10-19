@@ -162,3 +162,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Auditoría de sesión marcada como parcial (falta el restablecimiento). HU-006 pasa a «núcleo verificado» en tablero y EP-02; no se marca verificada.
 - Siguen bloqueadas por decisiones: MFA (D-03f, alcance), límite por IP (D-21), restablecimiento (D-12 + ADR-012) y nivel OWASP ASVS.
 - Commit inicial preparado en `main` (el repositorio no tenía commits). loop_core.md no se ejecutó.
+
+## [2026-10-19] implementacion | Correcciones del CI de `main` (rama `fix/ci-main`)
+- `.github/workflows/ci.yml`: `dotnet ef migrations script` usa `--configuration Release` (antes `-c`, que es `--context`). Verificado en local: el script se genera.
+- `.gitleaks.toml` nuevo: reglas por defecto + allowlist para `RedactorDatosSensiblesTests.cs` (valores ficticios). Sin verificar: falta ejecutar gitleaks (en CI o en local).
+- Sin push. Pendiente: publicar la rama, ver el CI en verde y fusionar para alcanzar M0.
