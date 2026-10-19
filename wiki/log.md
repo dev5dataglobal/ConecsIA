@@ -162,3 +162,28 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Auditoría de sesión marcada como parcial (falta el restablecimiento). HU-006 pasa a «núcleo verificado» en tablero y EP-02; no se marca verificada.
 - Siguen bloqueadas por decisiones: MFA (D-03f, alcance), límite por IP (D-21), restablecimiento (D-12 + ADR-012) y nivel OWASP ASVS.
 - Commit inicial preparado en `main` (el repositorio no tenía commits). loop_core.md no se ejecutó.
+
+## [2026-10-19] implementacion | Correcciones del CI de `main` (rama `fix/ci-main`)
+- `.github/workflows/ci.yml`: `dotnet ef migrations script` usa `--configuration Release` (antes `-c`, que es `--context`). Verificado en local: el script se genera.
+- `.gitleaks.toml` nuevo: reglas por defecto + allowlist para `RedactorDatosSensiblesTests.cs` (valores ficticios). Sin verificar: falta ejecutar gitleaks (en CI o en local).
+- Sin push. Pendiente: publicar la rama, ver el CI en verde y fusionar para alcanzar M0.
+
+## [2026-10-19] revision | Identidad de git corregida a la cuenta empresarial
+- Repo configurado con `user.name=dev5dataglobal` y el correo corporativo (config local; la global no cambia).
+- Reescritos con el nuevo autor los 2 commits de `fix/ci-main` (sin cambios de contenido). `main` conserva su historia con la identidad personal, por decisión del responsable.
+- Pendiente: force-push de `fix/ci-main` por el responsable.
+
+## [2026-10-19] revision | Historia de git reescrita a la identidad empresarial
+- Por pedido del responsable, los 19 commits locales (`main`, `evaluacion/pre-loop-core`, `fix/ci-main`) pasan de la identidad personal a `dev5dataglobal` con el correo corporativo (`git filter-branch --env-filter`).
+- Verificado: los árboles de las tres ramas son idénticos a los de antes; solo cambian los hashes. Respaldo previo en un bundle del scratchpad de la sesión.
+- Pendiente: force-push de `main` y `fix/ci-main` por el responsable. `evaluacion/pre-loop-core` no está publicada.
+
+## [2026-10-19] revision | /loop (una iteración) detenido: M0 sigue sin cumplirse
+- El force-push ya está hecho: `main` (023113b) y `fix/ci-main` (816adbc) coinciden con `origin`.
+- El CI de `main` está en cola con el `ci.yml` antiguo; sin fusionar `fix/ci-main` volverá a fallar. Siguen abiertas D-20 y ADR-021 (Propuesta).
+- No se implementó ninguna historia ni se creó worktree.
+
+## [2026-10-19] consulta | Opciones para decidir D-20 (idioma de las rutas)
+- Nueva página `wiki/consultas/Opciones para decidir D-20.md`: inventario del código y del OpenAPI (todo en español, salvo login/logout/csrf/me/health) y del backlog (EP-03 a EP-06 en inglés, EP-07 en adelante en español).
+- Recomendación (propuesta): opción A, español con excepciones técnicas estándar. D-20 sigue pendiente hasta que la apruebe el responsable.
+- `index.md` actualizado. Sin cambios de código.
