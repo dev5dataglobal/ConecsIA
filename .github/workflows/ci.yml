@@ -32,7 +32,7 @@ jobs:
       - name: Script de migraciones idempotente
         run: |
           dotnet tool restore
-          dotnet ef migrations script --idempotent --no-build -c Release \
+          dotnet ef migrations script --idempotent --no-build --configuration Release \
             -p src/ConecsIA.Migrations -s src/ConecsIA.Migrations -o artifacts/migraciones.sql
       - uses: actions/upload-artifact@v4
         with:

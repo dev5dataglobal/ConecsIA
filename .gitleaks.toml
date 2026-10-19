@@ -1,0 +1,9 @@
+# Configuración de gitleaks: reglas por defecto + allowlist de valores ficticios.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valores ficticios usados para probar el enmascarado de datos sensibles"
+paths = [
+  '''backend/tests/ConecsIA\.UnitTests/Observabilidad/RedactorDatosSensiblesTests\.cs''',
+]
