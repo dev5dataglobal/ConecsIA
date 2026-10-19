@@ -197,3 +197,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Todos los loops están **BLOQUEADOS**: `goal_authentication.md` no está completo (MFA, D-21, restablecimiento y ASVS). Se propone diferir esas casillas a integraciones y quality para alcanzar M0.
 - Regla nueva propuesta: «token de migración» (un solo loop genera migraciones a la vez, por el snapshot único de ADR-021).
 - No existen `AGENTS.md`, `wiki/vision-general.md` ni `wiki/pendientes.md`; se usaron CLAUDE.md, overview.md y Decisiones pendientes.md. D-20 debe resolverse antes de M1.
+
+## [2026-10-21] decision | goal_authentication.md cerrado con pendientes diferidos
+- El responsable cerró el goal: el restablecimiento (solicitud, confirmación, expiración del token y su auditoría) pasa a `loop_integraciones.md`; MFA, D-21 y la revisión OWASP ASVS pasan a `loop_quality.md`.
+- HU-006 queda como «goal cerrado (piezas diferidas)» en el tablero y en EP-02.
+- Los loops ya no están bloqueados por la autenticación. M0 sigue pendiente porque falta publicar `main` y tener el CI en verde; core necesita además D-20.

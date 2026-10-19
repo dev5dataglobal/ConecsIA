@@ -24,7 +24,7 @@ Garantizar desde la base que ninguna operación cruza la frontera de [[Organizac
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
 | HU-005 | Aislamiento por organización en persistencia | L | **En curso** (base implementada con HU-013) | Spike RLS pendiente |
-| HU-006 | Autenticación y sesión de usuario | L | **Núcleo verificado** 2026-10-21; restan MFA, límite por IP (D-21), restablecimiento (D-12) y revisión ASVS | — |
+| HU-006 | Autenticación y sesión de usuario | L | **Goal cerrado** 2026-10-21; el restablecimiento va a loop_integraciones y MFA, D-21 y ASVS a loop_quality | — |
 | HU-007 | Contexto de organización y sede derivado de membresía | M | **En curso** (base implementada con HU-013) | Selección multi-membresía y caché dependen de D-03; autenticación provisional (ADR-022) |
 | HU-008 | Registro de auditoría append-only | M | **En curso** (base implementada con HU-013) | Retención (D-14) |
 

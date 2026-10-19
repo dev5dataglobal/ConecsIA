@@ -9,15 +9,15 @@ tags: [conecsia, loop]
 
 # loop_quality — Calidad, endurecimiento y preparación productiva
 
-> [!warning] Estado: **BLOQUEADO, no está listo para ejecutar**
-> `goal_authentication.md` no está completo: siguen pendientes MFA, D-21, el restablecimiento y la revisión ASVS. Este loop no se ejecuta hasta alcanzar **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) y cumplir las condiciones de inicio de abajo.
+> [!warning] Estado: **pendiente de condiciones de inicio**
+> La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-01 (cierre), EP-19 · **Rama:** `loop/quality` · **Worktree:** `../ConecsIA-wt/quality`
 
 **Objetivo:** Cerrar la DoD de EP-01 con el CI de GitHub; respaldo y restauración, carga p95, endurecimiento de seguridad y privacidad, y preparación del piloto.
 
 ## Condiciones de inicio
-- [ ] M0 alcanzado: goal de autenticación cerrado o diferido formalmente, `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
 - [ ] Cada tarea tiene su propio requisito: cierre de EP-01, ninguno más; HU-053, HU-021 en `main`; HU-054, M5; HU-055, M7; HU-056, M8.
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/quality -b loop/quality main`.
 
@@ -39,14 +39,14 @@ tags: [conecsia, loop]
 9. **Detente** en la parte que dependa de una decisión abierta: márcala con ⏸, regístrala como D-xx y sigue con la siguiente tarea independiente.
 
 ## Condiciones de bloqueo
-- Decisiones abiertas: **D-02, D-13, D-14 y D-15**; el nivel OWASP ASVS; MFA y D-21 si se difirió el goal.
+- Decisiones abiertas: **D-02, D-13, D-14 y D-15**; el nivel OWASP ASVS; MFA (D-03f) y D-21.
 - Un ADR del loop que siga en Propuesta y cambie el modelo.
 - Otro loop tiene el token de migración y la tarea necesita una migración.
 - El CI de `main` está en rojo.
 
 ## Tareas (en orden)
 - [ ] **HU-001..004** Cerrar la DoD de EP-01. — *CI en verde en GitHub, revisión por otra persona, y OpenAPI y Compose verificados.*
-- [ ] **HU-006 (diferido)** MFA, límite por IP (D-21) y revisión ASVS. — *Solo si se difirió el goal y las decisiones están tomadas.*
+- [ ] **HU-006 (diferido)** MFA, límite por IP (D-21) y revisión ASVS. — *Diferido desde el goal (2026-10-21). Cada pieza espera su decisión: MFA (D-03f), D-21 y el nivel ASVS.*
 - [ ] **HU-053** Respaldo y restauración verificada. — *RPO y RTO dependen de D-14.*
 - [ ] **HU-054** Pruebas de carga y rendimiento p95. — *Los umbrales dependen de D-15.*
 - [ ] **HU-055** Endurecimiento de seguridad y privacidad. — *Transversal: cada corrección va en el módulo dueño, una vez cerrado su loop.*

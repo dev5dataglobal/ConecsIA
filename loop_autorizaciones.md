@@ -9,15 +9,15 @@ tags: [conecsia, loop]
 
 # loop_autorizaciones — Flujo central: autorizaciones, visitas y QR
 
-> [!warning] Estado: **BLOQUEADO, no está listo para ejecutar**
-> `goal_authentication.md` no está completo: siguen pendientes MFA, D-21, el restablecimiento y la revisión ASVS. Este loop no se ejecuta hasta alcanzar **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) y cumplir las condiciones de inicio de abajo.
+> [!warning] Estado: **pendiente de condiciones de inicio**
+> La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-07, EP-08, EP-09 · **Rama:** `loop/autorizaciones` · **Worktree:** `../ConecsIA-wt/autorizaciones`
 
 **Objetivo:** Crear, decidir, cancelar, revocar y vencer autorizaciones con sus modalidades; evaluar su vigencia (aprobada no es lo mismo que vigente); gestionar visitas y preautorizaciones; emitir el QR opaco y leerlo.
 
 ## Condiciones de inicio
-- [ ] M0 alcanzado: goal de autenticación cerrado o diferido formalmente, `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
 - [ ] M3 en `main`; ADR-007, 008, 009 y 010 aprobados, o la parte que dependa de ellos aislada.
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/autorizaciones -b loop/autorizaciones main`.
 

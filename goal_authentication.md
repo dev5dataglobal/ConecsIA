@@ -1,9 +1,9 @@
 ---
 tipo: implementacion
-estado: aprobado
+estado: implementado
 fuentes: [PRD v0.1]
 relacionados: [HU-006, HU-007, HU-016, D-03, D-14, ADR-005, ADR-006, ADR-022]
-actualizado: 2026-10-17
+actualizado: 2026-10-21
 tags: [conecsia, goal, seguridad]
 ---
 
@@ -12,6 +12,9 @@ tags: [conecsia, goal, seguridad]
 **Objetivo:** reemplazar la autenticación provisional ([[ADR-022 Autenticación de desarrollo provisional]]) por autenticación real, sin tocar el contexto, los permisos, el alcance ni la auditoría, que ya son definitivos ([[ADR-005 Contexto de organización y autorización por permisos]]).
 
 **Fuente:** `wiki/backlog/EP-02 Tenancy, identidad y auditoría base.md` § HU-006 · PRD §5.2 (reglas 1, 7 y 8) y §12.5.
+
+> [!success] Goal cerrado 2026-10-21
+> El responsable dio por cerrado el goal con el núcleo de HU-006 verificado. Lo que quedaba se difirió (`[~]`): el restablecimiento (solicitud, confirmación, expiración del token y su auditoría) a `loop_integraciones.md`, y MFA, el límite por IP (D-21) y la revisión OWASP ASVS a `loop_quality.md`. Con esto se cumple la parte de autenticación de M0 en `PLAN-DE-LOOPS.md`.
 
 ## Protocolo de cada iteración
 
@@ -57,27 +60,27 @@ tags: [conecsia, goal, seguridad]
 
 ## Fase 3 — Backend: bloqueo, revocación y restablecimiento
 
-- [ ] MFA TOTP: opcional para usuarios y obligatorio para Superadministrador SaaS y Administrador de organización (D-03f). — *⏸ Detenido 2026-10-19: la aprobación dice «no se implementa ahora». Confirmar si se aborda en esta fase o se difiere.*
-- [ ] Límite adicional de intentos por IP (D-03d). — *⏸ Detenido 2026-10-19: falta el valor (intentos por ventana) y confirmar los proxies de confianza para obtener la IP real detrás de nginx. Registrado como D-21.*
+- [~] MFA TOTP: opcional para usuarios y obligatorio para Superadministrador SaaS y Administrador de organización (D-03f). — *⏸ Detenido 2026-10-19: la aprobación dice «no se implementa ahora». Confirmar si se aborda en esta fase o se difiere.* *— ↪ Diferido 2026-10-21 por el responsable a `loop_quality.md`.*
+- [~] Límite adicional de intentos por IP (D-03d). — *⏸ Detenido 2026-10-19: falta el valor (intentos por ventana) y confirmar los proxies de confianza para obtener la IP real detrás de nginx. Registrado como D-21.* *— ↪ Diferido 2026-10-21 por el responsable a `loop_quality.md`.*
 - [x] Registro de sesiones en el servidor: revocar una sesión concreta y que el cierre de sesión invalide la cookie también en el servidor (D-03c). — *2026-10-19: tabla `sesion_usuario` (migración `SesionesUsuario`), claim de sesión en la cookie, `GET /api/v1/auth/sesiones` y `DELETE /api/v1/auth/sesiones/{id}`. Pruebas: revocar una sesión deja las demás activas; una copia de la cookie no sirve tras cerrar sesión; la sesión de otro usuario da 404.*
 
 - [x] Bloqueo temporal al superar el umbral (D-03d); 423 o 429 según ADR-020. — *423 `CUENTA_BLOQUEADA`; `UsuarioCredencialTests` y `SesionTests.Cinco_fallos_bloquean_la_cuenta…`, con auditoría `sesion.bloquear`.*
 - [x] Revocación: al inactivar el usuario o la membresía, la siguiente petición protegida se rechaza (sello de seguridad, PRD §5.2.8). — *Usuario: `SesionTests.Inactivar_al_usuario…` (401). Membresía: `ContratoAutenticacionTests.Inactivar_la_membresia…` (403 en cada petición, porque el middleware no usa caché).*
-- [ ] `POST /api/v1/auth/password/reset-request`: respuesta idéntica exista o no el usuario. — *⏸ Detenido: el token se entrega por correo y el proveedor, el remitente y el texto dependen de D-12; además, el envío depende del outbox (ADR-012, en Propuesta).*
-- [ ] `POST /api/v1/auth/password/reset`: token de un solo uso con expiración corta (D-03e); invalida las sesiones previas.
-- [ ] Auditoría de inicio y cierre de sesión, fallos, bloqueos, restablecimiento y revocación, sin contraseñas ni tokens. — *2026-10-21: parcial. Auditados `sesion.iniciar` (exitoso y denegado: credenciales inválidas, bloqueado), `sesion.bloquear`, `sesion.cerrar` y `sesion.revocar` en `ServicioIngreso`; sin secretos según `SesionTests.La_auditoria_de_sesion_no_contiene_contrasenas_ni_cookies`. Falta el restablecimiento (detenido por D-12).*
+- [~] `POST /api/v1/auth/password/reset-request`: respuesta idéntica exista o no el usuario. — *⏸ Detenido: el token se entrega por correo y el proveedor, el remitente y el texto dependen de D-12; además, el envío depende del outbox (ADR-012, en Propuesta).* *— ↪ Diferido 2026-10-21 por el responsable a `loop_integraciones.md`.*
+- [~] `POST /api/v1/auth/password/reset`: token de un solo uso con expiración corta (D-03e); invalida las sesiones previas. *— ↪ Diferido 2026-10-21 por el responsable a `loop_integraciones.md`.*
+- [~] Auditoría de inicio y cierre de sesión, fallos, bloqueos, restablecimiento y revocación, sin contraseñas ni tokens. — *2026-10-21: parcial. Auditados `sesion.iniciar` (exitoso y denegado: credenciales inválidas, bloqueado), `sesion.bloquear`, `sesion.cerrar` y `sesion.revocar` en `ServicioIngreso`; sin secretos según `SesionTests.La_auditoria_de_sesion_no_contiene_contrasenas_ni_cookies`. Falta el restablecimiento (detenido por D-12).* *— ↪ Diferido 2026-10-21 por el responsable a `loop_integraciones.md` (auditoría del restablecimiento).*
 
 ## Fase 4 — Frontend
 
 - [x] Pantalla de inicio de sesión con error genérico. — *2026-10-20: `IngresarPage` con correo y contraseña; el mensaje lo redacta el servidor; la contraseña se limpia tras cada intento. `SesionReal.test.tsx` (ingreso con CSRF; error genérico).*
 - [x] Cierre de sesión. — *`apiSesion.cerrarSesion` → `POST /auth/logout` con token (revoca la sesión en el servidor). `SesionReal.test.tsx`.*
-- [ ] Solicitud y confirmación de restablecimiento. — *⏸ Detenido: depende del backend de restablecimiento (D-12).*
+- [~] Solicitud y confirmación de restablecimiento. — *⏸ Detenido: depende del backend de restablecimiento (D-12).* *— ↪ Diferido 2026-10-21 por el responsable a `loop_integraciones.md`.*
 - [x] Manejo global de 401 (redirige al inicio de sesión) y de 423/429. — *401 en cualquier petición → olvida la sesión y vuelve a `/ingresar` (evento global); 423 mostrado; reintento único ante `CSRF_INVALIDO`. `SesionReal.test.tsx`. El 429 se mostrará igual cuando exista (D-21).*
 - [x] Retirar el selector de usuario de desarrollo cuando la autenticación real esté activa. — *El selector solo aparece si `GET /api/v1/desarrollo/usuarios` responde (404 fuera de Development/Testing). `SesionReal.test.tsx`. Frontend: 28/28, typecheck, lint, formato y build en verde.*
 
 ## Fase 5 — Pruebas y criterios de aceptación
 
-- [ ] Unitarias: política de bloqueo y expiración de tokens. — *Bloqueo: `UsuarioCredencialTests` 4/4. Falta la expiración del token de restablecimiento (detenido por D-12).*
+- [~] Unitarias: política de bloqueo y expiración de tokens. — *Bloqueo: `UsuarioCredencialTests` 4/4. Falta la expiración del token de restablecimiento (detenido por D-12).* *— ↪ Diferido 2026-10-21 por el responsable a `loop_integraciones.md` (expiración del token).*
 - [x] Integración con PostgreSQL real: ciclo login → uso → revocación. — *`SesionTests` (14 casos): ingreso, `/me`, cierre, revocación por usuario, contraseña y sesión concreta.*
 - [x] Aislamiento: una sesión de la organización A no accede a recursos de B; un usuario inactivo es rechazado. — *El esquema de cookie solo aporta el id de usuario; el aislamiento lo aplica el mismo middleware y filtro probados en `SedesTests` (A no ve, lee ni modifica sedes de B: 404) y `ContratoAutenticacionTests`. Usuario inactivo: 401 en el ingreso y en la sesión.*
 - [x] Logs y auditoría sin contraseñas ni tokens (prueba automatizada sobre los eventos generados). — *`SesionTests.La_auditoria_de_sesion_no_contiene_contrasenas_ni_cookies`. Los logs de la aplicación no registran cuerpos ni cabeceras; no hay prueba automatizada sobre los logs.*
@@ -89,15 +92,16 @@ tags: [conecsia, goal, seguridad]
 
 ## Fase 6 — Cierre
 
-- [ ] Revisión de seguridad del flujo (nivel OWASP ASVS por acordar: **pendiente de decisión**).
+- [~] Revisión de seguridad del flujo (nivel OWASP ASVS por acordar: **pendiente de decisión**). *— ↪ Diferido 2026-10-21 por el responsable a `loop_quality.md`.*
 - [x] La API no arranca con `Desarrollo` habilitado fuera de `Development`/`Testing` (se mantiene la prueba de ADR-022). — *`UnitTests/Seguridad/AutenticacionDesarrolloTests.cs` en verde (56/56, 2026-10-19); además, el esquema compuesto solo atiende la cabecera si está habilitado.*
-- [ ] Wiki actualizada: HU-006 marcada como verificada, — *2026-10-21: wiki al día (ADR-006 y ADR-022 aprobados, Estado de implementación, tablero, EP-02, index y log). HU-006 queda «núcleo verificado», no «verificada»: faltan MFA, D-21, restablecimiento (D-12) y nivel ASVS.* ADR-006 aprobado, ADR-022 actualizado, `Estado de implementación.md`, `tablero-scrum.md`, `index.md` y `log.md`.
+- [x] Wiki actualizada: HU-006 marcada como verificada, — *2026-10-21: wiki al día (ADR-006 y ADR-022 aprobados, Estado de implementación, tablero, EP-02, index y log). HU-006 queda «núcleo verificado», no «verificada»: faltan MFA, D-21, restablecimiento (D-12) y nivel ASVS.* ADR-006 aprobado, ADR-022 actualizado, `Estado de implementación.md`, `tablero-scrum.md`, `index.md` y `log.md`.
 - [x] HU-016 (invitación) desbloqueada en el backlog. — *2026-10-20: EP-05 ya no la bloquea D-03/HU-006; sigue dependiendo de D-12 para enviar la invitación.*
 
 ## Registro de evidencia
 
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-21 | **Cierre del goal** | Decisión del responsable en el chat: diferir el restablecimiento a loop_integraciones y MFA, D-21 y ASVS a loop_quality |
 | 2026-10-21 | Verificación de cierre y commit | Backend 184/184 (arq. 59, unit. 60, integ. 65 con PostgreSQL real), frontend 28/28 y build OK. Casillas restantes bloqueadas por decisiones |
 | 2026-10-20 | E2E real en navegador | Defecto corregido (Secure en Development) + semillas con contraseña desde .env; unitarias 60/60 (+4) |
 | 2026-10-20 | Fase 4 (salvo restablecimiento), Fase 5 y parte de la 6 | Frontend 28/28 (+6), build OK; casillas marcadas con evidencia existente |

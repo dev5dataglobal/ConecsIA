@@ -17,7 +17,7 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 **Primera vertical funcional (2026-10-17):** HU-013 Gestionar sedes, con la base de HU-005, HU-007 y HU-008. Se adelantó respecto de los sprints propuestos para validar de punta a punta aislamiento, permisos y auditoría. Autenticación provisional ([[ADR-022 Autenticación de desarrollo provisional]]) porque HU-006 sigue bloqueada por D-03. Detalle: [[Sedes]].
 
 ## Bloqueada
-- [ ] HU-006 Autenticación y sesión de usuario — núcleo verificado 2026-10-21; bloqueado el resto por MFA (D-03f), D-21, D-12 y nivel ASVS
+- [ ] HU-006 Autenticación y sesión de usuario — goal cerrado 2026-10-21; el restablecimiento se difiere a loop_integraciones y MFA, D-21 y ASVS a loop_quality
 - [ ] HU-035 Tratamiento de inconsistencias de entrada/salida — parcial: la regularización está bloqueada por D-08
 - [ ] HU-052 Documentación de contratistas y límites de invitados — bloqueada por D-11
 
@@ -47,7 +47,7 @@ _(vacío)_
 | HU-002 | Proyecto frontend base | [[EP-01 Fundamentos técnicos]] | F0 | M | En revisión |
 | HU-003 | Entorno local con Docker Compose y semillas sintéticas | [[EP-01 Fundamentos técnicos]] | F0 | M | En revisión |
 | HU-004 | Observabilidad y formato de errores base | [[EP-01 Fundamentos técnicos]] | F0 | M | En revisión |
-| HU-005 | Aislamiento por organización en persistencia | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | L | Núcleo verificado (bloqueado el resto) |
+| HU-005 | Aislamiento por organización en persistencia | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | L | Goal cerrado (piezas diferidas) |
 | HU-006 | Autenticación y sesión de usuario | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | L | En curso |
 | HU-007 | Contexto de organización y sede derivado de membresía | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso; selección multi-membresía depende de D-03 |
 | HU-008 | Registro de auditoría append-only | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso |

@@ -9,15 +9,15 @@ tags: [conecsia, loop]
 
 # loop_integraciones — Integraciones: outbox, correo y archivos privados
 
-> [!warning] Estado: **BLOQUEADO, no está listo para ejecutar**
-> `goal_authentication.md` no está completo: siguen pendientes MFA, D-21, el restablecimiento y la revisión ASVS. Este loop no se ejecuta hasta alcanzar **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) y cumplir las condiciones de inicio de abajo.
+> [!warning] Estado: **pendiente de condiciones de inicio**
+> La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-13 (+ HU-021 de EP-06) · **Rama:** `loop/integraciones` · **Worktree:** `../ConecsIA-wt/integraciones`
 
 **Objetivo:** Outbox transaccional y procesos de fondo, correo con reintentos y plantillas, y almacenamiento privado de archivos. También entrega el envío que esperan HU-016, HU-029 y el restablecimiento de HU-006.
 
 ## Condiciones de inicio
-- [ ] M0 alcanzado: goal de autenticación cerrado o diferido formalmente, `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
 - [ ] Outbox y correo: **ADR-012 aprobado y D-12 resuelta** (sin D-12 solo se avanza la parte técnica, contra Mailpit). Archivos: M3 en `main`, **ADR-013 aprobado** y D-13 resuelta.
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/integraciones -b loop/integraciones main`.
 
@@ -48,7 +48,7 @@ tags: [conecsia, loop]
 - [ ] **HU-042** Outbox y envío de correo con reintentos. — *El outbox se escribe en la misma transacción; los reintentos son idempotentes; sin datos personales en los logs.*
 - [ ] **HU-043** Plantillas de correo por organización. — *Los destinatarios dependen de D-12.*
 - [ ] **HU-016/HU-029 (envío)** Conectar al outbox la invitación de usuario y la preautorización. — *Solo el adaptador de envío; de esos módulos no se toca nada más allá de la interfaz.*
-- [ ] **HU-006 (restablecimiento)** Solicitud y confirmación de restablecimiento. — *Solo si se difirió el goal. La respuesta es idéntica exista o no el usuario; el token es de un solo uso y dura 30 min; invalida las sesiones previas.*
+- [ ] **HU-006 (restablecimiento)** Solicitud y confirmación de restablecimiento. — *Diferido desde el goal (2026-10-21). Incluye la expiración del token, su prueba unitaria y la auditoría del restablecimiento. La respuesta es idéntica exista o no el usuario; el token es de un solo uso y dura 30 min; invalida las sesiones previas.*
 - [ ] **HU-021** Fotografía de persona en almacenamiento privado. — *Emulador de almacenamiento de objetos en Compose; acceso por URL firmada y aislado por organización.*
 
 ## Integración

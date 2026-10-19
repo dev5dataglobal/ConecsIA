@@ -9,15 +9,15 @@ tags: [conecsia, loop]
 
 # loop_accesos — Operación: entradas, salidas, presencia e historial
 
-> [!warning] Estado: **BLOQUEADO, no está listo para ejecutar**
-> `goal_authentication.md` no está completo: siguen pendientes MFA, D-21, el restablecimiento y la revisión ASVS. Este loop no se ejecuta hasta alcanzar **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) y cumplir las condiciones de inicio de abajo.
+> [!warning] Estado: **pendiente de condiciones de inicio**
+> La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-10, EP-11 · **Rama:** `loop/accesos` · **Worktree:** `../ConecsIA-wt/accesos`
 
 **Objetivo:** Registrar entradas validadas y salidas con consumo atómico e idempotente, cerrar permanencias, mostrar quién está dentro en tiempo real y el historial, y construir la pantalla de recepción.
 
 ## Condiciones de inicio
-- [ ] M0 alcanzado: goal de autenticación cerrado o diferido formalmente, `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
 - [ ] M4 en `main`; ADR-007 y ADR-011 aprobados.
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/accesos -b loop/accesos main`.
 

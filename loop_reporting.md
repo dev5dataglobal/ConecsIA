@@ -9,15 +9,15 @@ tags: [conecsia, loop]
 
 # loop_reporting — Alertas, dashboard, reportes y auditoría consultable
 
-> [!warning] Estado: **BLOQUEADO, no está listo para ejecutar**
-> `goal_authentication.md` no está completo: siguen pendientes MFA, D-21, el restablecimiento y la revisión ASVS. Este loop no se ejecuta hasta alcanzar **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) y cumplir las condiciones de inicio de abajo.
+> [!warning] Estado: **pendiente de condiciones de inicio**
+> La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-12, EP-14, EP-15 · **Rama:** `loop/reporting` · **Worktree:** `../ConecsIA-wt/reporting`
 
 **Objetivo:** Alertas operativas con su ciclo de estados, dashboard, reportes Excel y PDF, y consulta de la auditoría para el auditor.
 
 ## Condiciones de inicio
-- [ ] M0 alcanzado: goal de autenticación cerrado o diferido formalmente, `main` publicado y CI en verde.
+- [x] Goal de autenticación cerrado (2026-10-21). — [ ] M0: falta tener `main` publicado y CI en verde.
 - [ ] M5 en `main`; ADR-016 aprobado para HU-045.
 - [ ] Rama creada desde un `main` actualizado: `git worktree add ../ConecsIA-wt/reporting -b loop/reporting main`.
 

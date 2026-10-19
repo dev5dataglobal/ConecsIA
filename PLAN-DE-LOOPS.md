@@ -9,10 +9,8 @@ tags: [conecsia, loops, plan]
 
 # Plan de loops
 
-> [!warning] Ejecución bloqueada
-> `goal_authentication.md` **no está completo**. El núcleo de HU-006 está verificado, pero siguen abiertas cinco casillas, todas detenidas por decisiones de producto: MFA (D-03f), límite por IP (D-21), solicitud y confirmación de restablecimiento (D-12 + ADR-012), expiración del token de restablecimiento y revisión OWASP ASVS. Por eso **ningún loop está marcado como listo para ejecutar**. Cada `loop_*.md` repite esta condición en su sección «Condiciones de inicio».
->
-> Para desbloquear, el responsable debe elegir una de dos opciones: a) cerrar esas decisiones y terminar el goal, o b) declarar formalmente que las casillas detenidas se difieren (por ejemplo, a `loop_integraciones` y `loop_quality`) y dar el goal por cerrado. La opción b es la que se propone aquí, porque ninguna historia de los loops depende de MFA, del límite por IP ni del restablecimiento (ver §2.3).
+> [!success] Autenticación cerrada (2026-10-21)
+> El responsable cerró `goal_authentication.md` y difirió lo que quedaba: el restablecimiento va a `loop_integraciones`, y MFA, D-21 y ASVS a `loop_quality`. **Ningún loop está en ejecución todavía.** Para alcanzar M0 falta publicar `main` y tener el CI en verde. `loop_core` necesita además D-20 resuelta antes de M1.
 
 > [!note] Fuentes que no existen
 > Se pidieron `AGENTS.md`, `wiki/vision-general.md` y `wiki/pendientes.md`, pero no existen en el repositorio. Se usaron sus equivalentes: `CLAUDE.md`, `wiki/overview.md` y `wiki/decisiones/Decisiones pendientes.md`. Las historias y dependencias salen de `wiki/backlog/EP-*.md`, y ninguna se inventó.
@@ -157,7 +155,7 @@ loop_quality: cierre de EP-01 en paralelo desde el inicio; HU-053..056 al final.
 
 | Hito | Contenido fusionado en `main` | Desbloquea |
 |---|---|---|
-| **M0** | Goal de autenticación cerrado o diferido formalmente; `main` publicado y CI en verde | `loop_core`, `loop_quality` (EP-01) |
+| **M0** | ✅ Goal de autenticación cerrado (2026-10-21); falta `main` publicado y CI en verde | `loop_core`, `loop_quality` (EP-01) |
 | **M1** | core: HU-005, 007, 008 cerradas + HU-010 + HU-017 + HU-018 | `loop_personas` |
 | **M2** | core completo (HU-009–016) | `loop_sectorial` (con HU-020); invitación de HU-016 lista para recibir el envío |
 | **M3** | personas: HU-019, 020, 022 | `loop_autorizaciones`; HU-021 en `loop_integraciones` |
@@ -226,7 +224,7 @@ git worktree add ../ConecsIA-wt/core -b loop/core main
 
 | Decisión | Loop afectado | Efecto |
 |---|---|---|
-| Cierre o diferimiento del goal (MFA, D-21, reset, ASVS) | todos | M0 |
+| ~~Cierre del goal~~ cerrado 2026-10-21; MFA, D-21 y ASVS van a quality y el restablecimiento a integraciones | quality, integraciones | ya no bloquea M0 |
 | D-20 idioma de rutas | todos desde personas | Debe resolverse **antes de M1**. Si se cambia después, hay que renombrar las rutas ya implementadas. |
 | D-01, D-16 | core | Vocabulario e inactivación de organización. |
 | D-04 | core (HU-014), autorizaciones | Quién autoriza y decide. |
