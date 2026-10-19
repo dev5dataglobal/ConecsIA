@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Un módulo solo referencia el núcleo compartido y la infraestructura común (ADR-001). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\ConecsIA.SharedKernel\ConecsIA.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\ConecsIA.Infrastructure\ConecsIA.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Controladores MVC en la capa Api del módulo (ADR-002). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>
