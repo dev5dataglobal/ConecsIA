@@ -29,6 +29,11 @@ public sealed partial class ManejadorExcepciones(
     {
         var problema = Clasificar(exception);
 
+        if (exception is EscrituraEntreOrganizacionesException escritura)
+        {
+            await AuditarEscrituraEntreOrganizacionesAsync(httpContext, escritura, cancellationToken);
+        }
+
         if (problema.Status >= StatusCodes.Status500InternalServerError)
         {
             // Solo el tipo: el mensaje puede contener datos personales o SQL.
@@ -66,6 +71,20 @@ public sealed partial class ManejadorExcepciones(
         _ => Crear(StatusCodes.Status500InternalServerError, "Error interno", detalle: null),
     };
 
+    private async Task AuditarEscrituraEntreOrganizacionesAsync(
+        HttpContext httpContext, EscrituraEntreOrganizacionesException escritura, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await AuditoriaEscrituraEntreOrganizaciones.RegistrarAsync(httpContext.RequestServices, escritura, cancellationToken);
+        }
+        catch (Exception fallo)
+        {
+            // La respuesta 404 no depende de la auditoría; solo se registra el tipo del fallo.
+            RegistrarFalloAuditoria(logger, fallo.GetType().FullName ?? fallo.GetType().Name);
+        }
+    }
+
     private static ProblemDetails Crear(int estado, string titulo, string? detalle, string? codigo = null)
     {
         var problema = new ProblemDetails { Status = estado, Title = titulo, Detail = detalle };
@@ -79,4 +98,7 @@ public sealed partial class ManejadorExcepciones(
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Excepción no controlada de tipo {TipoExcepcion}")]
     private static partial void RegistrarErrorNoControlado(ILogger logger, string tipoExcepcion);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo auditar una escritura entre organizaciones: {TipoExcepcion}")]
+    private static partial void RegistrarFalloAuditoria(ILogger logger, string tipoExcepcion);
 }

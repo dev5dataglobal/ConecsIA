@@ -241,41 +241,7 @@ public sealed class SedesTests(BaseDatosFixture baseDatos) : IAsyncLifetime
 
     // ---------- Aislamiento entre organizaciones (CA-01) ----------
 
-    [Fact]
-    public async Task Admin_de_A_no_ve_sedes_de_B_en_el_listado()
-    {
-        var cuerpo = await fabrica.Como(e.AdminA).GetFromJsonAsync<JsonElement>($"{Ruta}?tamano=100");
-
-        var ids = cuerpo.GetProperty("elementos").EnumerateArray().Select(s => s.GetProperty("id").GetGuid()).ToList();
-        Assert.Contains(e.SedeA1, ids);
-        Assert.Contains(e.SedeA2, ids);
-        Assert.DoesNotContain(e.SedeB1, ids);
-    }
-
-    [Fact]
-    public async Task Admin_de_A_recibe_404_al_leer_modificar_o_inactivar_una_sede_de_B()
-    {
-        var cliente = fabrica.Como(e.AdminA);
-
-        var leer = await cliente.GetAsync($"{Ruta}/{e.SedeB1}");
-        var modificar = await cliente.PutAsJsonAsync($"{Ruta}/{e.SedeB1}", new
-        {
-            nombre = "Robada",
-            ciudad = "Lima",
-            pais = "Perú",
-            zonaHoraria = "America/Lima",
-            version = 1u,
-        });
-        var inactivar = await cliente.PostAsync($"{Ruta}/{e.SedeB1}/inactivar", null);
-
-        Assert.Equal(HttpStatusCode.NotFound, leer.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, modificar.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, inactivar.StatusCode);
-
-        var sedeB = await fabrica.Como(e.AdminB).GetFromJsonAsync<JsonElement>($"{Ruta}/{e.SedeB1}");
-        Assert.Equal("Sede B1", sedeB.GetProperty("nombre").GetString());
-        Assert.Equal("Activa", sedeB.GetProperty("estado").GetString());
-    }
+    // El aislamiento Org A vs Org B de sedes lo cubre SuiteAislamientoTests (HU-005).
 
     // ---------- Modificar y concurrencia ----------
 

@@ -1,7 +1,10 @@
 using ConecsIA.Infrastructure.Persistencia;
 using ConecsIA.Infrastructure.Seguridad;
 using ConecsIA.IntegrationTests.Infraestructura;
+using ConecsIA.Api.Errores;
+using ConecsIA.Modules.Auditoria.Domain;
 using ConecsIA.Modules.Estructura.Domain;
+using ConecsIA.SharedKernel.Auditoria;
 using ConecsIA.SharedKernel.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -122,5 +125,61 @@ public sealed class AislamientoYAuditoriaTests(BaseDatosFixture baseDatos) : IAs
             .ToList();
 
         Assert.True(sinFiltro.Count == 0, $"Entidades con OrganizacionId sin filtro global: {string.Join(", ", sinFiltro)}");
+    }
+
+    [Fact]
+    public void Todo_indice_unico_de_una_entidad_de_organizacion_incluye_la_organizacion()
+    {
+        var modelo = Modelo();
+
+        var indebidos = modelo.GetEntityTypes()
+            .Where(t => typeof(IEntidadDeOrganizacion).IsAssignableFrom(t.ClrType))
+            .SelectMany(t => t.GetIndexes().Where(i => i.IsUnique)
+                .Where(i => i.Properties.All(p => p.Name != nameof(IEntidadDeOrganizacion.OrganizacionId)))
+                .Select(i => $"{t.ClrType.Name}({string.Join(", ", i.Properties.Select(p => p.Name))})"))
+            .ToList();
+
+        Assert.True(indebidos.Count == 0, $"Índices únicos sin organización: {string.Join("; ", indebidos)}");
+    }
+
+    [Fact]
+    public void Toda_relacion_entre_entidades_de_organizacion_usa_una_clave_compuesta_con_la_organizacion()
+    {
+        var modelo = Modelo();
+
+        var indebidas = modelo.GetEntityTypes()
+            .Where(t => typeof(IEntidadDeOrganizacion).IsAssignableFrom(t.ClrType))
+            .SelectMany(t => t.GetForeignKeys()
+                .Where(fk => typeof(IEntidadDeOrganizacion).IsAssignableFrom(fk.PrincipalEntityType.ClrType))
+                .Where(fk => fk.Properties.All(p => p.Name != nameof(IEntidadDeOrganizacion.OrganizacionId)))
+                .Select(fk => $"{t.ClrType.Name} → {fk.PrincipalEntityType.ClrType.Name}"))
+            .ToList();
+
+        Assert.True(indebidas.Count == 0, $"Relaciones que podrían cruzar organizaciones: {string.Join("; ", indebidas)}");
+    }
+
+    [Fact]
+    public async Task Una_escritura_entre_organizaciones_responde_404_y_queda_auditada_como_denegada()
+    {
+        var respuesta = await fabrica.Como(e.AdminA).PostAsync($"/api/v1/soporte-pruebas/escritura-cruzada/{e.OrgB}", null);
+
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, respuesta.StatusCode);
+        Assert.DoesNotContain(e.OrgB.ToString(), await SuiteAislamientoTests.CuerpoSinInstanciaAsync(respuesta));
+
+        await using var ambito = fabrica.Services.CreateAsyncScope();
+        ambito.ServiceProvider.GetRequiredService<ContextoSolicitud>().ComoSistema();
+        var contexto = ambito.ServiceProvider.GetRequiredService<ConecsIADbContext>();
+        var evento = await contexto.Set<EventoAuditoria>()
+            .SingleAsync(a => a.ActorUsuarioId == e.AdminA && a.Accion == AuditoriaEscrituraEntreOrganizaciones.Accion);
+        Assert.Equal(e.OrgA, evento.OrganizacionId);
+        Assert.Equal(ResultadoAuditoria.Denegado, evento.Resultado);
+        Assert.Equal("Sede", evento.TipoObjeto);
+        Assert.Empty(await contexto.Set<Sede>().Where(s => s.Nombre == "Inyectada por soporte").ToListAsync());
+    }
+
+    private Microsoft.EntityFrameworkCore.Metadata.IModel Modelo()
+    {
+        using var ambito = fabrica.Services.CreateScope();
+        return ambito.ServiceProvider.GetRequiredService<ConecsIADbContext>().Model;
     }
 }

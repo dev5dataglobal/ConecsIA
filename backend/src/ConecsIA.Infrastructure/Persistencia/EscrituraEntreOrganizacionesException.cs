@@ -5,4 +5,8 @@ namespace ConecsIA.Infrastructure.Persistencia;
 /// Se responde como 404 para no revelar datos de otra organización.
 /// </summary>
 public sealed class EscrituraEntreOrganizacionesException(string entidad)
-    : InvalidOperationException($"Escritura de {entidad} fuera de la organización del contexto.");
+    : InvalidOperationException($"Escritura de {entidad} fuera de la organización del contexto.")
+{
+    /// <summary>Nombre del tipo de entidad rechazado (sin identificadores ni datos de la otra organización).</summary>
+    public string Entidad { get; } = entidad;
+}

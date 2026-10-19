@@ -1,3 +1,5 @@
+using ConecsIA.Infrastructure.Persistencia;
+using ConecsIA.Modules.Estructura.Domain;
 using ConecsIA.SharedKernel.Errores;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -34,4 +36,19 @@ public sealed class SoportePruebasController : ControllerBase
     [HttpGet("no-controlada")]
     public IActionResult NoControlada() =>
         throw new InvalidOperationException("SELECT * FROM persona WHERE documento = '1023456789'");
+}
+
+/// <summary>Soporte autenticado: pasa por el middleware de contexto de organización.</summary>
+[ApiController]
+[Route("api/v1/soporte-pruebas")]
+public sealed class SoportePruebasAutenticadoController : ControllerBase
+{
+    /// <summary>Simula un caso de uso defectuoso que intenta escribir en otra organización (HU-005).</summary>
+    [HttpPost("escritura-cruzada/{organizacionAjena:guid}")]
+    public async Task<IActionResult> EscrituraCruzada(Guid organizacionAjena, [FromServices] ConecsIADbContext contexto)
+    {
+        contexto.Add(Sede.Crear(organizacionAjena, "Inyectada por soporte", null, null, null, "UTC", DateTimeOffset.UtcNow));
+        await contexto.SaveChangesAsync();
+        return NoContent();
+    }
 }
