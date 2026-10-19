@@ -80,4 +80,5 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Opciones para decidir D-03]] — opciones de identidad y sesión (D-03a–f) con la recomendación del agente
 - [[Opciones para decidir D-20]] — idioma de rutas y contratos de la API; recomienda español (opción A)
 - [[Opciones para decidir D-20]] — idioma de rutas y contratos; aprobada la opción A (español)
+- [[Opciones para decidir ADR-021]] — DbContext compartido y migraciones: impacto en Docker, CI, producción, rollback y pruebas
 - [[Integración en main antes de loop_core]] — qué integrar en main y decisiones previas al loop core

@@ -236,3 +236,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Rutas indicativas traducidas en EP-03, EP-04, EP-05 y EP-06. Se quitó la nota de desviación en `Sedes` y en EP-04.
 - Actualizados `PLAN-DE-LOOPS.md`, `loop_core.md`, `PLAN-DE-TRABAJO.md` e `index.md`. Nueva página `consultas/Opciones para decidir D-20` (el análisis también está en `fix/ci-main`, commit d1421b0).
 - Sin cambios de código: lo implementado ya cumple la convención. `loop_core` sigue esperando M0 (CI de `main`) y ADR-021.
+
+## [2026-10-19] consulta | Opciones para decidir ADR-021 (migraciones)
+- Nueva página `consultas/Opciones para decidir ADR-021`: propuesta vigente, alternativas (contexto por módulo, migraciones en la API) e impacto en Docker, desarrollo local, CI, producción, rollback y pruebas.
+- Recomendación (propuesta): aprobar A con tres condiciones: regla de arquitectura por módulo, token de migración y rollback hacia adelante.
+- ADR-021 sigue en Propuesta. `index.md` actualizado. Sin cambios de código.
