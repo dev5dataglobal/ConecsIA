@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+/*
+ * Paleta oficial de ConecsIA (2026-10-17) y mockup de Figma "ConecsIA".
+ * Contraste (WCAG AA): `gris` (#838383) solo para bordes, íconos y texto grande;
+ * el texto secundario usa `tinta-suave`.
+ */
+@theme {
+  --font-sans:
+    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --color-marca: #6953da;
+  --color-marca-oscura: #5641c4;
+  --color-marca-suave: #9c8be7;
+  --color-marca-tenue: #efecfb;
+  --color-acento: #d5f379;
+  --color-tinta: #131315;
+  --color-tinta-suave: #5c5c60;
+  --color-gris: #838383;
+  --color-linea: #e4e4e1;
+  --color-superficie: #eeeeec;
+  --color-fondo: #fdfdfd;
+}
+
+body {
+  background-color: var(--color-superficie);
+  color: var(--color-tinta);
+}
