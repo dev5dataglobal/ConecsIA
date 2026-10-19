@@ -78,3 +78,4 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Revisión del backlog v1]] — inconsistencias y bloqueos detectados al crear el backlog
 - [[Revisión del modelo ER db.md]] — 35 adaptaciones propuestas al diagrama ER frente a PRD y ADR
 - [[Opciones para decidir D-03]] — opciones de identidad y sesión (D-03a–f) con la recomendación del agente
+- [[Opciones para decidir D-20]] — idioma de rutas y contratos de la API; recomienda español (opción A)

@@ -182,3 +182,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - El force-push ya está hecho: `main` (023113b) y `fix/ci-main` (816adbc) coinciden con `origin`.
 - El CI de `main` está en cola con el `ci.yml` antiguo; sin fusionar `fix/ci-main` volverá a fallar. Siguen abiertas D-20 y ADR-021 (Propuesta).
 - No se implementó ninguna historia ni se creó worktree.
+
+## [2026-10-19] consulta | Opciones para decidir D-20 (idioma de las rutas)
+- Nueva página `wiki/consultas/Opciones para decidir D-20.md`: inventario del código y del OpenAPI (todo en español, salvo login/logout/csrf/me/health) y del backlog (EP-03 a EP-06 en inglés, EP-07 en adelante en español).
+- Recomendación (propuesta): opción A, español con excepciones técnicas estándar. D-20 sigue pendiente hasta que la apruebe el responsable.
+- `index.md` actualizado. Sin cambios de código.
