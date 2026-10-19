@@ -172,3 +172,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Repo configurado con `user.name=dev5dataglobal` y el correo corporativo (config local; la global no cambia).
 - Reescritos con el nuevo autor los 2 commits de `fix/ci-main` (sin cambios de contenido). `main` conserva su historia con la identidad personal, por decisión del responsable.
 - Pendiente: force-push de `fix/ci-main` por el responsable.
+
+## [2026-10-19] revision | Historia de git reescrita a la identidad empresarial
+- Por pedido del responsable, los 19 commits locales (`main`, `evaluacion/pre-loop-core`, `fix/ci-main`) pasan de la identidad personal a `dev5dataglobal` con el correo corporativo (`git filter-branch --env-filter`).
+- Verificado: los árboles de las tres ramas son idénticos a los de antes; solo cambian los hashes. Respaldo previo en un bundle del scratchpad de la sesión.
+- Pendiente: force-push de `main` y `fix/ci-main` por el responsable. `evaluacion/pre-loop-core` no está publicada.
