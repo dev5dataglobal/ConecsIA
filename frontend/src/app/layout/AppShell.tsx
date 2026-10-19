@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { cerrarSesion as cerrarSesionApi } from '../../features/sesion/apiSesion'
 import { guardarOrganizacionSeleccionada } from '../../features/sesion/organizacionSeleccionada'
-import { useContexto, useMembresias } from '../../features/sesion/useContexto'
+import { haySesion } from '../../features/sesion/sesion'
+import { useContexto, useMembresias, usePlataforma } from '../../features/sesion/useContexto'
 import { IndicadorConexion } from '../../features/sistema/IndicadorConexion'
 import type { ClaveTexto } from '../../shared/i18n/es'
 import { useT } from '../../shared/i18n/traductor'
@@ -15,6 +16,13 @@ const enlaces: { to: string; clave: ClaveTexto; icono: NombreIcono }[] = [
   { to: '/sedes', clave: 'nav.sedes', icono: 'sede' },
   { to: '/roles', clave: 'nav.roles', icono: 'escudo' },
 ]
+
+/** Consola del plano SaaS (HU-009): solo para usuarios con permisos de plataforma. */
+const enlaceSaas: (typeof enlaces)[number] = {
+  to: '/saas/organizaciones',
+  clave: 'nav.saas',
+  icono: 'sede',
+}
 
 function iniciales(nombre: string) {
   return nombre
@@ -37,6 +45,9 @@ export function AppShell() {
   const [colapsado, setColapsado] = useState(false)
   const { data: contexto } = useContexto()
   const { data: membresias } = useMembresias(contexto !== undefined)
+  const { data: plataforma } = usePlataforma(haySesion())
+  const enlacesVisibles =
+    plataforma && (plataforma.permisosSaas ?? []).length > 0 ? [...enlaces, enlaceSaas] : enlaces
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -53,7 +64,7 @@ export function AppShell() {
 
   const navegacion = (compacto: boolean) => (
     <ul className="flex flex-col gap-1">
-      {enlaces.map((enlace) => (
+      {enlacesVisibles.map((enlace) => (
         <li key={enlace.to}>
           <NavLink
             to={enlace.to}

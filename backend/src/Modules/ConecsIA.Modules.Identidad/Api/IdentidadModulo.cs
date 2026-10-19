@@ -20,5 +20,6 @@ public sealed class IdentidadModulo : IModulo
         servicios.AddScoped<ServicioIngreso>();
         servicios.AddScoped<IRepositorioRoles, RepositorioRoles>();
         servicios.AddScoped<ServicioRoles>();
+        servicios.AddScoped<ConecsIA.SharedKernel.Organizaciones.IProvisionOrganizacion, ProvisionOrganizacion>();
     }
 }

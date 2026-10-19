@@ -6,7 +6,7 @@ namespace ConecsIA.Infrastructure.Seguridad;
 /// Implementación con ámbito por petición. Solo lo establece el middleware de contexto a partir de
 /// una membresía verificada, o el código interno marcado como sistema (semillas, migraciones).
 /// </summary>
-public sealed class ContextoSolicitud : IContextoSolicitud
+public sealed class ContextoSolicitud : IContextoSolicitud, IContextoPlanoSaas
 {
     private static readonly IReadOnlySet<string> SinPermisos = new HashSet<string>();
     private static readonly IReadOnlySet<Guid> SinSedes = new HashSet<Guid>();
@@ -15,6 +15,7 @@ public sealed class ContextoSolicitud : IContextoSolicitud
     public Guid? UsuarioId { get; private set; }
     public Guid? OrganizacionId { get; private set; }
     public IReadOnlySet<string> Permisos { get; private set; } = SinPermisos;
+    public IReadOnlySet<string> PermisosSaas { get; private set; } = SinPermisos;
     public bool AlcanceTotalSedes { get; private set; }
     public IReadOnlySet<Guid> SedesAsignadas { get; private set; } = SinSedes;
 
@@ -32,8 +33,15 @@ public sealed class ContextoSolicitud : IContextoSolicitud
         SedesAsignadas = sedesAsignadas.ToHashSet();
     }
 
-    /// <summary>Usuario autenticado cuya organización todavía no se resolvió (o fue rechazada).</summary>
-    public void EstablecerUsuario(Guid usuarioId) => UsuarioId = usuarioId;
+    /// <summary>
+    /// Usuario autenticado sin organización resuelta (o rechazada). En endpoints
+    /// <c>[SinOrganizacionResuelta]</c> lleva sus permisos del plano SaaS (HU-009).
+    /// </summary>
+    public void EstablecerUsuario(Guid usuarioId, IEnumerable<string>? permisosSaas = null)
+    {
+        UsuarioId = usuarioId;
+        PermisosSaas = permisosSaas?.ToHashSet(StringComparer.Ordinal) ?? SinPermisos;
+    }
 
     public void ComoSistema() => EsSistema = true;
 
@@ -46,5 +54,19 @@ public sealed class ContextoSolicitud : IContextoSolicitud
         OrganizacionId = organizacionId;
         Permisos = permisos.ToHashSet(StringComparer.Ordinal);
         AlcanceTotalSedes = true;
+    }
+
+    /// <summary>
+    /// HU-009: el plano SaaS escribe en una organización concreta (aprovisionamiento). No concede
+    /// permisos de organización; sin el permiso SaaS de administración se rechaza.
+    /// </summary>
+    public void OperarEnOrganizacion(Guid organizacionId)
+    {
+        if (!PermisosSaas.Contains(SharedKernel.Seguridad.PermisosSaas.OrganizacionesAdministrar))
+        {
+            throw new AccesoDenegadoException(AccesoDenegadoException.CodigoPermisoRequerido, "No tienes el permiso requerido para esta operación.");
+        }
+
+        OrganizacionId = organizacionId;
     }
 }

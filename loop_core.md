@@ -52,7 +52,7 @@ tags: [conecsia, loop]
 - [ ] **HU-010** Tipos de organización y plantilla básica de catálogos. — *Plantilla sembrable. Se coordina con HU-020: los catálogos de persona y documento los crea `loop_personas`.*
 - [ ] **HU-015** Gestionar zonas y puntos de acceso. — *ZONA con `es_punto_acceso`. ⏸ si ADR-019 sigue en Propuesta: pedir confirmación.*
 - [ ] **HU-018** Alcance por sede, destino y punto de acceso. — *Filtro de alcance reutilizable por todos los módulos. **Al fusionar HU-017, HU-010 y HU-018 se alcanza M1.***
-- [ ] **HU-009** Alta, edición e inactivación de organizaciones. — *Los efectos de la inactivación quedan ⏸ por D-16: aislar la parte afectada.*
+- [x] **HU-009** Alta, edición e inactivación de organizaciones. — *Los efectos de la inactivación quedan ⏸ por D-16: aislar la parte afectada.*
 - [ ] **HU-011** Planes y habilitación de módulos por organización. — *Los módulos opcionales consultan la habilitación. Inactivar un módulo no borra sus históricos.*
 - [ ] **HU-016** Invitar y administrar usuarios. — *Alta, inactivación y contraseña inicial. El envío del enlace queda detrás de una interfaz y lo entrega `loop_integraciones` (D-12).*
 - [ ] **HU-014** Gestionar áreas/destinos y responsables/autorizadores. — *El alcance de los autorizadores queda ⏸ por D-04 en la parte afectada.*
@@ -71,6 +71,7 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-009 | Backend 275 en verde (`OrganizacionesTests` 10, `OrganizacionTests` 5). Frontend 38/38 (`OrganizacionesSaasPage.test.tsx`). Migración `OrganizacionesSaas`. Inactivación interina por D-16 (⏸ efectos definitivos). Detalle en [[Organizaciones y plano SaaS]]. |
 | 2026-10-19 | HU-017 | Backend 260 en verde (`RolTests`, `RolesTests` con la matriz de 25 casos, rol en `SuiteAislamientoTests`). Frontend 35/35, lint y build OK (`RolesPage.test.tsx`). Migración `RolesConfigurables`. Matriz en [[Roles y permisos]]. ⏸ CA-07 a EP-07. |
 | 2026-10-19 | HU-008 | 217 pruebas en verde: `MinimizadorValoresAuditoriaTests` (10), rollback y atomicidad en `AislamientoYAuditoriaTests`; append-only ya verificado. ⏸ La lectura aislada por organización pasa a HU-046. IP sin registrar (requiere migración). |
 | 2026-10-19 | HU-007 | Backend: 205 pruebas en verde (`ContextoOrganizacionTests`: multi-membresía, `GET /api/v1/me/membresias`, cambio de permisos, denegación auditada, contexto de proceso; prueba de endpoints anónimos). Frontend: 31/31, `tsc` y `build` OK (`SeleccionOrganizacion.test.tsx`). OpenAPI y `schema.d.ts` regenerados. |

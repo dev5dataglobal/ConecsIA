@@ -67,6 +67,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 ## Módulos
 - [[Plataforma base]] — fundaciones técnicas F0 (HU-001 a HU-004)
 - [[Sedes]] — primera vertical funcional: HU-013 con aislamiento, contexto por membresía y auditoría
+- [[Organizaciones y plano SaaS]] — HU-009: consola SaaS, alta con primer administrador, inactivación interina (D-16)
 - [[Roles y permisos]] — HU-017: catálogo cerrado, roles por organización, plantillas y matriz verificada
 
 ## Implementación

@@ -49,6 +49,21 @@ export function useMembresias(habilitado = haySesion()) {
   })
 }
 
+export interface Plataforma {
+  usuario: { id: string; nombre: string; correo: string }
+  permisosSaas: string[]
+}
+
+/** Identidad y permisos del plano SaaS (HU-009); no requiere organización resuelta. */
+export function usePlataforma(habilitado = haySesion()) {
+  return useQuery({
+    queryKey: ['me', 'plataforma', leerSesionDesarrollo() ?? 'sesion'],
+    queryFn: () => apiFetch<Plataforma>('/api/v1/me/plataforma'),
+    enabled: habilitado,
+    retry: false,
+  })
+}
+
 /** Códigos de la API que indican que hay que (volver a) elegir organización. */
 export const CODIGOS_ELEGIR_ORGANIZACION = [
   'ORGANIZACION_NO_SELECCIONADA',

@@ -7,4 +7,8 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Controladores MVC en la capa Api del módulo (ADR-002). -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>

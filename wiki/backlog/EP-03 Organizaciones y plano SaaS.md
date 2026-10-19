@@ -23,7 +23,7 @@ Permitir al Superadministrador SaaS dar de alta, configurar e inactivar [[Organi
 ## Historias
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
-| HU-009 | Alta, edición e inactivación de organizaciones | M | Lista para refinar | Efectos de inactivación: D-16 |
+| HU-009 | Alta, edición e inactivación de organizaciones | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Efectos de inactivación: D-16 (interino) |
 | HU-010 | Tipos de organización y plantilla básica de catálogos | M | Lista para refinar | — |
 | HU-011 | Planes y habilitación de módulos por organización | M | Lista para refinar (parcial) | D-16 |
 | HU-012 | Vocabulario configurable por organización | S | Lista para refinar | Etiquetas definitivas: D-01 |
@@ -62,23 +62,23 @@ Superadministrador SaaS; Administrador de organización (lectura/edición de su 
 - **Endpoints indicativos:** `POST/GET /api/v1/saas/organizaciones`, `PUT /api/v1/saas/organizaciones/{id}`, `POST /api/v1/saas/organizaciones/{id}/inactivar`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un superadministrador **cuando** crea una organización **entonces** queda activa, auditada y con invitación al primer administrador.
-- [ ] **Dado** un administrador de A **cuando** intenta leer o editar la organización B **entonces** recibe 404 (CA-01).
-- [ ] **Dado** una organización inactivada **cuando** uno de sus usuarios intenta una operación nueva **entonces** se rechaza y los datos históricos permanecen (RN-08).
+- [x] **Dado** un superadministrador **cuando** crea una organización **entonces** queda activa, auditada y con invitación al primer administrador. — *El administrador queda vinculado con su rol; el envío de la invitación es de HU-016/D-12.*
+- [x] **Dado** un administrador de A **cuando** intenta leer o editar la organización B **entonces** recibe 404 (CA-01).
+- [x] **Dado** una organización inactivada **cuando** uno de sus usuarios intenta una operación nueva **entonces** se rechaza y los datos históricos permanecen (RN-08).
 
 ### Tareas backend
-- [ ] Agregado `Organization`, casos de uso de alta/edición/inactivación con concurrencia optimista.
-- [ ] Política de plano SaaS separada de permisos de organización.
-- [ ] Integración con invitación (HU-016) y auditoría.
+- [x] Agregado `Organization`, casos de uso de alta/edición/inactivación con concurrencia optimista.
+- [x] Política de plano SaaS separada de permisos de organización.
+- [ ] Integración con invitación (HU-016) y auditoría. — *Auditoría hecha; la invitación se integra en HU-016.*
 
 ### Tareas frontend
-- [ ] Consola SaaS: lista paginada, formulario, confirmación de inactivación con advertencia de efectos.
+- [x] Consola SaaS: lista paginada, formulario, confirmación de inactivación con advertencia de efectos.
 
 ### Pruebas
-- [ ] Unitarias: transiciones de estado.
-- [ ] Integración (PostgreSQL real): unicidad y concurrencia optimista.
-- [ ] Aislamiento / permisos negativos: administrador de organización sin permiso SaaS; usuario de organización inactiva.
-- [ ] E2E / UI: alta e inactivación.
+- [x] Unitarias: transiciones de estado.
+- [x] Integración (PostgreSQL real): unicidad y concurrencia optimista.
+- [x] Aislamiento / permisos negativos: administrador de organización sin permiso SaaS; usuario de organización inactiva.
+- [x] E2E / UI: alta e inactivación. *(Vitest; sin E2E con navegador.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:

@@ -19,6 +19,7 @@ internal sealed class ConfiguracionUsuario : IEntityTypeConfiguration<Usuario>
         builder.HasIndex(u => u.Correo).IsUnique();
         builder.Property(u => u.HashContrasena).HasMaxLength(512);
         builder.Property(u => u.SelloSeguridad).HasMaxLength(64).IsRequired();
+        builder.Property(u => u.PermisosSaas).HasColumnType("text[]");
     }
 }
 
@@ -79,6 +80,10 @@ internal sealed class RepositorioIdentidad(ConecsIADbContext contexto) : IReposi
             .ToListAsync(cancelacion);
 
     public void AgregarSesion(SesionUsuario sesion) => contexto.Add(sesion);
+
+    public void AgregarUsuario(Usuario usuario) => contexto.Add(usuario);
+
+    public void AgregarMembresia(Membresia membresia) => contexto.Add(membresia);
 
     public Task<SesionUsuario?> ObtenerSesionAsync(Guid sesionId, CancellationToken cancelacion) =>
         contexto.Set<SesionUsuario>().AsNoTracking().SingleOrDefaultAsync(s => s.Id == sesionId, cancelacion);

@@ -356,6 +356,11 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nombre");
 
+                    b.PrimitiveCollection<List<string>>("PermisosSaas")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("permisos_saas");
+
                     b.Property<string>("SelloSeguridad")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -378,6 +383,15 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset>("ActualizadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizada_en");
+
+                    b.Property<string>("ContactoAdministrativo")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("contacto_administrativo");
+
                     b.Property<DateTimeOffset>("CreadaEn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("creada_en");
@@ -388,14 +402,50 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
 
+                    b.Property<string>("IdentificacionLegal")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("identificacion_legal");
+
+                    b.Property<DateTimeOffset?>("InactivadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("inactivada_en");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nombre");
 
+                    b.Property<string>("NombreNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nombre_normalizado");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("tipo");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<string>("ZonaHoraria")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("zona_horaria");
+
                     b.HasKey("Id")
                         .HasName("pk_organizacion");
+
+                    b.HasIndex("NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organizacion_nombre_normalizado");
 
                     b.ToTable("organizacion", (string)null);
                 });

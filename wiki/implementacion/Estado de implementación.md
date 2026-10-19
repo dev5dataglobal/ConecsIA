@@ -143,3 +143,8 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - Detalle en [[Roles y permisos]]. Migración `20261019*_RolesConfigurables` (tabla `rol` con FK a `organizacion`; `membresia.roles uuid[]` con default `{}`).
 - La prueba de arquitectura de espacios de nombres ahora excluye los tipos generados por el compilador y sus anidados (expresiones de colección y `GeneratedRegex`).
 - `Dialogo` pasó de `features/sedes` a `shared/ui`.
+
+## HU-009 cerrada en `loop/core` (2026-10-19)
+- Detalle en [[Organizaciones y plano SaaS]]. Migración `20261019204416_OrganizacionesSaas`: columnas nuevas en `organizacion`, índice único `nombre_normalizado` (filas existentes normalizadas con SQL) y `usuario.permisos_saas`. El token `xmin` no se agrega porque es una columna de sistema.
+- Nuevos contratos en SharedKernel: `PermisosSaas`, `IContextoPlanoSaas`, `IProvisionOrganizacion` y `ZonaHorariaIana`. `IContextoSolicitud` expone `PermisosSaas`.
+- La HU-010 se reordenó después de HU-009, de la que depende (ver `loop_core.md`).

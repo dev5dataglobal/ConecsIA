@@ -41,14 +41,15 @@ public sealed class MiddlewareContextoOrganizacion(RequestDelegate siguiente)
 
         if (endpoint.Metadata.GetMetadata<SinOrganizacionResueltaAttribute>() is not null)
         {
-            if (!await resolvedor.UsuarioActivoAsync(usuarioId, http.RequestAborted))
+            var permisosSaas = await resolvedor.PermisosSaasDeUsuarioActivoAsync(usuarioId, http.RequestAborted);
+            if (permisosSaas is null)
             {
                 await EscribirAsync(http, problemas, StatusCodes.Status401Unauthorized, "No autenticado",
                     "La sesión no corresponde a un usuario activo.", codigo: null);
                 return;
             }
 
-            contexto.EstablecerUsuario(usuarioId);
+            contexto.EstablecerUsuario(usuarioId, permisosSaas);
             await siguiente(http);
             return;
         }

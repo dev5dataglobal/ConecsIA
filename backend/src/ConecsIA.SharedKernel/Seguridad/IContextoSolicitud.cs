@@ -19,7 +19,12 @@ public interface IContextoSolicitud
 
     IReadOnlySet<Guid> SedesAsignadas { get; }
 
+    /// <summary>Permisos del plano SaaS del usuario (HU-009). Solo se cargan en endpoints sin organización resuelta.</summary>
+    IReadOnlySet<string> PermisosSaas { get; }
+
     bool TienePermiso(string permiso) => EsSistema || Permisos.Contains(permiso);
+
+    bool TienePermisoSaas(string permiso) => EsSistema || PermisosSaas.Contains(permiso);
 
     bool PuedeOperarEnSede(Guid sedeId) => EsSistema || AlcanceTotalSedes || SedesAsignadas.Contains(sedeId);
 }

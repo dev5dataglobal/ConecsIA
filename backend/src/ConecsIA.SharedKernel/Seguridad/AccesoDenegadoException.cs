@@ -19,6 +19,14 @@ public class AccesoDenegadoException(string codigo, string mensaje) : Exception(
         }
     }
 
+    public static void ExigirPermisoSaas(IContextoSolicitud contexto, string permiso)
+    {
+        if (!contexto.TienePermisoSaas(permiso))
+        {
+            throw new AccesoDenegadoException(CodigoPermisoRequerido, "No tienes el permiso de plataforma requerido para esta operación.");
+        }
+    }
+
     public static void ExigirSede(IContextoSolicitud contexto, Guid sedeId)
     {
         if (!contexto.PuedeOperarEnSede(sedeId))

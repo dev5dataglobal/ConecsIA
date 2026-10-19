@@ -166,6 +166,10 @@ public class ResolvedorContextoTests
 
         public void AgregarSesion(SesionUsuario sesion) => throw new NotSupportedException();
 
+        public void AgregarUsuario(Usuario usuario) => Usuarios.Add(usuario);
+
+        public void AgregarMembresia(Membresia membresia) => Membresias.Add(membresia);
+
         public Task<SesionUsuario?> ObtenerSesionAsync(Guid sesionId, CancellationToken cancelacion) =>
             throw new NotSupportedException();
 

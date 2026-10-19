@@ -284,3 +284,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: `RolTests`, `RolesTests` (matriz plantilla × endpoint) y `RolesPage.test.tsx`. Backend 260 y frontend 35 en verde.
 - Nuevo: catálogo, roles, plantillas propuestas, anti-escalamiento, último administrador (propuesta), pantalla `/roles` y semillas de roles.
 - Wiki: nueva página [[Roles y permisos]], EP-05, `tablero-scrum`, `index`, `Estado de implementación`, `loop_core.md`. ⏸ CA-07 a EP-07 (D-04).
+
+## [2026-10-19] implementacion | HU-009 Alta, edición e inactivación de organizaciones (loop_core)
+- Orden: HU-009 antes que HU-010, porque HU-010 depende de ella. HU-015 queda ⏸ porque ADR-019 sigue en Propuesta (se pedirá confirmación).
+- Pruebas primero: `OrganizacionesTests`, `OrganizacionTests` y `OrganizacionesSaasPage.test.tsx`. Backend 275 y frontend 38 en verde. Migración `OrganizacionesSaas` (token de loop_core).
+- Plano SaaS separado de los permisos de organización. La inactivación sigue el comportamiento interino de D-16.
+- Wiki: nueva [[Organizaciones y plano SaaS]], EP-03, `tablero-scrum`, `index`, `Estado de implementación`, `loop_core.md`.

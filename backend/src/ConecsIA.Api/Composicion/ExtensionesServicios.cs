@@ -41,6 +41,7 @@ public static class ExtensionesServicios
         servicios.AddDbContext<ConecsIADbContext>(opciones => OpcionesPersistencia.Configurar(opciones, cadena));
         servicios.AddScoped<IUnidadDeTrabajo, UnidadDeTrabajo>();
         servicios.AddScoped<IConjuntoSemillas, SemillasPrimeraVertical>();
+        servicios.AddScoped<IConjuntoSemillas, SemillasPlanoSaas>();
         servicios.AddScoped<IConjuntoSemillas, SemillasContrasenas>();
         servicios.AddScoped<IConjuntoSemillas, SemillasRoles>();
         servicios.AddHealthChecks().AddDbContextCheck<ConecsIADbContext>("postgresql", tags: ["ready"]);
@@ -101,6 +102,7 @@ public static class ExtensionesServicios
 
         servicios.AddScoped<ContextoSolicitud>();
         servicios.AddScoped<IContextoSolicitud>(sp => sp.GetRequiredService<ContextoSolicitud>());
+        servicios.AddScoped<IContextoPlanoSaas>(sp => sp.GetRequiredService<ContextoSolicitud>());
         servicios.AddHttpContextAccessor();
         servicios.AddScoped<ISesionUsuario, SesionCookie>();
 

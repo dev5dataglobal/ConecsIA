@@ -11,6 +11,7 @@ public sealed class Usuario
         Correo = string.Empty;
         Nombre = string.Empty;
         SelloSeguridad = string.Empty;
+        PermisosSaas = [];
     }
 
     public Guid Id { get; private set; }
@@ -23,6 +24,9 @@ public sealed class Usuario
     public string SelloSeguridad { get; private set; }
     public int IntentosFallidos { get; private set; }
     public DateTimeOffset? BloqueadoHasta { get; private set; }
+
+    /// <summary>Permisos del plano SaaS (HU-009). No dan acceso a datos de organizaciones cliente.</summary>
+    public List<string> PermisosSaas { get; private set; }
 
     public static Usuario Crear(string correo, string nombre) => new()
     {
@@ -40,6 +44,8 @@ public sealed class Usuario
         usuario.Id = id;
         return usuario;
     }
+
+    public void AsignarPermisosSaas(IEnumerable<string> permisos) => PermisosSaas = permisos.Distinct(StringComparer.Ordinal).ToList();
 
     public static string NormalizarCorreo(string correo) => correo.Trim().ToLowerInvariant();
 

@@ -42,6 +42,10 @@ public interface IRepositorioIdentidad
 
     void AgregarSesion(SesionUsuario sesion);
 
+    void AgregarUsuario(Usuario usuario);
+
+    void AgregarMembresia(Membresia membresia);
+
     Task<SesionUsuario?> ObtenerSesionAsync(Guid sesionId, CancellationToken cancelacion);
 
     Task<SesionUsuario?> ObtenerSesionParaActualizarAsync(Guid sesionId, CancellationToken cancelacion);
@@ -102,9 +106,12 @@ public sealed class ResolvedorContexto(IRepositorioIdentidad repositorio, IConsu
         return new ResultadoResolucion(EstadoResolucion.Resuelto, usuario, membresia, permisos);
     }
 
-    /// <summary>Usuario activo (para endpoints <c>[SinOrganizacionResuelta]</c>).</summary>
-    public async Task<bool> UsuarioActivoAsync(Guid usuarioId, CancellationToken cancelacion) =>
-        await repositorio.ObtenerUsuarioAsync(usuarioId, cancelacion) is { Activo: true };
+    /// <summary>
+    /// Para endpoints <c>[SinOrganizacionResuelta]</c>: permisos del plano SaaS de un usuario activo,
+    /// o null si el usuario no existe o está inactivo.
+    /// </summary>
+    public async Task<IReadOnlyList<string>?> PermisosSaasDeUsuarioActivoAsync(Guid usuarioId, CancellationToken cancelacion) =>
+        await repositorio.ObtenerUsuarioAsync(usuarioId, cancelacion) is { Activo: true } usuario ? usuario.PermisosSaas : null;
 
     /// <summary>Membresías activas del usuario en organizaciones activas, con el nombre de la organización.</summary>
     public async Task<IReadOnlyList<(Membresia Membresia, string NombreOrganizacion)>> MembresiasVigentesAsync(

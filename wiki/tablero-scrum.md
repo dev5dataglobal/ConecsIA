@@ -51,7 +51,7 @@ _(vacío)_
 | HU-006 | Autenticación y sesión de usuario | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | L | En curso |
 | HU-007 | Contexto de organización y sede derivado de membresía | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso; selección multi-membresía depende de D-03 |
 | HU-008 | Registro de auditoría append-only | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso |
-| HU-009 | Alta, edición e inactivación de organizaciones | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
+| HU-009 | Alta, edición e inactivación de organizaciones | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core` (sin PR); D-16 interino |
 | HU-010 | Tipos de organización y plantilla básica de catálogos | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
 | HU-011 | Planes y habilitación de módulos por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
 | HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Backlog |

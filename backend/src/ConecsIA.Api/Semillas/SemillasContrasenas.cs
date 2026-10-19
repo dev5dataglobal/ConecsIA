@@ -24,6 +24,7 @@ public sealed partial class SemillasContrasenas(
         SemillasPrimeraVertical.AdminPinos,
         SemillasPrimeraVertical.OperadorPinos,
         SemillasPrimeraVertical.AdminAndes,
+        SemillasPlanoSaas.Superadministrador,
     ];
 
     public async Task SembrarAsync(CancellationToken cancelacion)

@@ -4,7 +4,8 @@ import { NoEncontradoPage } from '../features/inicio/NoEncontradoPage'
 import { RolesPage } from '../features/roles/RolesPage'
 import { SedesPage } from '../features/sedes/SedesPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
-import { RequiereSesion } from '../features/sesion/RequiereSesion'
+import { OrganizacionesSaasPage } from '../features/saas/OrganizacionesSaasPage'
+import { RequierePlataforma, RequiereSesion } from '../features/sesion/RequiereSesion'
 import { AppShell } from './layout/AppShell'
 
 export const rutas: RouteObject[] = [
@@ -19,6 +20,10 @@ export const rutas: RouteObject[] = [
           { path: 'sedes', element: <SedesPage /> },
           { path: 'roles', element: <RolesPage /> },
         ],
+      },
+      {
+        element: <RequierePlataforma />,
+        children: [{ path: 'saas/organizaciones', element: <OrganizacionesSaasPage /> }],
       },
       { path: '*', element: <NoEncontradoPage /> },
     ],
