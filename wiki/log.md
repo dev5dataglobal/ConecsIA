@@ -305,3 +305,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Revisado en el navegador en escritorio (~800px) y móvil (375px): diseño correcto, sin errores de consola ni scroll horizontal; el selector de usuarios de desarrollo aparece con la API en modo desarrollo.
 - Agregado `.claude/launch.json` (configuración `frontend`) para levantar Vite.
 - Página tocada: [[Estado de implementación]].
+
+## [2026-10-20] revision | Commit de wiki y launch.json en feature/login
+- Commit `883ca63` con la revisión visual de /ingresar y `.claude/launch.json`.
+- Sin otras páginas afectadas; no se crearon páginas (index.md sin cambios).
