@@ -165,3 +165,10 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 
 ## HU-010 cerrada en `loop/core` (2026-10-19)
 - Catálogos por organización y plantilla básica (detalle en [[Organizaciones y plano SaaS]]). Migración `CatalogosPlantilla`. Nueva decisión D-23 para el contenido de la plantilla.
+
+## loop_core: estado al 2026-10-19 (rama `loop/core`, sin push de los últimos commits ni PR)
+- **Cerradas con evidencia:** HU-005, 007, 008, 009, 010, 011, 012, 013, 014, 016 y 017.
+- **⏸ con decisión registrada:** HU-015 (ADR-019 en Propuesta; requiere confirmación del responsable) y HU-018 (sedes hecho; destinos D-04; puntos HU-015).
+- **Pruebas:** backend 343 (arquitectura 69, unitarias 103, integración 171) y frontend 48, lint y build en verde.
+- **Migraciones nuevas** (token de loop_core): `RolesConfigurables`, `OrganizacionesSaas`, `ModulosOrganizacion`, `UsuariosInvitaciones`, `AreasDestinos`, `VocabularioOrganizacion` y `CatalogosPlantilla`.
+- **Pendiente para M2:** confirmar ADR-019 y HU-015, PR a `main` con el CI en verde y revisión del PO.

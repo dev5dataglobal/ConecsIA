@@ -244,6 +244,35 @@ public sealed class SesionTests(BaseDatosFixture baseDatos) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, (await clienteB.GetAsync("/api/v1/me")).StatusCode);
     }
 
+    /// <summary>HU-013 (cierre de la DoD): ciclo completo de una sede con sesión real (cookie + CSRF).</summary>
+    [Fact]
+    public async Task El_ciclo_completo_de_una_sede_funciona_con_sesion_real()
+    {
+        var cliente = Navegador();
+        Assert.True((await IngresarAsync(cliente, correoAdminA, Contrasena)).IsSuccessStatusCode);
+
+        var creada = await PostConCsrfAsync(cliente, "/api/v1/sedes",
+            JsonContent.Create(new { nombre = $"Real {Guid.NewGuid():N}"[..20], zonaHoraria = "America/Bogota" }));
+        Assert.Equal(HttpStatusCode.Created, creada.StatusCode);
+        var sede = await creada.Content.ReadFromJsonAsync<JsonElement>();
+        var ruta = $"/api/v1/sedes/{sede.GetProperty("id").GetGuid()}";
+        Assert.Equal("America/Bogota", sede.GetProperty("zonaHoraria").GetString());
+
+        var modificada = await EnviarConCsrfAsync(cliente, HttpMethod.Put, ruta, JsonContent.Create(new
+        {
+            nombre = sede.GetProperty("nombre").GetString() + " Norte",
+            zonaHoraria = "America/Lima",
+            version = sede.GetProperty("version").GetUInt32(),
+        }));
+        Assert.Equal(HttpStatusCode.OK, modificada.StatusCode);
+
+        Assert.Equal(HttpStatusCode.OK, (await PostConCsrfAsync(cliente, $"{ruta}/inactivar")).StatusCode);
+        var final = await cliente.GetFromJsonAsync<JsonElement>(ruta);
+        Assert.Equal("Inactiva", final.GetProperty("estado").GetString());
+        Assert.Equal("America/Lima", final.GetProperty("zonaHoraria").GetString());
+        Assert.Equal(JsonValueKind.String, final.GetProperty("inactivadaEn").ValueKind);
+    }
+
     private static Task<HttpResponseMessage> PostConCsrfAsync(HttpClient cliente, string ruta, HttpContent? contenido = null) =>
         EnviarConCsrfAsync(cliente, HttpMethod.Post, ruta, contenido);
 

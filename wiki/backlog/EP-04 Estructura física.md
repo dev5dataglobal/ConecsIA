@@ -64,7 +64,7 @@ Administrador de organización (crea/inactiva); Administrador de sede (edita la 
 
 ### Criterios de aceptación
 - [x] **Dado** una organización con varias sedes **cuando** un operador asignado a S1 lista sedes **entonces** solo ve S1, y el backend rechaza operar en S2 (CA-02). *Verificado 2026-10-17: integración + Docker (403 `FUERA_DE_ALCANCE`).*
-- [ ] **Dado** una sede inactivada **cuando** se consulta un historial que la referencia **entonces** la referencia se conserva (CA-03, CA-15). *Parcial: la sede inactiva sigue consultable y filtrable; aún no existen historiales (Accesos) que la referencien.*
+- [ ] **Dado** una sede inactivada **cuando** se consulta un historial que la referencia **entonces** la referencia se conserva (CA-03, CA-15). *Parcial: la sede inactiva sigue consultable y filtrable.* ⏸ *Los historiales que la referencian llegan con loop_accesos; las áreas ya conservan su sede (FK compuesta, HU-014).*
 - [x] **Dado** una zona horaria inválida **cuando** se guarda **entonces** se rechaza con 400. *Verificado 2026-10-17.*
 
 ### Tareas backend
@@ -78,11 +78,11 @@ Administrador de organización (crea/inactiva); Administrador de sede (edita la 
 - [x] Unitarias: validación de zona horaria y transiciones de estado.
 - [x] Integración (PostgreSQL real): unicidad por organización, también con altas concurrentes.
 - [x] Aislamiento / permisos negativos: sede de B desde A ⇒ 404; operador sin permiso de administración ⇒ 403.
-- [ ] E2E / UI: alta, edición e inactivación. *Verificado manualmente en Docker con el navegador el 2026-10-17; falta automatizar con Playwright.*
+- [ ] E2E / UI: alta, edición e inactivación. *Verificado manualmente en Docker con el navegador el 2026-10-17. El ciclo completo con sesión real (cookie + CSRF) quedó verificado en integración el 2026-10-19 (`SesionTests.El_ciclo_completo_de_una_sede_funciona_con_sesion_real`).* ⏸ *E2E con Playwright: loop_quality.*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Instantes en `timestamptz`; zona horaria persistida y expuesta en contratos.
+- [x] Instantes en `timestamptz`; zona horaria persistida y expuesta en contratos. *(Migraciones con `timestamp with time zone`; `zonaHoraria` en `SedeDto`.)*
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-06 — efecto de cambiar zona horaria y festivos. Pendiente: regla de inactivar sede con personas dentro.

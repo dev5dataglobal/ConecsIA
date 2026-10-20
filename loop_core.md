@@ -57,7 +57,7 @@ tags: [conecsia, loop]
 - [x] **HU-016** Invitar y administrar usuarios. — *Alta, inactivación y contraseña inicial. El envío del enlace queda detrás de una interfaz y lo entrega `loop_integraciones` (D-12).*
 - [x] **HU-014** Gestionar áreas/destinos y responsables/autorizadores. — *El alcance de los autorizadores queda ⏸ por D-04 en la parte afectada.*
 - [x] **HU-012** Vocabulario configurable por organización. — *Las etiquetas definitivas dependen de D-01.*
-- [ ] **HU-013** Gestionar sedes con zona horaria (cierre). — *Cerrar la DoD con sesión real. La regla de cambio de zona horaria sigue en D-06. **Al cerrar el loop se alcanza M2.***
+- [x] **HU-013** Gestionar sedes con zona horaria (cierre). — *Cerrar la DoD con sesión real. La regla de cambio de zona horaria sigue en D-06. **Al cerrar el loop se alcanza M2.***
 
 ## Integración
 - Cada historia va en un PR propio a `main` desde `loop/core`; no se espera al final del loop.
@@ -71,6 +71,7 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-013 (cierre) | Ciclo completo con sesión real (cookie + CSRF): `SesionTests`. Backend 343 en verde. ⏸ CA-03 con historiales de accesos (loop_accesos) y E2E con Playwright (loop_quality). |
 | 2026-10-19 | HU-010 | Backend 340 en verde (`PlantillasTests` 5, `PlantillasOrganizacionTests` 2). Frontend 48/48 (`CatalogosPage.test.tsx`). Migración `CatalogosPlantilla`. Contenido de la plantilla propuesto, D-23. |
 | 2026-10-19 | HU-012 | Backend 336 en verde (`VocabularioTests` 5 de integración y 10 unitarias). Frontend 47/47 (`VocabularioPage.test.tsx`). Migración `VocabularioOrganizacion`. ⏸ Etiquetas por vertical (D-01). |
 | 2026-10-19 | HU-014 | Backend 321 en verde (`AreasTests` 12, `AreaTests` 5; FK compuesta verificada en PostgreSQL). Frontend 45/45 (`AreasPage.test.tsx`). Migración `AreasDestinos`. ⏸ Alcance de autorizadores por destino (D-04). |

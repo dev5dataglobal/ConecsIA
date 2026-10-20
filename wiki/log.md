@@ -320,3 +320,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: `PlantillasTests` (5: copia, reaplicación sin pisar personalizaciones ni roles, concurrencia, alta, permisos) y unitarias. Backend 340 y frontend 48 en verde. Migración `CatalogosPlantilla`.
 - Nueva D-23: el contenido de la plantilla es una propuesta. Incidencia: Docker Desktop se detuvo y se reinició para las pruebas.
 - Wiki: EP-03, `Decisiones pendientes`, [[Organizaciones y plano SaaS]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-013 cierre y estado de loop_core
+- HU-013: ciclo completo con sesión real verificado en integración. ⏸ CA-03 con historiales (loop_accesos) y E2E (loop_quality).
+- loop_core: 11 historias cerradas. Pendientes HU-015 (⏸ ADR-019) y HU-018 (parcial). Backend 343 y frontend 48 en verde.
+- El token de migración lo mantiene loop_core hasta fusionar `loop/core`. Wiki: EP-04, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
