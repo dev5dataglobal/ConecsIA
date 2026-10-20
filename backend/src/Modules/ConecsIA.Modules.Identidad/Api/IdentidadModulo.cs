@@ -20,6 +20,12 @@ public sealed class IdentidadModulo : IModulo
         servicios.AddScoped<ServicioIngreso>();
         servicios.AddScoped<IRepositorioRoles, RepositorioRoles>();
         servicios.AddScoped<ServicioRoles>();
+        servicios.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
+        servicios.AddScoped<ServicioUsuarios>();
+        servicios.AddScoped<ServicioAceptacionInvitaciones>();
+        var invitaciones = new OpcionesInvitaciones();
+        configuracion.GetSection(OpcionesInvitaciones.Seccion).Bind(invitaciones);
+        servicios.AddSingleton(invitaciones);
         servicios.AddScoped<ConecsIA.SharedKernel.Organizaciones.IProvisionOrganizacion, ProvisionOrganizacion>();
     }
 }

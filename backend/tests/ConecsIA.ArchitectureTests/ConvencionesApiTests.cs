@@ -75,6 +75,7 @@ public class ConvencionesApiTests
             "AutenticacionController.Ingresar",
             "CsrfController.Obtener",
             "DesarrolloController.Usuarios",    // responde 404 fuera de Development/Testing
+            "InvitacionesController.Aceptar",   // el token de un solo uso prueba la posesión del correo (HU-016)
             "SistemaController.ObtenerVersion",
         ];
 

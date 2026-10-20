@@ -2,6 +2,8 @@ import type { RouteObject } from 'react-router'
 import { InicioPage } from '../features/inicio/InicioPage'
 import { NoEncontradoPage } from '../features/inicio/NoEncontradoPage'
 import { RolesPage } from '../features/roles/RolesPage'
+import { AceptarInvitacionPage } from '../features/usuarios/AceptarInvitacionPage'
+import { UsuariosPage } from '../features/usuarios/UsuariosPage'
 import { SedesPage } from '../features/sedes/SedesPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
 import { OrganizacionesSaasPage } from '../features/saas/OrganizacionesSaasPage'
@@ -14,11 +16,13 @@ export const rutas: RouteObject[] = [
     children: [
       { index: true, element: <InicioPage /> },
       { path: 'ingresar', element: <IngresarPage /> },
+      { path: 'invitaciones/:token', element: <AceptarInvitacionPage /> },
       {
         element: <RequiereSesion />,
         children: [
           { path: 'sedes', element: <SedesPage /> },
           { path: 'roles', element: <RolesPage /> },
+          { path: 'usuarios', element: <UsuariosPage /> },
         ],
       },
       {

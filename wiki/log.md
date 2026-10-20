@@ -296,3 +296,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - ⏸ El contenido de los planes depende de D-16. La consulta histórica de un módulo deshabilitado se verificará con el primer módulo opcional.
 - Incidencia: los contenedores de ConecsIA estaban detenidos; se levantó `postgres` para regenerar OpenAPI.
 - Wiki: EP-03, [[Organizaciones y plano SaaS]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-016 Usuarios por invitación y HU-018 alcance por sede (loop_core)
+- Pruebas primero: `UsuariosTests` (17, incluida la aceptación concurrente), `InvitacionTests` (5) y `UsuariosPage.test.tsx` (4). Backend 304 y frontend 43 en verde. Migración `UsuariosInvitaciones`.
+- Decisiones aplicadas: D-03b (un correo existente recibe una membresía nueva) y D-03e (contraseña de 12 caracteres o más). La vigencia de 72 h es una propuesta configurable.
+- Revisión de seguridad: el token pasó de la ruta al cuerpo para no quedar en trazas de OpenTelemetry ni en `instance`.
+- ⏸ CA-05 (Persona, loop_personas) y alcance por punto de acceso (HU-015). Wiki: EP-05, [[Roles y permisos]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

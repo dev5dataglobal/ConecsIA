@@ -48,8 +48,39 @@ public sealed class Membresia
     /// <summary>Compara claves de permiso exactas; un nombre de rol nunca concede nada.</summary>
     public bool TienePermiso(string permiso) => Permisos.Contains(permiso, StringComparer.Ordinal);
 
+    /// <summary>Invitada y aún sin aceptar (HU-016): no da acceso hasta aceptar la invitación.</summary>
+    public bool PendienteDeAceptar { get; private set; }
+
+    /// <summary>HU-016: membresía creada por invitación; inactiva hasta que se acepte.</summary>
+    public static Membresia CrearInvitada(
+        Guid usuarioId, Guid organizacionId, IEnumerable<Guid> roles, bool alcanceTotalSedes, IEnumerable<Guid> sedesAsignadas)
+    {
+        var membresia = Crear(usuarioId, organizacionId, [], alcanceTotalSedes, sedesAsignadas, roles);
+        membresia.Activa = false;
+        membresia.PendienteDeAceptar = true;
+        return membresia;
+    }
+
+    public void AceptarInvitacion()
+    {
+        Activa = true;
+        PendienteDeAceptar = false;
+    }
+
     /// <summary>Reemplaza los roles asignados (HU-016/HU-017). El servicio verifica que sean de la organización.</summary>
     public void AsignarRoles(IEnumerable<Guid> roles) => Roles = roles.Distinct().ToList();
 
+    /// <summary>HU-018: alcance territorial. Vacío y sin alcance total = ningún acceso territorial.</summary>
+    public void AsignarAlcance(bool alcanceTotalSedes, IEnumerable<Guid> sedes)
+    {
+        AlcanceTotalSedes = alcanceTotalSedes;
+        SedesAsignadas = alcanceTotalSedes ? [] : sedes.Distinct().ToList();
+    }
+
     public void Inactivar() => Activa = false;
+
+    public void Reactivar()
+    {
+        if (!PendienteDeAceptar) Activa = true;
+    }
 }

@@ -50,3 +50,14 @@ Verificada por `RolesTests.Cada_plantilla_accede_solo_a_lo_que_conceden_sus_perm
 - ⏸ CA-07 (operador sin `autorizaciones.decidir` recibe 403 al aprobar): no existe todavía el endpoint de decisión (EP-07) y los permisos de decisión por tipo dependen de [[Decisiones pendientes|D-04]].
 - La asignación de roles a usuarios desde la UI llega con HU-016.
 - E2E con navegador: no hay (solo Vitest y pruebas de integración).
+
+## Usuarios y alcance (HU-016, HU-018 por sede — Implementado 2026-10-19)
+- **Invitación** `POST /api/v1/usuarios/invitaciones` (`usuarios.invitar`): correo, nombre, roles, alcance inicial. Crea el usuario si no existe. Con un correo existente agrega una membresía nueva (D-03b), salvo que ya sea miembro (409). La membresía queda **pendiente** hasta aceptar.
+- **Token** de 32 bytes aleatorios; se guarda solo el hash SHA-256 (índice único global, `[UnicidadGlobal]`). Vigencia `Invitaciones:VigenciaHoras`, 72 h por defecto (propuesta, configurable). Es de un solo uso, con concurrencia optimista (`xmin`).
+- **Aceptación** anónima `POST /api/v1/invitaciones/aceptar` `{token, contrasena}`: 410 si no existe, venció o ya se usó (sin distinguir el motivo). Si el usuario no tiene contraseña, exige 12 caracteres o más (D-03e). El token va en el cuerpo para no quedar en trazas.
+- **Envío:** el enlace solo se devuelve en Development y Testing. El correo es de loop_integraciones (D-12).
+- **Administración** (`usuarios.administrar`): `PUT /usuarios/{id}/roles` (roles de la organización, anti-escalamiento), `PUT /usuarios/{id}/alcance`, `POST /usuarios/{id}/inactivar` (revoca las sesiones del usuario mediante el sello) y `/reactivar`. Otro ID de organización responde 404.
+- **Alcance por sede (HU-018):** el alcance vacío no da acceso territorial. Quien asigna solo concede sedes dentro de su propio alcance, y solo quien tiene alcance total puede concederlo. Una sede de otra organización responde 404 (contrato `IConsultaSedes`).
+- **Auditoría:** `usuario.invitar`, `usuario.aceptar_invitacion`, `usuario.roles`, `usuario.alcance`, `usuario.inactivar` y `usuario.reactivar`.
+- **SPA:** `/usuarios` (lista, invitar, roles y alcance, inactivar) y `/invitaciones/:token` (aceptación).
+- **Pendiente:** el vínculo con Persona (loop_personas). El alcance por destino llega con HU-014; el de punto de acceso queda ⏸ (HU-015, ADR-019).

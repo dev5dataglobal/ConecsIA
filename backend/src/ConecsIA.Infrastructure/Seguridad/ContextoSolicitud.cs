@@ -6,7 +6,7 @@ namespace ConecsIA.Infrastructure.Seguridad;
 /// Implementación con ámbito por petición. Solo lo establece el middleware de contexto a partir de
 /// una membresía verificada, o el código interno marcado como sistema (semillas, migraciones).
 /// </summary>
-public sealed class ContextoSolicitud : IContextoSolicitud, IContextoPlanoSaas
+public sealed class ContextoSolicitud : IContextoSolicitud, IContextoPlanoSaas, IContextoProceso
 {
     private static readonly IReadOnlySet<string> SinPermisos = new HashSet<string>();
     private static readonly IReadOnlySet<Guid> SinSedes = new HashSet<Guid>();

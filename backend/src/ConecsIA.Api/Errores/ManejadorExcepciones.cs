@@ -54,6 +54,7 @@ public sealed partial class ManejadorExcepciones(
         CredencialesInvalidasException e => Crear(StatusCodes.Status401Unauthorized, "No autenticado", e.Message, CredencialesInvalidasException.Codigo),
         CuentaBloqueadaException e => Crear(StatusCodes.Status423Locked, "Cuenta bloqueada", e.Message, CuentaBloqueadaException.Codigo),
         RecursoNoEncontradoException e => Crear(StatusCodes.Status404NotFound, "Recurso no encontrado", e.Message),
+        RecursoNoDisponibleException e => Crear(StatusCodes.Status410Gone, "Recurso no disponible", e.Message, e.Codigo),
         EscrituraEntreOrganizacionesException => Crear(StatusCodes.Status404NotFound, "Recurso no encontrado", detalle: null),
         AccesoDenegadoException e => Crear(StatusCodes.Status403Forbidden, "Acceso denegado", e.Message, e.Codigo),
         ConflictoException e => Crear(StatusCodes.Status409Conflict, "Conflicto", e.Message, e.Codigo),

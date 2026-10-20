@@ -136,6 +136,8 @@ public sealed class AislamientoYAuditoriaTests(BaseDatosFixture baseDatos) : IAs
             .Where(t => typeof(IEntidadDeOrganizacion).IsAssignableFrom(t.ClrType))
             .SelectMany(t => t.GetIndexes().Where(i => i.IsUnique)
                 .Where(i => i.Properties.All(p => p.Name != nameof(IEntidadDeOrganizacion.OrganizacionId)))
+                .Where(i => !i.Properties.All(p => p.PropertyInfo?.GetCustomAttributes(typeof(UnicidadGlobalAttribute), false)
+                    is [UnicidadGlobalAttribute { Justificacion.Length: > 20 }]))
                 .Select(i => $"{t.ClrType.Name}({string.Join(", ", i.Properties.Select(p => p.Name))})"))
             .ToList();
 

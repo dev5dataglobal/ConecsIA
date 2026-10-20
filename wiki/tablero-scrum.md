@@ -58,9 +58,9 @@ _(vacío)_
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | En revisión |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | Backlog |
 | HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | Backlog |
-| HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog; aceptación de invitación depende de D-03 |
+| HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Implementada en `loop/core` (sin PR); correo D-12 |
 | HU-017 | Roles configurables y catálogo de permisos | [[EP-05 Usuarios, roles y permisos]] | F1 | L | Implementada en `loop/core` (sin PR) |
-| HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog |
+| HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Parcial en `loop/core`: sedes; destinos con HU-014; puntos ⏸ |
 | HU-019 | Registrar y buscar persona por documento sin duplicados | [[EP-06 Personas]] | F1 | L | Backlog |
 | HU-020 | Tipos de persona y tipos de documento | [[EP-06 Personas]] | F1 | S | Backlog |
 | HU-021 | Fotografía de persona en almacenamiento privado | [[EP-06 Personas]] | F1 | M | Backlog |

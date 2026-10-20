@@ -18,3 +18,13 @@ public sealed class SinFiltroDeOrganizacionAttribute(string justificacion) : Att
 {
     public string Justificacion { get; } = justificacion;
 }
+
+/// <summary>
+/// Excepción revisada a la convención de HU-005: un índice único que no incluye la organización
+/// porque el valor es único en todo el sistema por construcción (p. ej. hash de un token aleatorio).
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, Inherited = false)]
+public sealed class UnicidadGlobalAttribute(string justificacion) : Attribute
+{
+    public string Justificacion { get; } = justificacion;
+}

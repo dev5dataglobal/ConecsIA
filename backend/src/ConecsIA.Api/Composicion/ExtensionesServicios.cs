@@ -103,6 +103,7 @@ public static class ExtensionesServicios
         servicios.AddScoped<ContextoSolicitud>();
         servicios.AddScoped<IContextoSolicitud>(sp => sp.GetRequiredService<ContextoSolicitud>());
         servicios.AddScoped<IContextoPlanoSaas>(sp => sp.GetRequiredService<ContextoSolicitud>());
+        servicios.AddScoped<IContextoProceso>(sp => sp.GetRequiredService<ContextoSolicitud>());
         servicios.AddHttpContextAccessor();
         servicios.AddScoped<ISesionUsuario, SesionCookie>();
 

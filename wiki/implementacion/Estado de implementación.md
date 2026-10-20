@@ -152,3 +152,7 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 ## HU-011 cerrada en `loop/core` (2026-10-19)
 - Módulos opcionales por organización y guarda `MODULO_NO_HABILITADO` (detalle en [[Organizaciones y plano SaaS]]). Migración `ModulosOrganizacion`.
 - `IContextoPlanoSaas.OperarEnOrganizacion` acepta ahora cualquiera de los dos permisos SaaS de organizaciones (consultar o administrar); cada caso de uso exige antes el suyo.
+
+## HU-016 y HU-018 (por sede) en `loop/core` (2026-10-19)
+- Detalle en [[Roles y permisos]] § Usuarios y alcance. Migración `UsuariosInvitaciones` (tabla `invitacion` y `membresia.pendiente_de_aceptar`).
+- Nuevos contratos: `IContextoProceso` (flujos anónimos verificados por token), `IConsultaSedes` (Estructura), `RecursoNoDisponibleException` (410) y `[UnicidadGlobal]`, una excepción revisada a la convención de índices de HU-005.

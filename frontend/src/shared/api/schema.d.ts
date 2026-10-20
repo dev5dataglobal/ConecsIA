@@ -1370,6 +1370,607 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/usuarios': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto'][]
+            'application/json': components['schemas']['UsuarioOrganizacionDto'][]
+            'text/json': components['schemas']['UsuarioOrganizacionDto'][]
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto']
+            'application/json': components['schemas']['UsuarioOrganizacionDto']
+            'text/json': components['schemas']['UsuarioOrganizacionDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/invitaciones': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudInvitacion']
+          'text/json': components['schemas']['SolicitudInvitacion']
+          'application/*+json': components['schemas']['SolicitudInvitacion']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['InvitacionDto']
+            'application/json': components['schemas']['InvitacionDto']
+            'text/json': components['schemas']['InvitacionDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails']
+            'application/json': components['schemas']['ValidationProblemDetails']
+            'text/json': components['schemas']['ValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/{id}/roles': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudRoles']
+          'text/json': components['schemas']['SolicitudRoles']
+          'application/*+json': components['schemas']['SolicitudRoles']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto']
+            'application/json': components['schemas']['UsuarioOrganizacionDto']
+            'text/json': components['schemas']['UsuarioOrganizacionDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/{id}/alcance': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudAlcance']
+          'text/json': components['schemas']['SolicitudAlcance']
+          'application/*+json': components['schemas']['SolicitudAlcance']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto']
+            'application/json': components['schemas']['UsuarioOrganizacionDto']
+            'text/json': components['schemas']['UsuarioOrganizacionDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/{id}/inactivar': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto']
+            'application/json': components['schemas']['UsuarioOrganizacionDto']
+            'text/json': components['schemas']['UsuarioOrganizacionDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/usuarios/{id}/reactivar': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['UsuarioOrganizacionDto']
+            'application/json': components['schemas']['UsuarioOrganizacionDto']
+            'text/json': components['schemas']['UsuarioOrganizacionDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/invitaciones/aceptar': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudAceptarInvitacion']
+          'text/json': components['schemas']['SolicitudAceptarInvitacion']
+          'application/*+json': components['schemas']['SolicitudAceptarInvitacion']
+        }
+      }
+      responses: {
+        /** @description No Content */
+        204: {
+          headers: {
+            [name: string]: unknown
+          }
+          content?: never
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Gone */
+        410: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unprocessable Entity */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/saas/modulos': {
     parameters: {
       query?: never
@@ -2343,6 +2944,14 @@ export interface components {
       version: string
       modulos: string[]
     }
+    /**
+     * @description Respuesta de la invitación. El enlace solo se devuelve en Development/Testing, mientras el envío
+     *     por correo (loop_integraciones, D-12) no exista; en otros entornos se entrega por ese canal.
+     */
+    InvitacionDto: {
+      usuario: components['schemas']['UsuarioOrganizacionDto']
+      enlaceAceptacion: null | string
+    }
     MembresiaDto: {
       /** Format: uuid */
       organizacionId: string
@@ -2447,6 +3056,14 @@ export interface components {
       expiraEn: string
       actual: boolean
     }
+    SolicitudAceptarInvitacion: {
+      token: null | string
+      contrasena: null | string
+    }
+    SolicitudAlcance: {
+      alcanceTotalSedes: boolean
+      sedes: null | string[]
+    }
     SolicitudCrearOrganizacion: {
       nombre: null | string
       tipo: null | string
@@ -2471,6 +3088,13 @@ export interface components {
     SolicitudIngreso: {
       correo: null | string
       contrasena: null | string
+    }
+    SolicitudInvitacion: {
+      correo: null | string
+      nombre: null | string
+      roles: null | string[]
+      alcanceTotalSedes: boolean
+      sedes: null | string[]
     }
     SolicitudModificarMiOrganizacion: {
       nombre: null | string
@@ -2508,6 +3132,9 @@ export interface components {
     SolicitudModulos: {
       habilitados: null | string[]
     }
+    SolicitudRoles: {
+      roles: null | string[]
+    }
     TipoOrganizacion: {
       clave: string
       nombre: string
@@ -2528,6 +3155,16 @@ export interface components {
       id: string
       nombre: string
       correo: string
+    }
+    UsuarioOrganizacionDto: {
+      /** Format: uuid */
+      usuarioId: string
+      nombre: string
+      correo: string
+      estado: string
+      roles: string[]
+      alcanceTotalSedes: boolean
+      sedes: string[]
     }
     ValidationProblemDetails: {
       type?: null | string

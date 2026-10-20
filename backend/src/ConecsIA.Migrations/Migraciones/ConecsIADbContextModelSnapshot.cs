@@ -168,6 +168,77 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("sede", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Invitacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset?>("AceptadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("aceptada_en");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<Guid?>("CreadaPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creada_por");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTimeOffset>("ExpiraEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_en");
+
+                    b.Property<string>("HashToken")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("hash_token");
+
+                    b.Property<Guid>("MembresiaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("membresia_id");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invitacion");
+
+                    b.HasIndex("HashToken")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invitacion_hash_token");
+
+                    b.HasIndex("MembresiaId")
+                        .HasDatabaseName("ix_invitacion_membresia_id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_invitacion_usuario_id");
+
+                    b.HasIndex("OrganizacionId", "Estado")
+                        .HasDatabaseName("ix_invitacion_organizacion_id_estado");
+
+                    b.ToTable("invitacion", (string)null);
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Membresia", b =>
                 {
                     b.Property<Guid>("Id")
@@ -185,6 +256,12 @@ namespace ConecsIA.Migrations.Migraciones
                     b.Property<Guid>("OrganizacionId")
                         .HasColumnType("uuid")
                         .HasColumnName("organizacion_id");
+
+                    b.Property<bool>("PendienteDeAceptar")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("pendiente_de_aceptar");
 
                     b.PrimitiveCollection<List<string>>("Permisos")
                         .IsRequired()
@@ -486,6 +563,23 @@ namespace ConecsIA.Migrations.Migraciones
                         .HasDatabaseName("ix_organizacion_nombre_normalizado");
 
                     b.ToTable("organizacion", (string)null);
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Invitacion", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Identidad.Domain.Membresia", null)
+                        .WithMany()
+                        .HasForeignKey("MembresiaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitacion_membresia_membresia_id");
+
+                    b.HasOne("ConecsIA.Modules.Identidad.Domain.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_invitacion_usuario_usuario_id");
                 });
 
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Membresia", b =>

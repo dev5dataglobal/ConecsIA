@@ -23,9 +23,9 @@ Administrar [[Usuarios, roles y permisos|usuarios, roles configurables y alcance
 ## Historias
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
-| HU-016 | Invitar y administrar usuarios | M | Lista para refinar | D-03 y HU-006 resueltos (2026-10-19/20); envío de la invitación: D-12 |
+| HU-016 | Invitar y administrar usuarios | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | D-03 y HU-006 resueltos (2026-10-19/20); envío de la invitación: D-12 |
 | HU-017 | Roles configurables y catálogo de permisos | L | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | CA-07 ⏸ (EP-07, D-04) |
-| HU-018 | Alcance por sede, destino y punto de acceso | M | Lista para refinar | — |
+| HU-018 | Alcance por sede, destino y punto de acceso | M | **Parcial** 2026-10-19: sedes implementadas; destinos con HU-014, puntos ⏸ HU-015/ADR-019 | — |
 
 ---
 
@@ -60,27 +60,27 @@ Administrador de organización; Administrador de sede (si tiene permiso de invit
 - **Endpoints indicativos:** `POST /api/v1/usuarios/invitaciones`, `POST /api/v1/invitaciones/{token}/aceptar`, `GET /api/v1/usuarios`, `PUT /api/v1/usuarios/{id}/roles`, `POST /api/v1/usuarios/{id}/inactivar`.
 
 ### Criterios de aceptación
-- [ ] **Dado** una persona visitante y un usuario autenticado **cuando** se administran **entonces** inactivar uno no afecta al otro (CA-05).
-- [ ] **Dado** una invitación ya aceptada **cuando** se reutiliza el token **entonces** se rechaza.
-- [ ] **Dado** un usuario inactivado **cuando** consulto sus decisiones previas **entonces** conservan su autoría (PRD §5.2.5).
-- [ ] **Dado** un administrador de A **cuando** lista usuarios **entonces** no ve usuarios de B (CA-01).
+- [ ] **Dado** una persona visitante y un usuario autenticado **cuando** se administran **entonces** inactivar uno no afecta al otro (CA-05). — ⏸ *Persona es de loop_personas (EP-06). Usuario y membresía no tienen vínculo con Persona, así que inactivarlos no la toca.*
+- [x] **Dado** una invitación ya aceptada **cuando** se reutiliza el token **entonces** se rechaza.
+- [x] **Dado** un usuario inactivado **cuando** consulto sus decisiones previas **entonces** conservan su autoría (PRD §5.2.5). *(El usuario no se borra; la auditoría conserva el actor. Las decisiones de autorización llegan con EP-07.)*
+- [x] **Dado** un administrador de A **cuando** lista usuarios **entonces** no ve usuarios de B (CA-01).
 
 ### Tareas backend
-- [ ] Casos de uso de invitación/aceptación/inactivación; hash de token; revocación de sesiones.
-- [ ] Prevención de escalamiento de privilegios.
+- [x] Casos de uso de invitación/aceptación/inactivación; hash de token; revocación de sesiones.
+- [x] Prevención de escalamiento de privilegios.
 
 ### Tareas frontend
-- [ ] Lista de usuarios, formulario de invitación, edición de roles, pantalla de aceptación de invitación.
+- [x] Lista de usuarios, formulario de invitación, edición de roles, pantalla de aceptación de invitación.
 
 ### Pruebas
-- [ ] Unitarias: expiración y uso único del token.
-- [ ] Integración (PostgreSQL real): aceptación concurrente del mismo token ⇒ una sola membresía.
-- [ ] Aislamiento / permisos negativos: invitar en otra organización; asignar permiso no poseído.
-- [ ] E2E / UI: invitar, aceptar (correo capturado localmente), inactivar.
+- [x] Unitarias: expiración y uso único del token.
+- [x] Integración (PostgreSQL real): aceptación concurrente del mismo token ⇒ una sola membresía.
+- [x] Aislamiento / permisos negativos: invitar en otra organización; asignar permiso no poseído.
+- [x] E2E / UI: invitar, aceptar (correo capturado localmente), inactivar. *(Vitest; el enlace se expone en Development/Testing hasta el envío por correo, D-12.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Token de invitación nunca en logs ni en URL de terceros.
+- [x] Token de invitación nunca en logs ni en URL de terceros. *(Va en el cuerpo de `POST /api/v1/invitaciones/aceptar`, no en la ruta; se guarda solo el hash; la auditoría no lo incluye.)*
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-03 — multi-membresía e invitación. D-12 — proveedor y remitente de correo.
@@ -177,9 +177,9 @@ Administrador de organización; Administrador de sede (dentro de su sede); todos
 - **Endpoints indicativos:** `GET/PUT /api/v1/usuarios/{id}/alcance`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un operador asignado solo a S1 **cuando** registra o consulta en S2 por API **entonces** el backend lo rechaza (CA-02).
-- [ ] **Dado** un operador con alcance a un punto de acceso **cuando** intenta operar en otro punto de la misma sede **entonces** se rechaza.
-- [ ] **Dado** un administrador de sede S1 **cuando** intenta asignar alcance sobre S2 **entonces** se rechaza.
+- [x] **Dado** un operador asignado solo a S1 **cuando** registra o consulta en S2 por API **entonces** el backend lo rechaza (CA-02).
+- [ ] ⏸ (HU-015, ADR-019) **Dado** un operador con alcance a un punto de acceso **cuando** intenta operar en otro punto de la misma sede **entonces** se rechaza.
+- [x] **Dado** un administrador de sede S1 **cuando** intenta asignar alcance sobre S2 **entonces** se rechaza.
 
 ### Tareas backend
 - [ ] Modelo de alcance; evaluador `IScopeEvaluator`; especificaciones de filtrado reutilizables en repositorios.
@@ -188,8 +188,8 @@ Administrador de organización; Administrador de sede (dentro de su sede); todos
 - [ ] Editor de alcance (árbol sede → destinos/puntos).
 
 ### Pruebas
-- [ ] Unitarias: evaluador con combinaciones de alcance.
-- [ ] Integración (PostgreSQL real): filtrado de listas por alcance.
+- [x] Unitarias: evaluador con combinaciones de alcance. *(Sede: `IContextoSolicitud.PuedeOperarEnSede`.)*
+- [x] Integración (PostgreSQL real): filtrado de listas por alcance.
 - [ ] Aislamiento / permisos negativos: sede no asignada, punto no asignado, objetivo de otra organización.
 - [ ] E2E / UI: asignar alcance y comprobar visibilidad.
 
