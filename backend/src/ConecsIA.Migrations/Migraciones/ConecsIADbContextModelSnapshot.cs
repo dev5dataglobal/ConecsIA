@@ -88,6 +88,126 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("auditoria_evento", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Area", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizada_en");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTimeOffset?>("InactivadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("inactivada_en");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("NombreNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre_normalizado");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<Guid>("SedeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sede_id");
+
+                    b.Property<string>("Tipo")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("tipo");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_area");
+
+                    b.HasAlternateKey("OrganizacionId", "Id")
+                        .HasName("ak_area_organizacion_id_id");
+
+                    b.HasIndex("OrganizacionId", "SedeId", "NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("ix_area_organizacion_id_sede_id_nombre_normalizado");
+
+                    b.ToTable("area", (string)null);
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.AsignacionArea", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AreaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("area_id");
+
+                    b.Property<Guid?>("AsignadaPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("asignada_por");
+
+                    b.Property<DateTimeOffset>("DesdeEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("desde_en");
+
+                    b.Property<string>("Funcion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("funcion");
+
+                    b.Property<DateTimeOffset?>("HastaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hasta_en");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<Guid?>("RetiradaPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("retirada_por");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_area_asignacion");
+
+                    b.HasIndex("OrganizacionId", "AreaId")
+                        .HasDatabaseName("ix_area_asignacion_organizacion_id_area_id");
+
+                    b.HasIndex("OrganizacionId", "UsuarioId")
+                        .HasDatabaseName("ix_area_asignacion_organizacion_id_usuario_id");
+
+                    b.ToTable("area_asignacion", (string)null);
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Sede", b =>
                 {
                     b.Property<Guid>("Id")
@@ -565,6 +685,28 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("organizacion", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Area", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Estructura.Domain.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizacionId", "SedeId")
+                        .HasPrincipalKey("OrganizacionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_area_sede_organizacion_id_sede_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.AsignacionArea", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Estructura.Domain.Area", null)
+                        .WithMany("Asignaciones")
+                        .HasForeignKey("OrganizacionId", "AreaId")
+                        .HasPrincipalKey("OrganizacionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_area_asignacion_area_organizacion_id_area_id");
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Invitacion", b =>
                 {
                     b.HasOne("ConecsIA.Modules.Identidad.Domain.Membresia", null)
@@ -610,6 +752,11 @@ namespace ConecsIA.Migrations.Migraciones
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_organizacion_modulo_organizacion_organizacion_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Area", b =>
+                {
+                    b.Navigation("Asignaciones");
                 });
 #pragma warning restore 612, 618
         }

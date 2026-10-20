@@ -302,3 +302,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Decisiones aplicadas: D-03b (un correo existente recibe una membresía nueva) y D-03e (contraseña de 12 caracteres o más). La vigencia de 72 h es una propuesta configurable.
 - Revisión de seguridad: el token pasó de la ruta al cuerpo para no quedar en trazas de OpenTelemetry ni en `instance`.
 - ⏸ CA-05 (Persona, loop_personas) y alcance por punto de acceso (HU-015). Wiki: EP-05, [[Roles y permisos]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-014 Áreas o destinos con responsables y autorizadores (loop_core)
+- Pruebas primero: `AreasTests` (12), `AreaTests` (5) y `AreasPage.test.tsx` (2). Backend 321 y frontend 45 en verde. Migración `AreasDestinos`.
+- Primera FK compuesta efectiva: cierra el criterio pendiente de HU-005 (EP-02 actualizado).
+- ⏸ D-04: alcance por destino de los autorizadores. Wiki: nueva [[Áreas o destinos]], EP-04, EP-02, `index`, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router'
 import { InicioPage } from '../features/inicio/InicioPage'
 import { NoEncontradoPage } from '../features/inicio/NoEncontradoPage'
+import { AreasPage } from '../features/areas/AreasPage'
 import { RolesPage } from '../features/roles/RolesPage'
 import { AceptarInvitacionPage } from '../features/usuarios/AceptarInvitacionPage'
 import { UsuariosPage } from '../features/usuarios/UsuariosPage'
@@ -22,6 +23,7 @@ export const rutas: RouteObject[] = [
         children: [
           { path: 'sedes', element: <SedesPage /> },
           { path: 'roles', element: <RolesPage /> },
+          { path: 'sedes/:sedeId/areas', element: <AreasPage /> },
           { path: 'usuarios', element: <UsuariosPage /> },
         ],
       },

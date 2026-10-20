@@ -22,6 +22,7 @@ public sealed class IdentidadModulo : IModulo
         servicios.AddScoped<ServicioRoles>();
         servicios.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
         servicios.AddScoped<ServicioUsuarios>();
+        servicios.AddScoped<ConecsIA.SharedKernel.Identidad.IConsultaUsuarios, ConsultaUsuariosOrganizacion>();
         servicios.AddScoped<ServicioAceptacionInvitaciones>();
         var invitaciones = new OpcionesInvitaciones();
         configuracion.GetSection(OpcionesInvitaciones.Seccion).Bind(invitaciones);

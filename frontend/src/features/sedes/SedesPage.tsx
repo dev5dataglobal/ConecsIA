@@ -171,7 +171,13 @@ export function SedesPage() {
                           <Icono nombre="sede" className="size-4" />
                         </span>
                         <span className="min-w-0">
-                          <span className="block font-semibold">{sede.nombre}</span>
+                          <Link
+                            to={`/sedes/${sede.id}/areas`}
+                            className="block font-semibold hover:underline"
+                            aria-label={t('areas.ver', { nombre: sede.nombre })}
+                          >
+                            {sede.nombre}
+                          </Link>
                           {sede.direccion && (
                             <span className="block text-xs text-tinta-suave">{sede.direccion}</span>
                           )}

@@ -156,3 +156,6 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 ## HU-016 y HU-018 (por sede) en `loop/core` (2026-10-19)
 - Detalle en [[Roles y permisos]] § Usuarios y alcance. Migración `UsuariosInvitaciones` (tabla `invitacion` y `membresia.pendiente_de_aceptar`).
 - Nuevos contratos: `IContextoProceso` (flujos anónimos verificados por token), `IConsultaSedes` (Estructura), `RecursoNoDisponibleException` (410) y `[UnicidadGlobal]`, una excepción revisada a la convención de índices de HU-005.
+
+## HU-014 cerrada en `loop/core` (2026-10-19)
+- Detalle en [[Áreas o destinos]]. Migración `AreasDestinos`: primera **FK compuesta** efectiva (cierra el criterio pendiente de HU-005). Nuevo contrato `IConsultaUsuarios` (Identidad).

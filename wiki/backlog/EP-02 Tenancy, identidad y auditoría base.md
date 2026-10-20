@@ -67,7 +67,7 @@ Sistema (todas las operaciones); desarrolladores (convención obligatoria).
 
 ### Criterios de aceptación
 - [x] **Dado** un usuario de Org A que conoce el ID de un recurso de Org B **cuando** intenta listarlo, leerlo o modificarlo **entonces** recibe 404 y no se revela su existencia (CA-01). — *`SuiteAislamientoTests` (Sede).*
-- [ ] **Dado** un intento de relacionar una entidad de A con otra de B **cuando** se persiste **entonces** la FK compuesta lo rechaza en PostgreSQL (CA-01). — *No aplica aún: no hay relaciones entre entidades de organización. La prueba de convención `Toda_relacion_entre_entidades_de_organizacion_usa_una_clave_compuesta...` hará fallar la suite cuando aparezca una sin `organizacion_id`.*
+- [x] **Dado** un intento de relacionar una entidad de A con otra de B **cuando** se persiste **entonces** la FK compuesta lo rechaza en PostgreSQL (CA-01). — *Verificado con `area` → `sede` (`AreasTests`, 2026-10-19). Antes: no aplicaba aún: no hay relaciones entre entidades de organización. La prueba de convención `Toda_relacion_entre_entidades_de_organizacion_usa_una_clave_compuesta...` hará fallar la suite cuando aparezca una sin `organizacion_id`.*
 - [x] **Dado** un nuevo `DbSet` de cliente sin filtro de organización **cuando** corre la suite **entonces** la prueba de convención falla.
 
 ### Tareas backend

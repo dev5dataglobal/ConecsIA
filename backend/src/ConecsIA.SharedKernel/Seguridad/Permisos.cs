@@ -11,6 +11,12 @@ public static class Permisos
     public const string SedesModificar = "sedes.modificar";
     public const string SedesInactivar = "sedes.inactivar";
 
+    public const string AreasConsultar = "areas.consultar";
+    public const string AreasCrear = "areas.crear";
+    public const string AreasModificar = "areas.modificar";
+    public const string AreasInactivar = "areas.inactivar";
+    public const string AreasAsignar = "areas.asignar";
+
     public const string OrganizacionConsultar = "organizacion.consultar";
     public const string OrganizacionModificar = "organizacion.modificar";
 
@@ -36,6 +42,11 @@ public static class CatalogoPermisos
         Definir(Permisos.SedesCrear, "Crear sedes"),
         Definir(Permisos.SedesModificar, "Modificar sedes"),
         Definir(Permisos.SedesInactivar, "Inactivar sedes"),
+        Definir(Permisos.AreasConsultar, "Consultar áreas o destinos"),
+        Definir(Permisos.AreasCrear, "Crear áreas o destinos"),
+        Definir(Permisos.AreasModificar, "Modificar áreas o destinos"),
+        Definir(Permisos.AreasInactivar, "Inactivar áreas o destinos"),
+        Definir(Permisos.AreasAsignar, "Asignar responsables y autorizadores de áreas"),
         Definir(Permisos.OrganizacionConsultar, "Consultar la información general de la organización"),
         Definir(Permisos.OrganizacionModificar, "Modificar la información general de la organización"),
         Definir(Permisos.UsuariosConsultar, "Consultar los usuarios de la organización"),

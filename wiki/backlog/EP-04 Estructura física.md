@@ -24,7 +24,7 @@ Modelar la jerarquía física Organización → [[Sede]] → [[Área o destino]]
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
 | HU-013 | Gestionar sedes con zona horaria | M | **En revisión** (verificada localmente 2026-10-17) | Autenticación provisional (D-03); ADR-008 por aprobar |
-| HU-014 | Gestionar áreas/destinos y responsables/autorizadores | M | Lista para refinar | Alcance de autorizadores: D-04 |
+| HU-014 | Gestionar áreas/destinos y responsables/autorizadores | M | **Implementada** 2026-10-19 en `loop/core`; alcance de autorizadores ⏸ D-04 | Alcance de autorizadores: D-04 |
 | HU-015 | Gestionar zonas y puntos de acceso | M | Lista para refinar | ADR-019 por aprobar |
 
 ---
@@ -120,25 +120,25 @@ Administrador de organización; Administrador de sede; Autorizador (consumidor).
 - **Endpoints indicativos:** `GET/POST /api/v1/sedes/{sedeId}/areas`, `PUT /api/v1/areas/{id}`, `PUT /api/v1/areas/{id}/autorizadores`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un área con responsables **cuando** se inactiva **entonces** autorizaciones e historiales previos conservan área y responsables (CA-03, CA-15).
-- [ ] **Dado** un usuario de B **cuando** se intenta asignar como autorizador en un área de A **entonces** se rechaza (CA-01).
-- [ ] **Dado** un autorizador retirado **cuando** se consulta el historial **entonces** permanece la autoría de sus decisiones previas.
+- [x] **Dado** un área con responsables **cuando** se inactiva **entonces** autorizaciones e historiales previos conservan área y responsables (CA-03, CA-15).
+- [x] **Dado** un usuario de B **cuando** se intenta asignar como autorizador en un área de A **entonces** se rechaza (CA-01).
+- [x] **Dado** un autorizador retirado **cuando** se consulta el historial **entonces** permanece la autoría de sus decisiones previas. *(Asignación con vigencia en `area_asignacion`; las decisiones llegan con EP-07.)*
 
 ### Tareas backend
-- [ ] Agregado `AreaDestination` con asignaciones con vigencia; validaciones de pertenencia.
+- [x] Agregado `AreaDestination` con asignaciones con vigencia; validaciones de pertenencia.
 
 ### Tareas frontend
-- [ ] Gestión de áreas por sede; selector de usuarios filtrado por organización y estado.
+- [x] Gestión de áreas por sede; selector de usuarios filtrado por organización y estado.
 
 ### Pruebas
-- [ ] Unitarias: reglas de asignación.
-- [ ] Integración (PostgreSQL real): FKs compuestas y unicidad por sede.
-- [ ] Aislamiento / permisos negativos: asignación cruzada; administrador de sede sobre otra sede ⇒ 403.
-- [ ] E2E / UI: crear área, asignar y retirar autorizador.
+- [x] Unitarias: reglas de asignación.
+- [x] Integración (PostgreSQL real): FKs compuestas y unicidad por sede.
+- [x] Aislamiento / permisos negativos: asignación cruzada; administrador de sede sobre otra sede ⇒ 403.
+- [x] E2E / UI: crear área, asignar y retirar autorizador. *(Vitest; sin E2E con navegador.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Historial de asignaciones consultable con vigencias.
+- [x] Historial de asignaciones consultable con vigencias. (`GET /api/v1/areas/{id}/asignaciones`)
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-04 — cuándo se exige autorización y destinos de cada autorizador; puede requerir ajustar el modelo de asignación.
