@@ -295,3 +295,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Causa confirmada: el proceso `postgres` del sistema (PID 8464) escucha en 5432, y `.env` había vuelto a `POSTGRES_HOST_PORT=5432`.
 - Solución: `.env` con 5434 y stack levantado; la API responde Healthy.
 - Sin cambios en otras páginas (el README ya documenta el caso en «Problemas frecuentes»).
+
+## [2026-10-20] implementacion | Login animado en feature/login
+- `IngresarPage` rediseñado con los ajustes de `feature/frontend` y las animaciones del mockup; nuevo `ingresar.css`; ruta `/ingresar` fuera de `AppShell`.
+- Verificado con typecheck, lint, 28/28 pruebas y build; sin revisión visual en navegador.
+- Página tocada: [[Estado de implementación]].

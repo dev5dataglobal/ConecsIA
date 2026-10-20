@@ -7,11 +7,12 @@ import { RequiereSesion } from '../features/sesion/RequiereSesion'
 import { AppShell } from './layout/AppShell'
 
 export const rutas: RouteObject[] = [
+  // El ingreso ocupa la pantalla completa, fuera del AppShell.
+  { path: 'ingresar', element: <IngresarPage /> },
   {
     element: <AppShell />,
     children: [
       { index: true, element: <InicioPage /> },
-      { path: 'ingresar', element: <IngresarPage /> },
       {
         element: <RequiereSesion />,
         children: [{ path: 'sedes', element: <SedesPage /> }],

@@ -89,6 +89,13 @@ Implementado y verificado contra PostgreSQL real. Suite: 177/177 (56 unitarias, 
 - Pruebas: `frontend/src/features/sesion/SesionReal.test.tsx` (6). Suite: 28/28; typecheck, lint, prettier y build en verde.
 - **Pendiente:** pantallas de restablecimiento (D-12), E2E con navegador real (no hay usuarios sembrados con contraseña ni Playwright) y regenerar `schema.d.ts`.
 
+## HU-006 Pantalla de ingreso rediseñada (2026-10-20)
+- **Implementado** en `feature/login`: `IngresarPage.tsx` + `ingresar.css` con el diseño ajustado (commit `7e0e5d8` de `feature/frontend`) y animaciones del mockup; `/ingresar` se renderiza a pantalla completa, fuera de `AppShell`.
+- Se conserva la lógica de HU-006: ingreso real, errores redactados por el servidor, borrado de contraseña tras cada intento y selector de usuarios sintéticos (ADR-022).
+- El panel decorativo muestra solo ejemplos genéricos (sin datos de organizaciones), porque el usuario aún no está autenticado. Respeta `prefers-reduced-motion`.
+- **Verificado:** typecheck, oxlint, 28/28 pruebas Vitest y build. **No verificado** visualmente en el navegador.
+- Pendiente: «Recordarme», recuperación de contraseña y Microsoft siguen deshabilitados (fuera del alcance actual).
+
 ## HU-006 E2E con el stack real (2026-10-20)
 - **Verificado** a mano en el navegador contra Docker Compose: error genérico, ingreso, escritura con token anti-CSRF (201), cookie inaccesible desde JS, cierre de sesión que revoca (`/me` → 401).
 - **Defecto encontrado y corregido:** con `SecurePolicy=Always`, `GET /api/v1/auth/csrf` daba 500 sobre el HTTP local detrás de nginx. Ahora la política es `SameAsRequest` solo en Development y `Always` en los demás entornos (`AutenticacionCookie.PoliticaSecure`, con prueba unitaria).
