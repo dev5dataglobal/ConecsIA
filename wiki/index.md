@@ -71,6 +71,9 @@ Inicio: [[overview]] · Bitácora: [[log]]
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código
 
+## ImplementaciÃ³n reciente
+- [[Fase 1 backend hexagonal]] â€” reorganizaciÃ³n .NET, modelo EF Core y evidencia de migraciÃ³n
+
 ## Fuentes
 - [[PRD v0.1]] — PRD funcional y técnico (original en `fuentes/raw/`)
 

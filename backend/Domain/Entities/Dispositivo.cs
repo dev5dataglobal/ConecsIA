@@ -1,0 +1,4 @@
+﻿namespace ConecsIA.Domain.Entities;
+
+public class Dispositivo : OrganizacionEntity { public int IdDispositivo { get; set; } public int IdPersonaResponsable { get; set; } public int IdTipoDispositivo { get; set; } public string CodigoIdentificador { get; set; } = ""; public string? Serial { get; set; } public string? SerialNormalizado { get; set; } public string? Marca { get; set; } public string? Modelo { get; set; } public string? Color { get; set; } public string? Descripcion { get; set; } public bool Activo { get; set; } = true; public DateTime CreadoEn { get; set; } }
+

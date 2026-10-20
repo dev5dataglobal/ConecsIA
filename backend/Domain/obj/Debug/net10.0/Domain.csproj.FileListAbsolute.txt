@@ -1,0 +1,12 @@
+D:\Documentos\Data Global\ConecsIA\backend\Domain\bin\Debug\net10.0\Domain.deps.json
+D:\Documentos\Data Global\ConecsIA\backend\Domain\bin\Debug\net10.0\Domain.dll
+D:\Documentos\Data Global\ConecsIA\backend\Domain\bin\Debug\net10.0\Domain.pdb
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.AssemblyInfoInputs.cache
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.AssemblyInfo.cs
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.csproj.CoreCompileInputs.cache
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.sourcelink.json
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.dll
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\refint\Domain.dll
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.pdb
+D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\ref\Domain.dll

@@ -295,6 +295,17 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - La ruta raíz `/` mostraba el inicio sin sesión porque no estaba detrás de `RequiereSesion`.
 - Se protegió la ruta raíz; ahora un despliegue limpio redirige a `/ingresar` y una sesión válida conserva el inicio.
 
+## [2026-10-20] implementacion | Separacion de entidades por archivo
+- Se reemplazÃ³ `Domain/Entities/Entities.cs` por un archivo individual para cada entidad y la clase base `OrganizacionEntity`.
+- Los contratos y repositorios ya estaban separados individualmente; no se crearon clases vacÃ­as de controllers porque no existen endpoints implementados en esta fase.
+- Verificado: `dotnet build backend/ApiConecsia/ApiConecsia.csproj --no-restore` correcto, 0 errores.
+
+## [2026-10-20] implementacion | Fase 1 backend hexagonal y migracion PostgreSQL
+- Se crearon los cuatro proyectos de `backend/`, entidades desde `db.md`, contexto EF Core/Npgsql, repositorios especÃ­ficos y factory de diseÃ±o.
+- Se verificÃ³ `dotnet build` correctamente y se generÃ³ `20261020205103_InitialCreate`.
+- `dotnet ef database update` quedÃ³ pendiente por error PostgreSQL `28P01`; requiere `CONECSIA_CONNECTION_STRING` vÃ¡lida.
+- La Fase 2 (unidad de trabajo y DTOs) queda documentada sin implementarse.
+
 ## [2026-10-20] revision | Puerto 5432 ocupado por PostgreSQL local de Windows
 - Causa confirmada: el proceso `postgres` del sistema (PID 8464) escucha en 5432, y `.env` había vuelto a `POSTGRES_HOST_PORT=5432`.
 - Solución: `.env` con 5434 y stack levantado; la API responde Healthy.
