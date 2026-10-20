@@ -309,3 +309,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-20] revision | Commit de wiki y launch.json en feature/login
 - Commit `883ca63` con la revisión visual de /ingresar y `.claude/launch.json`.
 - Sin otras páginas afectadas; no se crearon páginas (index.md sin cambios).
+
+## [2026-10-20] revision | Push de feature/login para PR
+- Rama `feature/login` publicada en origin; el PR lo abre el usuario desde GitHub (gh no está instalado).
+- Sin cambios en otras páginas.
