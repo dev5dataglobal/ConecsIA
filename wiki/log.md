@@ -333,3 +333,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: `ZonasTests` (12, con CHECK, unicidad, aislamiento y alcance por punto) y `ZonaTests` (6). Backend 361 y frontend 49 en verde. Migración `ZonasPuntosAcceso`.
 - Contrato nuevo `IConsultaPuntosAcceso`; `IContextoSolicitud.PuntosAsignados` y `ExigirPunto`. El enum de modo viaja como texto.
 - loop_core: todas sus tareas cerradas; el alcance por destino queda ⏸ D-04. Wiki: nueva [[Zonas y puntos de acceso]], EP-04, EP-05, `index`, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] revision | Push de loop/core y PR preparado
+- `loop/core` publicada en origin (hasta 3877e82), al día con `origin/main`.
+- Formulario del PR `loop/core` → `main` listo con título y descripción en el navegador integrado. No se creó porque GitHub no tiene sesión ahí y no hay `gh`. Falta que el responsable pulse «Create pull request» y revise el CI.
