@@ -311,3 +311,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-19] implementacion | HU-012 Vocabulario por organización (loop_core)
 - Pruebas primero: `VocabularioTests` (integración y unitarias) y `VocabularioPage.test.tsx`. Backend 336 y frontend 47 en verde. Migración `VocabularioOrganizacion`.
 - ⏸ D-01: etiquetas por vertical. Wiki: EP-03, [[Organizaciones y plano SaaS]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] revision | Marcado de historias completadas en loop_core
+- `tablero-scrum`: nueva sección «Implementadas en `loop/core`» con HU-005, 007, 008, 009, 011, 012, 014, 016 y 017. En curso: HU-010, HU-018 (parcial) y HU-015 (⏸ ADR-019).
+- `loop_core.md`: HU-018 y HU-015 marcadas como ⏸ con su motivo. Faltan HU-010 y el cierre de HU-013.

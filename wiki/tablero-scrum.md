@@ -21,10 +21,21 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 - [ ] HU-035 Tratamiento de inconsistencias de entrada/salida — parcial: la regularización está bloqueada por D-08
 - [ ] HU-052 Documentación de contratistas y límites de invitados — bloqueada por D-11
 
-## En curso
-- [x] HU-005 Aislamiento por organización en persistencia — implementada 2026-10-19 en `loop/core` (commit local, sin PR); RLS en D-22
-- [x] HU-007 Contexto de organización y sede derivado de membresía — implementada 2026-10-19 en `loop/core` (sin PR)
-- [x] HU-008 Registro de auditoría append-only — base implementada; falta auditar denegaciones de permiso
+## Implementadas en `loop/core` (2026-10-19; commits locales, sin PR ni revisión del PO)
+- [x] HU-005 Aislamiento por organización en persistencia — RLS pendiente en D-22
+- [x] HU-007 Contexto de organización derivado de membresía (multi-membresía D-03b)
+- [x] HU-008 Registro de auditoría append-only — retención D-14; lectura aislada en HU-046
+- [x] HU-009 Alta, edición e inactivación de organizaciones — efectos de inactivar interinos (D-16)
+- [x] HU-011 Habilitación de módulos por organización — planes ⏸ D-16
+- [x] HU-012 Vocabulario configurable por organización — etiquetas por vertical ⏸ D-01
+- [x] HU-014 Áreas o destinos con responsables y autorizadores — alcance de autorizadores ⏸ D-04
+- [x] HU-016 Invitar y administrar usuarios — envío por correo D-12
+- [x] HU-017 Roles configurables y catálogo de permisos — CA-07 ⏸ EP-07
+
+## En curso (`loop/core`)
+- [ ] HU-010 Tipos de organización y plantilla básica — pruebas escritas; contenido de plantilla propuesto (D-23)
+- [ ] HU-018 Alcance por sede, destino y punto — sedes hecho; destinos ⏸ D-04; puntos ⏸ HU-015
+- [ ] HU-015 Zonas y puntos de acceso — ⏸ ADR-019 en Propuesta (requiere confirmación)
 
 ## En revisión (verificadas localmente; falta CI en GitHub y revisión del PO)
 - [ ] HU-001 Solución backend modular y pipeline CI
