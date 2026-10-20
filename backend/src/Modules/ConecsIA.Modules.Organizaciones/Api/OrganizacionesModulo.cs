@@ -18,5 +18,8 @@ public sealed class OrganizacionesModulo : IModulo
         servicios.AddScoped<IRepositorioOrganizaciones, RepositorioOrganizaciones>();
         servicios.AddScoped<ServicioOrganizacionesSaas>();
         servicios.AddScoped<ServicioMiOrganizacion>();
+        servicios.AddScoped<IRepositorioModulos, RepositorioModulos>();
+        servicios.AddScoped<ServicioModulos>();
+        servicios.AddScoped<ConecsIA.SharedKernel.Modulos.IModulosHabilitados, ModulosHabilitados>();
     }
 }

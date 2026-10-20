@@ -148,3 +148,7 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - Detalle en [[Organizaciones y plano SaaS]]. Migración `20261019204416_OrganizacionesSaas`: columnas nuevas en `organizacion`, índice único `nombre_normalizado` (filas existentes normalizadas con SQL) y `usuario.permisos_saas`. El token `xmin` no se agrega porque es una columna de sistema.
 - Nuevos contratos en SharedKernel: `PermisosSaas`, `IContextoPlanoSaas`, `IProvisionOrganizacion` y `ZonaHorariaIana`. `IContextoSolicitud` expone `PermisosSaas`.
 - La HU-010 se reordenó después de HU-009, de la que depende (ver `loop_core.md`).
+
+## HU-011 cerrada en `loop/core` (2026-10-19)
+- Módulos opcionales por organización y guarda `MODULO_NO_HABILITADO` (detalle en [[Organizaciones y plano SaaS]]). Migración `ModulosOrganizacion`.
+- `IContextoPlanoSaas.OperarEnOrganizacion` acepta ahora cualquiera de los dos permisos SaaS de organizaciones (consultar o administrar); cada caso de uso exige antes el suyo.

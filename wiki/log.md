@@ -290,3 +290,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: `OrganizacionesTests`, `OrganizacionTests` y `OrganizacionesSaasPage.test.tsx`. Backend 275 y frontend 38 en verde. Migración `OrganizacionesSaas` (token de loop_core).
 - Plano SaaS separado de los permisos de organización. La inactivación sigue el comportamiento interino de D-16.
 - Wiki: nueva [[Organizaciones y plano SaaS]], EP-03, `tablero-scrum`, `index`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] implementacion | HU-011 Habilitación de módulos por organización (loop_core)
+- Pruebas primero: `ModulosTests` (7) y `DialogoModulos.test.tsx`. Backend 282 y frontend 39 en verde. Migración `ModulosOrganizacion`.
+- ⏸ El contenido de los planes depende de D-16. La consulta histórica de un módulo deshabilitado se verificará con el primer módulo opcional.
+- Incidencia: los contenedores de ConecsIA estaban detenidos; se levantó `postgres` para regenerar OpenAPI.
+- Wiki: EP-03, [[Organizaciones y plano SaaS]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

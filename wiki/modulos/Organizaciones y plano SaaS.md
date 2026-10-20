@@ -30,3 +30,11 @@ tags: [conecsia, modulo, ep-03, saas]
 - **Nombre único global:** es una propuesta del backlog, implementada.
 - **Sin pantalla de la propia organización:** la API existe, pero la SPA no la ofrece todavía.
 - **Sin E2E con navegador:** hay Vitest y pruebas de integración.
+
+## Módulos opcionales (HU-011, Implementado 2026-10-19)
+- **Catálogo cerrado** `ModulosOpcionales`: `vehiculos` (Vehículos), `equipos` (Equipos externos) y `correo` (Notificaciones por correo). El núcleo siempre está habilitado.
+- **Tabla** `organizacion_modulo` (organización, módulo, habilitado, `cambiado_en`, `cambiado_por`). Deshabilitar conserva la fila y los datos.
+- **API SaaS:** `GET /api/v1/saas/modulos` y `GET/PUT /api/v1/saas/organizaciones/{id}/modulos` (lista completa de habilitados). Para la organización del usuario: `GET /api/v1/me/modulos`.
+- **Guarda** `IModulosHabilitados.ExigirAsync(modulo)`: 403 `MODULO_NO_HABILITADO`. Se lee en cada petición, con efecto inmediato. Se aplica solo a operaciones nuevas.
+- **Auditoría** `organizacion.modulos` con habilitados anterior y nuevo.
+- ⏸ **Planes:** su contenido depende de D-16; no se modelaron.

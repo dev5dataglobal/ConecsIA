@@ -69,4 +69,13 @@ public sealed class SoportePruebasAutenticadoController : ControllerBase
         await contexto.SaveChangesAsync();
         return NoContent();
     }
+
+    /// <summary>HU-011: operación nueva de un módulo opcional; exige que esté habilitado.</summary>
+    [HttpPost("operacion-de-modulo/{modulo}")]
+    public async Task<IActionResult> OperacionDeModulo(
+        string modulo, [FromServices] ConecsIA.SharedKernel.Modulos.IModulosHabilitados modulos)
+    {
+        await modulos.ExigirAsync(modulo, HttpContext.RequestAborted);
+        return NoContent();
+    }
 }

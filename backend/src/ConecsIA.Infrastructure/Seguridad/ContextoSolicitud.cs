@@ -58,11 +58,13 @@ public sealed class ContextoSolicitud : IContextoSolicitud, IContextoPlanoSaas
 
     /// <summary>
     /// HU-009: el plano SaaS escribe en una organización concreta (aprovisionamiento). No concede
-    /// permisos de organización; sin el permiso SaaS de administración se rechaza.
+    /// permisos de organización; sin un permiso SaaS de organizaciones se rechaza.
     /// </summary>
     public void OperarEnOrganizacion(Guid organizacionId)
     {
-        if (!PermisosSaas.Contains(SharedKernel.Seguridad.PermisosSaas.OrganizacionesAdministrar))
+        // Basta un permiso SaaS de organizaciones; cada caso de uso exige antes el suyo (consultar o administrar).
+        if (!PermisosSaas.Contains(SharedKernel.Seguridad.PermisosSaas.OrganizacionesAdministrar)
+            && !PermisosSaas.Contains(SharedKernel.Seguridad.PermisosSaas.OrganizacionesConsultar))
         {
             throw new AccesoDenegadoException(AccesoDenegadoException.CodigoPermisoRequerido, "No tienes el permiso requerido para esta operación.");
         }

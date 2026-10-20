@@ -109,6 +109,10 @@ export const es = {
   'saas.reactivar.titulo': 'Reactivar organización',
   'saas.reactivar.texto': 'Los usuarios de {nombre} vuelven a operar con sus membresías vigentes.',
   'saas.confirmar': 'Confirmar',
+  'saas.modulos': 'Módulos',
+  'saas.modulos.titulo': 'Módulos de {nombre}',
+  'saas.modulos.aviso':
+    'Deshabilitar un módulo impide operaciones nuevas, pero no borra sus datos. El contenido de los planes depende de D-16.',
   'saas.form.nueva': 'Nueva organización',
   'saas.form.editar': 'Editar organización',
   'saas.form.nombre': 'Nombre',

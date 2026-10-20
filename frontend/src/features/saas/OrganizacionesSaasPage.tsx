@@ -11,6 +11,7 @@ import {
   useTiposOrganizacion,
   type Organizacion,
 } from './apiSaas'
+import { DialogoModulos } from './DialogoModulos'
 import { FormularioOrganizacion } from './FormularioOrganizacion'
 
 type Edicion = { modo: 'crear' } | { modo: 'editar'; organizacion: Organizacion } | null
@@ -25,6 +26,7 @@ export function OrganizacionesSaasPage() {
   const [pagina, setPagina] = useState(1)
   const [edicion, setEdicion] = useState<Edicion>(null)
   const [cambio, setCambio] = useState<CambioEstado>(null)
+  const [modulosDe, setModulosDe] = useState<Organizacion | null>(null)
   const { data: plataforma } = usePlataforma()
   const { data, error, isPending } = useOrganizacionesSaas(pagina)
   const { data: tipos } = useTiposOrganizacion()
@@ -100,6 +102,13 @@ export function OrganizacionesSaasPage() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => setModulosDe(org)}
+                          className="rounded-lg px-2 py-1 text-xs font-medium text-tinta-suave hover:bg-superficie"
+                        >
+                          {t('saas.modulos')}
+                        </button>
+                        <button
+                          type="button"
                           onClick={() =>
                             setCambio({
                               organizacion: org,
@@ -153,6 +162,8 @@ export function OrganizacionesSaasPage() {
           onCerrar={() => setEdicion(null)}
         />
       )}
+
+      {modulosDe && <DialogoModulos organizacion={modulosDe} onCerrar={() => setModulosDe(null)} />}
 
       {cambio && (
         <Dialogo

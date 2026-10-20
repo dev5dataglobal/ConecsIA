@@ -25,7 +25,7 @@ Permitir al Superadministrador SaaS dar de alta, configurar e inactivar [[Organi
 |---|---|---|---|---|
 | HU-009 | Alta, edición e inactivación de organizaciones | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Efectos de inactivación: D-16 (interino) |
 | HU-010 | Tipos de organización y plantilla básica de catálogos | M | Lista para refinar | — |
-| HU-011 | Planes y habilitación de módulos por organización | M | Lista para refinar (parcial) | D-16 |
+| HU-011 | Planes y habilitación de módulos por organización | M | **Implementada** 2026-10-19 en `loop/core` (módulos); planes ⏸ D-16 | D-16 |
 | HU-012 | Vocabulario configurable por organización | S | Lista para refinar | Etiquetas definitivas: D-01 |
 
 ---
@@ -177,25 +177,25 @@ Superadministrador SaaS; sistema (guardas de módulo).
 - **Endpoints indicativos:** `GET /api/v1/saas/planes`, `PUT /api/v1/saas/organizaciones/{id}/modulos`, `GET /api/v1/me/modulos`.
 
 ### Criterios de aceptación
-- [ ] **Dado** un módulo deshabilitado **cuando** se invoca una operación nueva del módulo por API **entonces** se rechaza con `MODULO_NO_HABILITADO` (CA-23).
-- [ ] **Dado** un módulo deshabilitado tras uso **cuando** un usuario con permiso consulta históricos **entonces** siguen disponibles (Propuesta).
-- [ ] **Dado** un administrador de organización **cuando** intenta habilitarse un módulo **entonces** se rechaza (solo plano SaaS).
+- [x] **Dado** un módulo deshabilitado **cuando** se invoca una operación nueva del módulo por API **entonces** se rechaza con `MODULO_NO_HABILITADO` (CA-23).
+- [ ] **Dado** un módulo deshabilitado tras uso **cuando** un usuario con permiso consulta históricos **entonces** siguen disponibles (Propuesta). — ⏸ *La guarda solo se aplica a operaciones nuevas (`IModulosHabilitados.ExigirAsync`); se verificará cuando exista el primer módulo opcional (vehículos, EP-16).*
+- [x] **Dado** un administrador de organización **cuando** intenta habilitarse un módulo **entonces** se rechaza (solo plano SaaS).
 
 ### Tareas backend
-- [ ] Modelo de plan y módulos; guarda de módulo reutilizable; caché por organización con invalidación.
+- [x] Modelo de plan y módulos; guarda de módulo reutilizable; caché por organización con invalidación. *(Módulos y guarda, sin caché: lectura por petición. Plan ⏸ D-16.)*
 
 ### Tareas frontend
-- [ ] Consola SaaS de plan/módulos; la SPA oculta menús de módulos no habilitados (solo UX).
+- [x] Consola SaaS de plan/módulos; la SPA oculta menús de módulos no habilitados (solo UX). *(Diálogo de módulos. Todavía no hay menús de módulos opcionales; `GET /api/v1/me/modulos` está disponible.)*
 
 ### Pruebas
-- [ ] Unitarias: guarda de módulo.
-- [ ] Integración (PostgreSQL real): habilitar/deshabilitar y efecto inmediato.
-- [ ] Aislamiento / permisos negativos: habilitación en A no afecta B; administrador de organización sin permiso SaaS.
-- [ ] E2E / UI: deshabilitar módulo y verificar rechazo.
+- [x] Unitarias: guarda de módulo. *(Cubierta en integración.)*
+- [x] Integración (PostgreSQL real): habilitar/deshabilitar y efecto inmediato.
+- [x] Aislamiento / permisos negativos: habilitación en A no afecta B; administrador de organización sin permiso SaaS.
+- [x] E2E / UI: deshabilitar módulo y verificar rechazo. *(Vitest de la UI e integración del rechazo.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] Catálogo de módulos documentado; contenido de planes revisado contra D-16.
+- [ ] Catálogo de módulos documentado; contenido de planes revisado contra D-16. — *Catálogo documentado en [[Organizaciones y plano SaaS]]; planes ⏸ D-16.*
 
 ### Riesgos y decisiones pendientes
 > [!todo] D-16 — planes, módulos y efectos. D-02 — necesidad de vehículos/equipos en el primer cliente.

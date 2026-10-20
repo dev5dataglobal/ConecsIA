@@ -377,6 +377,44 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("usuario", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ModuloOrganizacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CambiadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cambiado_en");
+
+                    b.Property<Guid?>("CambiadoPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cambiado_por");
+
+                    b.Property<bool>("Habilitado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("habilitado");
+
+                    b.Property<string>("Modulo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("modulo");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_organizacion_modulo");
+
+                    b.HasIndex("OrganizacionId", "Modulo")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organizacion_modulo_organizacion_id_modulo");
+
+                    b.ToTable("organizacion_modulo", (string)null);
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.Organizacion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -468,6 +506,16 @@ namespace ConecsIA.Migrations.Migraciones
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_sesion_usuario_usuario_usuario_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ModuloOrganizacion", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Organizaciones.Domain.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_organizacion_modulo_organizacion_organizacion_id");
                 });
 #pragma warning restore 612, 618
         }
