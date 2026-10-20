@@ -38,3 +38,11 @@ tags: [conecsia, modulo, ep-03, saas]
 - **Guarda** `IModulosHabilitados.ExigirAsync(modulo)`: 403 `MODULO_NO_HABILITADO`. Se lee en cada petición, con efecto inmediato. Se aplica solo a operaciones nuevas.
 - **Auditoría** `organizacion.modulos` con habilitados anterior y nuevo.
 - ⏸ **Planes:** su contenido depende de D-16; no se modelaron.
+
+## Vocabulario por organización (HU-012, Implementado 2026-10-19)
+- **Catálogo cerrado de claves:** `organizacion`, `sede`, `area`, `zona`, `puntoAcceso`, `persona`, `visita` y `autorizacion`, cada una con singular y plural.
+- **Tabla** `organizacion_vocabulario` (una fila por organización, `terminos` en jsonb y `xmin`). Solo guarda lo personalizado; vacío = etiquetas por defecto.
+- **API:** `GET /api/v1/vocabulario` (cualquier miembro) y `PUT /api/v1/vocabulario` (`configuracion.modificar`, con versión; 409 si está obsoleta). Etiquetas de texto plano: sin `<>&"` ni caracteres de control, hasta 60 caracteres. Una clave desconocida responde 400.
+- **SPA:** `AppShell` envuelve la aplicación con el vocabulario de la organización (`aTextos`): menú, título de sedes, etiquetas de contexto y título de áreas. Pantalla `/configuracion/vocabulario`.
+- **RN-11:** rutas, permisos y contratos conservan los nombres del núcleo.
+- ⏸ **D-01:** las etiquetas por vertical y los valores por defecto de cada plantilla (HU-010).

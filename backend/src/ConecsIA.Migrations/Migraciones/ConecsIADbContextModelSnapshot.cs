@@ -685,6 +685,41 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("organizacion", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.VocabularioOrganizacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<string>("Terminos")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("terminos");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_organizacion_vocabulario");
+
+                    b.HasIndex("OrganizacionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_organizacion_vocabulario_organizacion_id");
+
+                    b.ToTable("organizacion_vocabulario", (string)null);
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Area", b =>
                 {
                     b.HasOne("ConecsIA.Modules.Estructura.Domain.Sede", null)
@@ -752,6 +787,16 @@ namespace ConecsIA.Migrations.Migraciones
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_organizacion_modulo_organizacion_organizacion_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.VocabularioOrganizacion", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Organizaciones.Domain.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_organizacion_vocabulario_organizacion_organizacion_id");
                 });
 
             modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Area", b =>

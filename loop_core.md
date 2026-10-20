@@ -56,7 +56,7 @@ tags: [conecsia, loop]
 - [x] **HU-011** Planes y habilitación de módulos por organización. — *Los módulos opcionales consultan la habilitación. Inactivar un módulo no borra sus históricos.*
 - [x] **HU-016** Invitar y administrar usuarios. — *Alta, inactivación y contraseña inicial. El envío del enlace queda detrás de una interfaz y lo entrega `loop_integraciones` (D-12).*
 - [x] **HU-014** Gestionar áreas/destinos y responsables/autorizadores. — *El alcance de los autorizadores queda ⏸ por D-04 en la parte afectada.*
-- [ ] **HU-012** Vocabulario configurable por organización. — *Las etiquetas definitivas dependen de D-01.*
+- [x] **HU-012** Vocabulario configurable por organización. — *Las etiquetas definitivas dependen de D-01.*
 - [ ] **HU-013** Gestionar sedes con zona horaria (cierre). — *Cerrar la DoD con sesión real. La regla de cambio de zona horaria sigue en D-06. **Al cerrar el loop se alcanza M2.***
 
 ## Integración
@@ -71,6 +71,7 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-012 | Backend 336 en verde (`VocabularioTests` 5 de integración y 10 unitarias). Frontend 47/47 (`VocabularioPage.test.tsx`). Migración `VocabularioOrganizacion`. ⏸ Etiquetas por vertical (D-01). |
 | 2026-10-19 | HU-014 | Backend 321 en verde (`AreasTests` 12, `AreaTests` 5; FK compuesta verificada en PostgreSQL). Frontend 45/45 (`AreasPage.test.tsx`). Migración `AreasDestinos`. ⏸ Alcance de autorizadores por destino (D-04). |
 | 2026-10-19 | HU-016 + HU-018 (sedes) | Backend 304 en verde (`UsuariosTests` 17, `InvitacionTests` 5). Frontend 43/43 (`UsuariosPage.test.tsx`). Migración `UsuariosInvitaciones`. HU-018 queda parcial: destinos con HU-014; puntos ⏸ HU-015. |
 | 2026-10-19 | HU-011 | Backend 282 en verde (`ModulosTests` 7). Frontend 39/39 (`DialogoModulos.test.tsx`). Migración `ModulosOrganizacion`. ⏸ Planes (D-16) y consulta histórica (sin módulo opcional todavía). |

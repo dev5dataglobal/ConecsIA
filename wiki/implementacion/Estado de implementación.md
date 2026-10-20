@@ -159,3 +159,6 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 
 ## HU-014 cerrada en `loop/core` (2026-10-19)
 - Detalle en [[Áreas o destinos]]. Migración `AreasDestinos`: primera **FK compuesta** efectiva (cierra el criterio pendiente de HU-005). Nuevo contrato `IConsultaUsuarios` (Identidad).
+
+## HU-012 cerrada en `loop/core` (2026-10-19)
+- Vocabulario por organización (detalle en [[Organizaciones y plano SaaS]]). Migración `VocabularioOrganizacion`. Nuevo permiso `configuracion.modificar`.

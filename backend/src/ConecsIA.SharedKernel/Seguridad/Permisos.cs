@@ -24,6 +24,8 @@ public static class Permisos
     public const string UsuariosInvitar = "usuarios.invitar";
     public const string UsuariosAdministrar = "usuarios.administrar";
 
+    public const string ConfiguracionModificar = "configuracion.modificar";
+
     public const string RolesConsultar = "roles.consultar";
     public const string RolesAdministrar = "roles.administrar";
 
@@ -52,6 +54,7 @@ public static class CatalogoPermisos
         Definir(Permisos.UsuariosConsultar, "Consultar los usuarios de la organización"),
         Definir(Permisos.UsuariosInvitar, "Invitar usuarios"),
         Definir(Permisos.UsuariosAdministrar, "Asignar roles y alcance, inactivar y reactivar usuarios"),
+        Definir(Permisos.ConfiguracionModificar, "Modificar la configuración de la organización (vocabulario)"),
         Definir(Permisos.RolesConsultar, "Consultar roles y el catálogo de permisos"),
         Definir(Permisos.RolesAdministrar, "Crear, modificar e inactivar roles"),
     ];

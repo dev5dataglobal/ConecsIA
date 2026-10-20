@@ -3550,6 +3550,136 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/vocabulario': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['VocabularioDto']
+            'application/json': components['schemas']['VocabularioDto']
+            'text/json': components['schemas']['VocabularioDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudVocabulario']
+          'text/json': components['schemas']['SolicitudVocabulario']
+          'application/*+json': components['schemas']['SolicitudVocabulario']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['VocabularioDto']
+            'application/json': components['schemas']['VocabularioDto']
+            'text/json': components['schemas']['VocabularioDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails']
+            'application/json': components['schemas']['ValidationProblemDetails']
+            'text/json': components['schemas']['ValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -3814,6 +3944,17 @@ export interface components {
     SolicitudRoles: {
       roles: null | string[]
     }
+    SolicitudVocabulario: {
+      terminos: null | {
+        [key: string]: components['schemas']['Termino']
+      }
+      /** Format: uint32 */
+      version: number | string
+    }
+    Termino: {
+      singular: string
+      plural: string
+    }
     TipoOrganizacion: {
       clave: string
       nombre: string
@@ -3855,6 +3996,14 @@ export interface components {
       errors?: {
         [key: string]: string[]
       }
+    }
+    VocabularioDto: {
+      claves: string[]
+      terminos: {
+        [key: string]: components['schemas']['Termino']
+      }
+      /** Format: uint32 */
+      version: number | string
     }
   }
   responses: never

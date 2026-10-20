@@ -54,7 +54,7 @@ _(vacío)_
 | HU-009 | Alta, edición e inactivación de organizaciones | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core` (sin PR); D-16 interino |
 | HU-010 | Tipos de organización y plantilla básica de catálogos | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
 | HU-011 | Planes y habilitación de módulos por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core` (módulos); planes ⏸ D-16 |
-| HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Backlog |
+| HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Implementada en `loop/core` (mecanismo); etiquetas ⏸ D-01 |
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | En revisión |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | Implementada en `loop/core` (sin PR); alcance de autorizadores ⏸ D-04 |
 | HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | Backlog |

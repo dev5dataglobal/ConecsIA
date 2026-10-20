@@ -26,7 +26,7 @@ Permitir al Superadministrador SaaS dar de alta, configurar e inactivar [[Organi
 | HU-009 | Alta, edición e inactivación de organizaciones | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Efectos de inactivación: D-16 (interino) |
 | HU-010 | Tipos de organización y plantilla básica de catálogos | M | Lista para refinar | — |
 | HU-011 | Planes y habilitación de módulos por organización | M | **Implementada** 2026-10-19 en `loop/core` (módulos); planes ⏸ D-16 | D-16 |
-| HU-012 | Vocabulario configurable por organización | S | Lista para refinar | Etiquetas definitivas: D-01 |
+| HU-012 | Vocabulario configurable por organización | S | **Implementada** 2026-10-19 en `loop/core` (mecanismo); etiquetas por vertical ⏸ D-01 | Etiquetas definitivas: D-01 |
 
 ---
 
@@ -233,20 +233,20 @@ Administrador de organización; todos los usuarios (consumo).
 - **Endpoints indicativos:** `GET /api/v1/vocabulario`, `PUT /api/v1/vocabulario`.
 
 ### Criterios de aceptación
-- [ ] **Dado** una etiqueta personalizada **cuando** un usuario de la organización abre la SPA **entonces** ve el término personalizado y la API conserva sus nombres de núcleo (RN-11).
-- [ ] **Dado** un usuario de otra organización **cuando** consulta vocabulario **entonces** recibe el de su propia organización.
+- [x] **Dado** una etiqueta personalizada **cuando** un usuario de la organización abre la SPA **entonces** ve el término personalizado y la API conserva sus nombres de núcleo (RN-11).
+- [x] **Dado** un usuario de otra organización **cuando** consulta vocabulario **entonces** recibe el de su propia organización.
 
 ### Tareas backend
-- [ ] Modelo, validación y endpoints; caché por organización.
+- [x] Modelo, validación y endpoints; caché por organización. *(Caché en la SPA con React Query; el servidor lee por petición.)*
 
 ### Tareas frontend
-- [ ] Proveedor de vocabulario que resuelve claves i18n con la etiqueta de la organización; pantalla de edición.
+- [x] Proveedor de vocabulario que resuelve claves i18n con la etiqueta de la organización; pantalla de edición.
 
 ### Pruebas
-- [ ] Unitarias: validación de claves y sanitización.
-- [ ] Integración (PostgreSQL real): persistencia y versión.
-- [ ] Aislamiento / permisos negativos: modificar vocabulario de otra organización; usuario sin permiso.
-- [ ] E2E / UI: etiqueta cambiada visible en menú y formularios.
+- [x] Unitarias: validación de claves y sanitización.
+- [x] Integración (PostgreSQL real): persistencia y versión.
+- [x] Aislamiento / permisos negativos: modificar vocabulario de otra organización; usuario sin permiso.
+- [x] E2E / UI: etiqueta cambiada visible en menú y formularios. *(Vitest: menú.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:

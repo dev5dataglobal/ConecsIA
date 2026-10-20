@@ -30,7 +30,7 @@ public sealed record Escenario(
     [
         Permisos.SedesConsultar, Permisos.SedesCrear, Permisos.SedesModificar, Permisos.SedesInactivar,
         Permisos.RolesConsultar, Permisos.RolesAdministrar,
-        Permisos.OrganizacionConsultar, Permisos.OrganizacionModificar,
+        Permisos.OrganizacionConsultar, Permisos.OrganizacionModificar, Permisos.ConfiguracionModificar,
         Permisos.UsuariosConsultar, Permisos.UsuariosInvitar, Permisos.UsuariosAdministrar,
         Permisos.AreasConsultar, Permisos.AreasCrear, Permisos.AreasModificar, Permisos.AreasInactivar, Permisos.AreasAsignar,
     ];

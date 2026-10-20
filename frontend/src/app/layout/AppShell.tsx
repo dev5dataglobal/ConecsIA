@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { cerrarSesion as cerrarSesionApi } from '../../features/sesion/apiSesion'
 import { guardarOrganizacionSeleccionada } from '../../features/sesion/organizacionSeleccionada'
 import { haySesion } from '../../features/sesion/sesion'
 import { useContexto, useMembresias, usePlataforma } from '../../features/sesion/useContexto'
 import { IndicadorConexion } from '../../features/sistema/IndicadorConexion'
+import { aTextos, useVocabularioOrganizacion } from '../../features/vocabulario/vocabulario'
 import type { ClaveTexto } from '../../shared/i18n/es'
+import { I18nProvider } from '../../shared/i18n/i18n'
 import { useT } from '../../shared/i18n/traductor'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono'
 
@@ -16,6 +18,7 @@ const enlaces: { to: string; clave: ClaveTexto; icono: NombreIcono }[] = [
   { to: '/sedes', clave: 'nav.sedes', icono: 'sede' },
   { to: '/usuarios', clave: 'nav.usuarios', icono: 'inicio' },
   { to: '/roles', clave: 'nav.roles', icono: 'escudo' },
+  { to: '/configuracion/vocabulario', clave: 'nav.vocabulario', icono: 'editar' },
 ]
 
 /** Consola del plano SaaS (HU-009): solo para usuarios con permisos de plataforma. */
@@ -41,6 +44,18 @@ function iniciales(nombre: string) {
  * cabecera ofrece un selector; el servidor verifica la elección en cada petición.
  */
 export function AppShell() {
+  // HU-012: el vocabulario de la organización sustituye etiquetas en todo el shell y sus páginas.
+  const { data: contexto } = useContexto()
+  const { data: vocabulario } = useVocabularioOrganizacion(contexto !== undefined)
+  const textos = useMemo(() => aTextos(vocabulario), [vocabulario])
+  return (
+    <I18nProvider vocabulario={textos}>
+      <ShellContenido />
+    </I18nProvider>
+  )
+}
+
+function ShellContenido() {
   const t = useT()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [colapsado, setColapsado] = useState(false)
