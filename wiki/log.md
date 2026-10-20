@@ -268,3 +268,30 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pruebas primero: regla por módulo de ADR-021, convenciones de índice y FK, suite Org A/B reutilizable y auditoría `Denegado` de la escritura cruzada (estaba en rojo y pasó a verde). `dotnet test` 196/196.
 - Wiki: ADR-004 (§ Spike RLS), `Decisiones pendientes` (nueva D-22), EP-02, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
 - Pendiente: PR `loop/core` → `main` (no se hizo push) y D-22.
+
+## [2026-10-19] revision | Push de `loop/core` e intento de PR de HU-005
+- `loop/core` publicada en origin (926e34c, 9798ede). El PR no se creó: GitHub no tenía sesión en el navegador integrado y no hay `gh`. Queda pendiente que el responsable lo abra.
+- El detalle de HU-005 está en la bitácora de `loop/core`. Este checkout (`evaluacion/pre-loop-core`) no cambió fuera de esta entrada.
+- Siguiente: completar las historias restantes de `loop_core.md` en `loop/core`.
+
+## [2026-10-19] revision | Avance de loop_core en la rama loop/core
+- En `loop/core` (worktree `../ConecsIA-wt/core`) están implementadas HU-005, 007, 008, 009, 011, 012, 014, 016 y 017; HU-018 parcial; HU-015 en pausa (ADR-019). El detalle está en la bitácora de esa rama.
+- Sigue: HU-010 y el cierre de HU-013. Esta entrada solo registra el avance; este checkout no cambió.
+
+## [2026-10-19] revision | Push de loop/core y PR preparado
+- `loop/core` publicada en origin (hasta 3877e82), al día con `origin/main`.
+- Formulario del PR `loop/core` → `main` listo con título y descripción en el navegador integrado. No se creó porque GitHub no tiene sesión ahí y no hay `gh`. Falta que el responsable pulse «Create pull request» y revise el CI.
+
+## [2026-10-19] revision | Vincular PR de loop/core: no encontrado
+- La API de GitHub solo lista el PR #1 (`fix/ci-main`, cerrado); no existe ningún PR con head `loop/core`. No se vinculó nada ni se revisó CI.
+
+## [2026-10-20] implementacion | HU-006 pantalla de ingreso ConecsIA
+- Se alineó `/ingresar` con la referencia visual: panel informativo oscuro, formulario claro responsive y accesibilidad básica.
+- Se conservó el flujo real de cookie HttpOnly, CSRF, login, estados de error/carga y redirección; se retiró el selector de usuarios sintéticos del login.
+- Verificado: build, lint y 26 pruebas frontend en verde.
+- Pendientes documentados: recuperación, Microsoft y “Recordarme” requieren alcance/backend aprobado.
+
+## [2026-10-20] revision | Puerto 5432 ocupado por PostgreSQL local de Windows
+- Causa confirmada: el proceso `postgres` del sistema (PID 8464) escucha en 5432, y `.env` había vuelto a `POSTGRES_HOST_PORT=5432`.
+- Solución: `.env` con 5434 y stack levantado; la API responde Healthy.
+- Sin cambios en otras páginas (el README ya documenta el caso en «Problemas frecuentes»).
