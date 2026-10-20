@@ -288,6 +288,86 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("sede", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Zona", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizada_en");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<bool>("EsPuntoAcceso")
+                        .HasColumnType("boolean")
+                        .HasColumnName("es_punto_acceso");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTimeOffset?>("InactivadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("inactivada_en");
+
+                    b.Property<string>("Modo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("modo");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("NombreNormalizado")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre_normalizado");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<Guid>("SedeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sede_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("pk_zona");
+
+                    b.HasAlternateKey("OrganizacionId", "Id")
+                        .HasName("ak_zona_organizacion_id_id");
+
+                    b.HasIndex("OrganizacionId", "SedeId", "NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("ix_zona_organizacion_id_sede_id_nombre_normalizado");
+
+                    b.ToTable("zona", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_zona_modo_solo_en_punto_de_acceso", "es_punto_acceso = (modo IS NOT NULL)");
+                        });
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Invitacion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -387,6 +467,11 @@ namespace ConecsIA.Migrations.Migraciones
                         .IsRequired()
                         .HasColumnType("text[]")
                         .HasColumnName("permisos");
+
+                    b.PrimitiveCollection<List<Guid>>("PuntosAsignados")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("puntos_asignados");
 
                     b.PrimitiveCollection<List<Guid>>("Roles")
                         .IsRequired()
@@ -792,6 +877,17 @@ namespace ConecsIA.Migrations.Migraciones
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_area_asignacion_area_organizacion_id_area_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Estructura.Domain.Zona", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Estructura.Domain.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizacionId", "SedeId")
+                        .HasPrincipalKey("OrganizacionId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_zona_sede_organizacion_id_sede_id");
                 });
 
             modelBuilder.Entity("ConecsIA.Modules.Identidad.Domain.Invitacion", b =>

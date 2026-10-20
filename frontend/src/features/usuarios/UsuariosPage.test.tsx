@@ -54,6 +54,7 @@ function api(
     if (url.endsWith('/api/v1/me')) return Promise.resolve(respuestaJson(contexto))
     if (url.endsWith('/api/v1/usuarios')) return Promise.resolve(respuestaJson([operador]))
     if (url.endsWith('/api/v1/roles')) return Promise.resolve(respuestaJson([rol]))
+    if (url.endsWith('/zonas')) return Promise.resolve(respuestaJson([]))
     if (url.includes('/api/v1/sedes'))
       return Promise.resolve(respuestaJson({ elementos: [sede], total: 1, pagina: 1, tamano: 20 }))
     return Promise.resolve(respuestaJson([]))

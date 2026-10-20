@@ -9,6 +9,7 @@ export interface UsuarioOrganizacion {
   roles: string[]
   alcanceTotalSedes: boolean
   sedes: string[]
+  puntos: string[]
 }
 
 export interface DatosInvitacion {
@@ -22,6 +23,7 @@ export interface DatosInvitacion {
 export interface Alcance {
   alcanceTotalSedes: boolean
   sedes: string[]
+  puntos: string[]
 }
 
 const RUTA = '/api/v1/usuarios'

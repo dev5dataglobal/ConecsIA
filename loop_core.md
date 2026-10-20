@@ -9,7 +9,7 @@ tags: [conecsia, loop]
 
 # loop_core — Núcleo: tenancy, organizaciones, estructura, usuarios y alcance
 
-> [!warning] Estado: **pendiente de condiciones de inicio**
+> [!success] Estado: **tareas completas en `loop/core` (2026-10-19)**; pendiente: PR a `main`, CI y revisión del PO para M1/M2.
 > La autenticación ya no bloquea: `goal_authentication.md` se cerró el 2026-10-21 y sus pendientes se difirieron. Este loop empieza cuando se cumplan **M0** de [`PLAN-DE-LOOPS.md`](PLAN-DE-LOOPS.md) (`main` publicado y CI en verde) y las condiciones de inicio de abajo.
 
 **Épicas:** EP-02, EP-03, EP-04, EP-05 · **Rama:** `loop/core` · **Worktree:** `../ConecsIA-wt/core`
@@ -50,8 +50,8 @@ tags: [conecsia, loop]
 - [x] **HU-008** Registro de auditoría append-only. — *Cerrar la DoD verificando el append-only en la base de datos. La retención sigue pendiente (D-14).*
 - [x] **HU-017** Roles configurables y catálogo de permisos. — *Catálogo de permisos, roles por organización y plantillas. Nunca se otorgan permisos por el nombre del rol.*
 - [x] **HU-010** Tipos de organización y plantilla básica de catálogos. — *Plantilla sembrable. Se coordina con HU-020: los catálogos de persona y documento los crea `loop_personas`.*
-- [ ] ⏸ (ADR-019 en Propuesta) **HU-015** Gestionar zonas y puntos de acceso. — *ZONA con `es_punto_acceso`. ⏸ si ADR-019 sigue en Propuesta: pedir confirmación.*
-- [ ] ⏸ (parcial: sedes ✔; destinos D-04; puntos HU-015) **HU-018** Alcance por sede, destino y punto de acceso. — *Filtro de alcance reutilizable por todos los módulos. **Al fusionar HU-017, HU-010 y HU-018 se alcanza M1.***
+- [x] **HU-015** Gestionar zonas y puntos de acceso. — *ZONA con `es_punto_acceso`. ⏸ si ADR-019 sigue en Propuesta: pedir confirmación.*
+- [x] (destinos ⏸ D-04) **HU-018** Alcance por sede, destino y punto de acceso. — *Filtro de alcance reutilizable por todos los módulos. **Al fusionar HU-017, HU-010 y HU-018 se alcanza M1.***
 - [x] **HU-009** Alta, edición e inactivación de organizaciones. — *Los efectos de la inactivación quedan ⏸ por D-16: aislar la parte afectada.*
 - [x] **HU-011** Planes y habilitación de módulos por organización. — *Los módulos opcionales consultan la habilitación. Inactivar un módulo no borra sus históricos.*
 - [x] **HU-016** Invitar y administrar usuarios. — *Alta, inactivación y contraseña inicial. El envío del enlace queda detrás de una interfaz y lo entrega `loop_integraciones` (D-12).*
@@ -71,6 +71,7 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-015 + HU-018 (puntos) | ADR-019 aprobado. Backend 361 en verde (`ZonasTests` 12, con el CHECK y el alcance por punto verificados en PostgreSQL; `ZonaTests` 6). Frontend 49/49. Migración `ZonasPuntosAcceso`. Destinos ⏸ D-04. |
 | 2026-10-19 | HU-013 (cierre) | Ciclo completo con sesión real (cookie + CSRF): `SesionTests`. Backend 343 en verde. ⏸ CA-03 con historiales de accesos (loop_accesos) y E2E con Playwright (loop_quality). |
 | 2026-10-19 | HU-010 | Backend 340 en verde (`PlantillasTests` 5, `PlantillasOrganizacionTests` 2). Frontend 48/48 (`CatalogosPage.test.tsx`). Migración `CatalogosPlantilla`. Contenido de la plantilla propuesto, D-23. |
 | 2026-10-19 | HU-012 | Backend 336 en verde (`VocabularioTests` 5 de integración y 10 unitarias). Frontend 47/47 (`VocabularioPage.test.tsx`). Migración `VocabularioOrganizacion`. ⏸ Etiquetas por vertical (D-01). |

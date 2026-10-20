@@ -17,6 +17,9 @@ public sealed class EstructuraModulo : IModulo
         servicios.AddScoped<ServicioSedes>();
         servicios.AddScoped<IRepositorioAreas, RepositorioAreas>();
         servicios.AddScoped<ServicioAreas>();
+        servicios.AddScoped<IRepositorioZonas, RepositorioZonas>();
+        servicios.AddScoped<ServicioZonas>();
+        servicios.AddScoped<ConecsIA.SharedKernel.Estructura.IConsultaPuntosAcceso, ConsultaPuntosAcceso>();
         servicios.AddScoped<ConecsIA.SharedKernel.Estructura.IConsultaSedes, ConsultaSedesExistentes>();
     }
 }

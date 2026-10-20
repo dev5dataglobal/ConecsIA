@@ -172,3 +172,7 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Pruebas:** backend 343 (arquitectura 69, unitarias 103, integración 171) y frontend 48, lint y build en verde.
 - **Migraciones nuevas** (token de loop_core): `RolesConfigurables`, `OrganizacionesSaas`, `ModulosOrganizacion`, `UsuariosInvitaciones`, `AreasDestinos`, `VocabularioOrganizacion` y `CatalogosPlantilla`.
 - **Pendiente para M2:** confirmar ADR-019 y HU-015, PR a `main` con el CI en verde y revisión del PO.
+
+## HU-015 y HU-018 (puntos) en `loop/core` (2026-10-19)
+- ADR-019 aprobado por el responsable. Detalle en [[Zonas y puntos de acceso]]. Migración `ZonasPuntosAcceso`.
+- **loop_core completo:** las 13 tareas están cerradas con evidencia; la única pausa es el alcance por destino (D-04). Pruebas: backend 361 (69 + 109 + 183) y frontend 49.

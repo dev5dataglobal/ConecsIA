@@ -14,7 +14,7 @@ public sealed record SolicitudInvitacion(
 
 public sealed record SolicitudRoles(IReadOnlyList<Guid>? Roles);
 
-public sealed record SolicitudAlcance(bool AlcanceTotalSedes, IReadOnlyList<Guid>? Sedes);
+public sealed record SolicitudAlcance(bool AlcanceTotalSedes, IReadOnlyList<Guid>? Sedes, IReadOnlyList<Guid>? Puntos = null);
 
 public sealed record SolicitudAceptarInvitacion(string? Token, string? Contrasena);
 
@@ -25,7 +25,8 @@ public sealed record UsuarioOrganizacionDto(
     string Estado,
     IReadOnlyList<Guid> Roles,
     bool AlcanceTotalSedes,
-    IReadOnlyList<Guid> Sedes);
+    IReadOnlyList<Guid> Sedes,
+    IReadOnlyList<Guid> Puntos);
 
 public sealed record InvitacionCreada(UsuarioOrganizacionDto Usuario, string Token);
 
@@ -63,6 +64,7 @@ public interface IRepositorioUsuarios
 public sealed class ServicioUsuarios(
     IRepositorioUsuarios repositorio,
     IConsultaSedes sedes,
+    IConsultaPuntosAcceso puntos,
     IContextoSolicitud contexto,
     IRegistroAuditoria auditoria,
     IUnidadDeTrabajo unidad,
@@ -70,6 +72,7 @@ public sealed class ServicioUsuarios(
     OpcionesInvitaciones opciones)
 {
     public const string CodigoYaEsMiembro = "USUARIO_YA_ES_MIEMBRO";
+    public const string CodigoPuntoInvalido = "PUNTO_ACCESO_INVALIDO";
     private const string TipoObjeto = "Usuario";
 
     private Guid Organizacion => contexto.OrganizacionId!.Value;
@@ -141,11 +144,12 @@ public sealed class ServicioUsuarios(
         AccesoDenegadoException.ExigirPermiso(contexto, Permisos.UsuariosAdministrar);
         var (membresia, usuario) = await CargarAsync(usuarioId, cancelacion);
         await ExigirAlcanceAsignableAsync(solicitud.AlcanceTotalSedes, solicitud.Sedes ?? [], cancelacion);
+        await ExigirPuntosAsignablesAsync(solicitud.AlcanceTotalSedes, solicitud.Sedes ?? [], solicitud.Puntos ?? [], cancelacion);
 
-        var anterior = new { membresia.AlcanceTotalSedes, Sedes = membresia.SedesAsignadas.ToList() };
-        membresia.AsignarAlcance(solicitud.AlcanceTotalSedes, solicitud.Sedes ?? []);
+        var anterior = new { membresia.AlcanceTotalSedes, Sedes = membresia.SedesAsignadas.ToList(), Puntos = membresia.PuntosAsignados.ToList() };
+        membresia.AsignarAlcance(solicitud.AlcanceTotalSedes, solicitud.Sedes ?? [], solicitud.Puntos ?? []);
         auditoria.Registrar(new EntradaAuditoria("usuario.alcance", TipoObjeto, usuario.Id, ResultadoAuditoria.Exitoso, anterior,
-            new { membresia.AlcanceTotalSedes, Sedes = membresia.SedesAsignadas.ToList() }));
+            new { membresia.AlcanceTotalSedes, Sedes = membresia.SedesAsignadas.ToList(), Puntos = membresia.PuntosAsignados.ToList() }));
 
         await unidad.GuardarAsync(cancelacion);
         return Dto(membresia, usuario);
@@ -212,10 +216,34 @@ public sealed class ServicioUsuarios(
         foreach (var id in ids) AccesoDenegadoException.ExigirSede(contexto, id);
     }
 
+    /// <summary>
+    /// HU-018 (ADR-019): cada punto es una zona activa marcada como punto de acceso (otra organización
+    /// = 404; no es punto o está fuera de las sedes asignadas = 422). Quien tiene puntos asignados solo
+    /// concede un subconjunto no vacío de los suyos.
+    /// </summary>
+    private async Task ExigirPuntosAsignablesAsync(bool total, IReadOnlyList<Guid> sedesAsignadas, IReadOnlyList<Guid> ids, CancellationToken cancelacion)
+    {
+        if (contexto.PuntosAsignados.Count > 0 && (ids.Count == 0 || ids.Any(p => !contexto.PuntosAsignados.Contains(p))))
+        {
+            throw new AccesoDenegadoException(AccesoDenegadoException.CodigoFueraDeAlcance, "Solo puedes asignar puntos de acceso que tienes asignados.");
+        }
+
+        if (ids.Count == 0) return;
+        var encontrados = await puntos.ObtenerAsync(ids, cancelacion);
+        if (ids.Any(id => !encontrados.ContainsKey(id))) throw new RecursoNoEncontradoException("el punto de acceso");
+        foreach (var punto in encontrados.Values)
+        {
+            if (!punto.EsPuntoAcceso || !punto.Activa || (!total && !sedesAsignadas.Contains(punto.SedeId)))
+            {
+                throw new ReglaNegocioException(CodigoPuntoInvalido, "Cada punto debe ser un punto de acceso activo de una sede asignada.");
+            }
+        }
+    }
+
     private static string Estado(Membresia m) => m.PendienteDeAceptar ? "Pendiente" : m.Activa ? "Activo" : "Inactivo";
 
     private static UsuarioOrganizacionDto Dto(Membresia m, Usuario u) =>
-        new(u.Id, u.Nombre, u.Correo, Estado(m), m.Roles, m.AlcanceTotalSedes, m.SedesAsignadas);
+        new(u.Id, u.Nombre, u.Correo, Estado(m), m.Roles, m.AlcanceTotalSedes, m.SedesAsignadas, m.PuntosAsignados);
 }
 
 /// <summary>

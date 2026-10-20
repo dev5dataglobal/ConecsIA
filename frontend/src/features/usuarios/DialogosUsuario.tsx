@@ -9,7 +9,7 @@ import {
   useInvitar,
   type UsuarioOrganizacion,
 } from './apiUsuarios'
-import { SelectorAlcance, SelectorRoles } from './SelectorAccesos'
+import { SelectorAlcance, SelectorPuntos, SelectorRoles } from './SelectorAccesos'
 
 const campo = 'w-full rounded-lg border border-linea bg-fondo px-3 py-2 text-sm'
 
@@ -138,13 +138,18 @@ export function DialogoAccesos({
   const [roles, setRoles] = useState(new Set(usuario.roles))
   const [total, setTotal] = useState(usuario.alcanceTotalSedes)
   const [sedes, setSedes] = useState(new Set(usuario.sedes))
+  const [puntos, setPuntos] = useState(new Set(usuario.puntos ?? []))
   const error = asignarRoles.error ?? asignarAlcance.error
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault()
     try {
       await asignarRoles.mutateAsync([...roles])
-      await asignarAlcance.mutateAsync({ alcanceTotalSedes: total, sedes: [...sedes] })
+      await asignarAlcance.mutateAsync({
+        alcanceTotalSedes: total,
+        sedes: [...sedes],
+        puntos: [...puntos],
+      })
       onCerrar()
     } catch {
       // El error se muestra con ProblemDetailsAlert.
@@ -164,6 +169,7 @@ export function DialogoAccesos({
             setSedes(s)
           }}
         />
+        {!total && <SelectorPuntos sedes={sedes} puntos={puntos} onCambiar={setPuntos} />}
         <Botones onCerrar={onCerrar} ocupado={asignarRoles.isPending || asignarAlcance.isPending} />
       </form>
     </Dialogo>

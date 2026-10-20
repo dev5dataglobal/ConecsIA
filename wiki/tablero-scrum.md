@@ -32,11 +32,11 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 - [x] HU-016 Invitar y administrar usuarios — envío por correo D-12
 - [x] HU-017 Roles configurables y catálogo de permisos — CA-07 ⏸ EP-07
 - [x] HU-010 Tipos de organización y plantilla básica — contenido propuesto (D-23)
+- [x] HU-015 Zonas y puntos de acceso — ADR-019 aprobado 2026-10-19
+- [x] HU-018 Alcance por sede y punto de acceso — destinos ⏸ D-04
 - [x] HU-013 Gestionar sedes (cierre) — sesión real verificada; CA-03 histórico ⏸ loop_accesos; E2E ⏸ loop_quality
 
 ## En curso (`loop/core`)
-- [ ] HU-018 Alcance por sede, destino y punto — sedes hecho; destinos ⏸ D-04; puntos ⏸ HU-015
-- [ ] HU-015 Zonas y puntos de acceso — ⏸ ADR-019 en Propuesta (requiere confirmación)
 
 ## En revisión (verificadas localmente; falta CI en GitHub y revisión del PO)
 - [ ] HU-001 Solución backend modular y pipeline CI
@@ -69,10 +69,10 @@ _(vacío)_
 | HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Implementada en `loop/core` (mecanismo); etiquetas ⏸ D-01 |
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | Cerrada en `loop/core` (sesión real verificada); CA-03 histórico ⏸ accesos; E2E ⏸ loop_quality |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | Implementada en `loop/core` (sin PR); alcance de autorizadores ⏸ D-04 |
-| HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | Backlog |
+| HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | Implementada en `loop/core` (ADR-019 aprobado) |
 | HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Implementada en `loop/core` (sin PR); correo D-12 |
 | HU-017 | Roles configurables y catálogo de permisos | [[EP-05 Usuarios, roles y permisos]] | F1 | L | Implementada en `loop/core` (sin PR) |
-| HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Parcial en `loop/core`: sedes; destinos con HU-014; puntos ⏸ |
+| HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Implementada en `loop/core` (sedes y puntos); destinos ⏸ D-04 |
 | HU-019 | Registrar y buscar persona por documento sin duplicados | [[EP-06 Personas]] | F1 | L | Backlog |
 | HU-020 | Tipos de persona y tipos de documento | [[EP-06 Personas]] | F1 | S | Backlog |
 | HU-021 | Fotografía de persona en almacenamiento privado | [[EP-06 Personas]] | F1 | M | Backlog |

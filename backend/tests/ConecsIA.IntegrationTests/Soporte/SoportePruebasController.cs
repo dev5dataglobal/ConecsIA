@@ -70,6 +70,19 @@ public sealed class SoportePruebasAutenticadoController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>HU-018 (ADR-019): operación en un punto de acceso; exige el alcance de sede y de punto.</summary>
+    [HttpPost("operacion-en-punto/{zonaId:guid}")]
+    public async Task<IActionResult> OperacionEnPunto(
+        Guid zonaId,
+        [FromServices] ConecsIA.SharedKernel.Estructura.IConsultaPuntosAcceso puntos,
+        [FromServices] ConecsIA.SharedKernel.Seguridad.IContextoSolicitud contexto)
+    {
+        var punto = (await puntos.ObtenerAsync([zonaId], HttpContext.RequestAborted)).GetValueOrDefault(zonaId)
+            ?? throw new RecursoNoEncontradoException("el punto de acceso");
+        ConecsIA.SharedKernel.Seguridad.AccesoDenegadoException.ExigirPunto(contexto, punto.Id, punto.SedeId);
+        return NoContent();
+    }
+
     /// <summary>HU-011: operación nueva de un módulo opcional; exige que esté habilitado.</summary>
     [HttpPost("operacion-de-modulo/{modulo}")]
     public async Task<IActionResult> OperacionDeModulo(

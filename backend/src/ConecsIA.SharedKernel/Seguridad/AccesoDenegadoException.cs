@@ -27,6 +27,14 @@ public class AccesoDenegadoException(string codigo, string mensaje) : Exception(
         }
     }
 
+    public static void ExigirPunto(IContextoSolicitud contexto, Guid puntoId, Guid sedeId)
+    {
+        if (!contexto.PuedeOperarEnPunto(puntoId, sedeId))
+        {
+            throw new AccesoDenegadoException(CodigoFueraDeAlcance, "El punto de acceso está fuera de tu alcance asignado.");
+        }
+    }
+
     public static void ExigirSede(IContextoSolicitud contexto, Guid sedeId)
     {
         if (!contexto.PuedeOperarEnSede(sedeId))

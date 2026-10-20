@@ -107,8 +107,9 @@ public static class PlantillasRol
         new("administrador-organizacion", "Administrador de organización", "Administra toda la organización.", Permisos.Todos),
         new("administrador-sede", "Administrador de sede", "Administra las sedes asignadas.",
             [Permisos.SedesConsultar, Permisos.SedesModificar,
-             Permisos.AreasConsultar, Permisos.AreasCrear, Permisos.AreasModificar, Permisos.AreasInactivar, Permisos.AreasAsignar]),
-        new("operador-acceso", "Operador de acceso", "Registra entradas y salidas en sus sedes.", [Permisos.SedesConsultar]),
+             Permisos.AreasConsultar, Permisos.AreasCrear, Permisos.AreasModificar, Permisos.AreasInactivar, Permisos.AreasAsignar,
+             Permisos.ZonasConsultar, Permisos.ZonasCrear, Permisos.ZonasModificar, Permisos.ZonasInactivar]),
+        new("operador-acceso", "Operador de acceso", "Registra entradas y salidas en sus sedes.", [Permisos.SedesConsultar, Permisos.ZonasConsultar]),
         new("autorizador", "Autorizador", "Decide solicitudes de ingreso de sus destinos.", [Permisos.SedesConsultar]),
         new("auditor", "Auditor", "Consulta sin modificar.", [Permisos.SedesConsultar, Permisos.RolesConsultar]),
     ];

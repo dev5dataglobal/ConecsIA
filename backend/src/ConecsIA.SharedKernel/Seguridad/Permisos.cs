@@ -17,6 +17,11 @@ public static class Permisos
     public const string AreasInactivar = "areas.inactivar";
     public const string AreasAsignar = "areas.asignar";
 
+    public const string ZonasConsultar = "zonas.consultar";
+    public const string ZonasCrear = "zonas.crear";
+    public const string ZonasModificar = "zonas.modificar";
+    public const string ZonasInactivar = "zonas.inactivar";
+
     public const string OrganizacionConsultar = "organizacion.consultar";
     public const string OrganizacionModificar = "organizacion.modificar";
 
@@ -49,6 +54,10 @@ public static class CatalogoPermisos
         Definir(Permisos.AreasModificar, "Modificar áreas o destinos"),
         Definir(Permisos.AreasInactivar, "Inactivar áreas o destinos"),
         Definir(Permisos.AreasAsignar, "Asignar responsables y autorizadores de áreas"),
+        Definir(Permisos.ZonasConsultar, "Consultar zonas y puntos de acceso"),
+        Definir(Permisos.ZonasCrear, "Crear zonas y puntos de acceso"),
+        Definir(Permisos.ZonasModificar, "Modificar zonas y puntos de acceso"),
+        Definir(Permisos.ZonasInactivar, "Inactivar zonas y puntos de acceso"),
         Definir(Permisos.OrganizacionConsultar, "Consultar la información general de la organización"),
         Definir(Permisos.OrganizacionModificar, "Modificar la información general de la organización"),
         Definir(Permisos.UsuariosConsultar, "Consultar los usuarios de la organización"),

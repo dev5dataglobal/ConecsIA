@@ -178,6 +178,12 @@ export function SedesPage() {
                           >
                             {sede.nombre}
                           </Link>
+                          <Link
+                            to={`/sedes/${sede.id}/zonas`}
+                            className="block text-xs text-marca hover:underline"
+                          >
+                            {t('zonas.ver')}
+                          </Link>
                           {sede.direccion && (
                             <span className="block text-xs text-tinta-suave">{sede.direccion}</span>
                           )}

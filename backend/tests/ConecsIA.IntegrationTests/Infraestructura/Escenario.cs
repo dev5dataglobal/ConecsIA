@@ -33,6 +33,7 @@ public sealed record Escenario(
         Permisos.OrganizacionConsultar, Permisos.OrganizacionModificar, Permisos.ConfiguracionModificar,
         Permisos.UsuariosConsultar, Permisos.UsuariosInvitar, Permisos.UsuariosAdministrar,
         Permisos.AreasConsultar, Permisos.AreasCrear, Permisos.AreasModificar, Permisos.AreasInactivar, Permisos.AreasAsignar,
+        Permisos.ZonasConsultar, Permisos.ZonasCrear, Permisos.ZonasModificar, Permisos.ZonasInactivar,
     ];
 
     public static async Task<Escenario> CrearAsync(FabricaApi fabrica)

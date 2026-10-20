@@ -31,7 +31,8 @@ public sealed class MeController(
         OrganizacionDto Organizacion,
         IReadOnlyList<string> Permisos,
         bool AlcanceTotalSedes,
-        IReadOnlyList<Guid> SedesAsignadas);
+        IReadOnlyList<Guid> SedesAsignadas,
+        IReadOnlyList<Guid> PuntosAsignados);
 
     [HttpGet]
     [ProducesResponseType<ContextoDto>(StatusCodes.Status200OK)]
@@ -47,7 +48,8 @@ public sealed class MeController(
             new OrganizacionDto(organizacion.Id, organizacion.Nombre),
             contexto.Permisos.Order(StringComparer.Ordinal).ToList(),
             contexto.AlcanceTotalSedes,
-            contexto.SedesAsignadas.ToList());
+            contexto.SedesAsignadas.ToList(),
+            contexto.PuntosAsignados.ToList());
     }
 
     /// <summary>

@@ -72,7 +72,7 @@ public sealed class MiddlewareContextoOrganizacion(RequestDelegate siguiente)
         {
             case EstadoResolucion.Resuelto:
                 var m = resultado.Membresia!;
-                contexto.Establecer(usuarioId, m.OrganizacionId, resultado.PermisosEfectivos!, m.AlcanceTotalSedes, m.SedesAsignadas);
+                contexto.Establecer(usuarioId, m.OrganizacionId, resultado.PermisosEfectivos!, m.AlcanceTotalSedes, m.SedesAsignadas, m.PuntosAsignados);
                 await siguiente(http);
                 return;
 

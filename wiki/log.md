@@ -325,3 +325,11 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - HU-013: ciclo completo con sesión real verificado en integración. ⏸ CA-03 con historiales (loop_accesos) y E2E (loop_quality).
 - loop_core: 11 historias cerradas. Pendientes HU-015 (⏸ ADR-019) y HU-018 (parcial). Backend 343 y frontend 48 en verde.
 - El token de migración lo mantiene loop_core hasta fusionar `loop/core`. Wiki: EP-04, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.
+
+## [2026-10-19] decision | ADR-019 aprobado
+- El responsable aprobó ADR-019 sin cambios. Actualizados: ADR-019 (§ Aprobación) y Registro de ADR.
+
+## [2026-10-19] implementacion | HU-015 Zonas y puntos de acceso; HU-018 alcance por punto (loop_core)
+- Pruebas primero: `ZonasTests` (12, con CHECK, unicidad, aislamiento y alcance por punto) y `ZonaTests` (6). Backend 361 y frontend 49 en verde. Migración `ZonasPuntosAcceso`.
+- Contrato nuevo `IConsultaPuntosAcceso`; `IContextoSolicitud.PuntosAsignados` y `ExigirPunto`. El enum de modo viaja como texto.
+- loop_core: todas sus tareas cerradas; el alcance por destino queda ⏸ D-04. Wiki: nueva [[Zonas y puntos de acceso]], EP-04, EP-05, `index`, `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

@@ -18,19 +18,22 @@ public sealed class ContextoSolicitud : IContextoSolicitud, IContextoPlanoSaas, 
     public IReadOnlySet<string> PermisosSaas { get; private set; } = SinPermisos;
     public bool AlcanceTotalSedes { get; private set; }
     public IReadOnlySet<Guid> SedesAsignadas { get; private set; } = SinSedes;
+    public IReadOnlySet<Guid> PuntosAsignados { get; private set; } = SinSedes;
 
     public void Establecer(
         Guid usuarioId,
         Guid organizacionId,
         IEnumerable<string> permisos,
         bool alcanceTotalSedes,
-        IEnumerable<Guid> sedesAsignadas)
+        IEnumerable<Guid> sedesAsignadas,
+        IEnumerable<Guid>? puntosAsignados = null)
     {
         UsuarioId = usuarioId;
         OrganizacionId = organizacionId;
         Permisos = permisos.ToHashSet(StringComparer.Ordinal);
         AlcanceTotalSedes = alcanceTotalSedes;
         SedesAsignadas = sedesAsignadas.ToHashSet();
+        PuntosAsignados = puntosAsignados?.ToHashSet() ?? SinSedes;
     }
 
     /// <summary>

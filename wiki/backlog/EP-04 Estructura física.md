@@ -25,7 +25,7 @@ Modelar la jerarquía física Organización → [[Sede]] → [[Área o destino]]
 |---|---|---|---|---|
 | HU-013 | Gestionar sedes con zona horaria | M | **En revisión** (verificada localmente 2026-10-17) | Autenticación provisional (D-03); ADR-008 por aprobar |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | M | **Implementada** 2026-10-19 en `loop/core`; alcance de autorizadores ⏸ D-04 | Alcance de autorizadores: D-04 |
-| HU-015 | Gestionar zonas y puntos de acceso | M | Lista para refinar | ADR-019 por aprobar |
+| HU-015 | Gestionar zonas y puntos de acceso | M | **Implementada** 2026-10-19 en `loop/core` (ADR-019 aprobado) | ADR-019 por aprobar |
 
 ---
 
@@ -176,25 +176,25 @@ Administrador de organización; Administrador de sede.
 - **Endpoints indicativos:** `GET/POST /api/v1/sedes/{sedeId}/zonas`, `PUT /api/v1/zonas/{id}`, `POST /api/v1/zonas/{id}/inactivar`.
 
 ### Criterios de aceptación
-- [ ] **Dado** una zona marcada como punto de acceso de entrada **cuando** se consulta para operar **entonces** solo se ofrece para entradas.
-- [ ] **Dado** una zona inactivada **cuando** se consultan movimientos históricos **entonces** se conserva la referencia (CA-03).
-- [ ] **Dado** un modo sin `es_punto_acceso` **cuando** se guarda **entonces** se rechaza con 400.
+- [x] **Dado** una zona marcada como punto de acceso de entrada **cuando** se consulta para operar **entonces** solo se ofrece para entradas.
+- [x] **Dado** una zona inactivada **cuando** se consultan movimientos históricos **entonces** se conserva la referencia (CA-03). *(La zona inactiva sigue consultable y tiene la clave `(organizacion_id, id)` para las FK de EP-10. Los movimientos llegan con loop_accesos.)*
+- [x] **Dado** un modo sin `es_punto_acceso` **cuando** se guarda **entonces** se rechaza con 400.
 
 ### Tareas backend
-- [ ] Agregado `Zone`, `CHECK` de consistencia modo/punto, unicidad por sede.
+- [x] Agregado `Zone`, `CHECK` de consistencia modo/punto, unicidad por sede.
 
 ### Tareas frontend
-- [ ] Gestión de zonas por sede con conmutador "punto de acceso" y modo.
+- [x] Gestión de zonas por sede con conmutador "punto de acceso" y modo.
 
 ### Pruebas
-- [ ] Unitarias: invariantes modo/punto.
-- [ ] Integración (PostgreSQL real): `CHECK` y unicidad.
-- [ ] Aislamiento / permisos negativos: zona de otra sede/organización; administrador sin alcance.
-- [ ] E2E / UI: crear zona y punto de acceso.
+- [x] Unitarias: invariantes modo/punto.
+- [x] Integración (PostgreSQL real): `CHECK` y unicidad.
+- [x] Aislamiento / permisos negativos: zona de otra sede/organización; administrador sin alcance.
+- [x] E2E / UI: crear zona y punto de acceso. *(Vitest.)*
 
 ### Definition of Done
 Cumple la [[PLAN-DE-TRABAJO#Definition of Done general|DoD general]] y además:
-- [ ] ADR-019 aprobado o ajustado antes de fijar la migración.
+- [x] ADR-019 aprobado o ajustado antes de fijar la migración. *(Aprobado 2026-10-19.)*
 
 ### Riesgos y decisiones pendientes
 > [!todo] ADR-019 en Propuesta — confirmar modelo único Zona/punto. Pendiente: si un punto de acceso puede pertenecer a varias zonas (no contemplado).

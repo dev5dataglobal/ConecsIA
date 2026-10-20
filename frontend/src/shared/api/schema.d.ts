@@ -1096,6 +1096,404 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v1/sedes/{sedeId}/zonas': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Con `operacion`, solo los puntos activos que la admiten y que el usuario puede operar (HU-018). */
+    get: {
+      parameters: {
+        query?: {
+          operacion?: components['schemas']['ModoPuntoAcceso']
+        }
+        header?: never
+        path: {
+          sedeId: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ZonaDto'][]
+            'application/json': components['schemas']['ZonaDto'][]
+            'text/json': components['schemas']['ZonaDto'][]
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          sedeId: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudCrearZona']
+          'text/json': components['schemas']['SolicitudCrearZona']
+          'application/*+json': components['schemas']['SolicitudCrearZona']
+        }
+      }
+      responses: {
+        /** @description Created */
+        201: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ZonaDto']
+            'application/json': components['schemas']['ZonaDto']
+            'text/json': components['schemas']['ZonaDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails']
+            'application/json': components['schemas']['ValidationProblemDetails']
+            'text/json': components['schemas']['ValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/zonas/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ZonaDto']
+            'application/json': components['schemas']['ZonaDto']
+            'text/json': components['schemas']['ZonaDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    put: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SolicitudModificarZona']
+          'text/json': components['schemas']['SolicitudModificarZona']
+          'application/*+json': components['schemas']['SolicitudModificarZona']
+        }
+      }
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ZonaDto']
+            'application/json': components['schemas']['ZonaDto']
+            'text/json': components['schemas']['ZonaDto']
+          }
+        }
+        /** @description Bad Request */
+        400: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ValidationProblemDetails']
+            'application/json': components['schemas']['ValidationProblemDetails']
+            'text/json': components['schemas']['ValidationProblemDetails']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Conflict */
+        409: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v1/zonas/{id}/inactivar': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          id: string
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ZonaDto']
+            'application/json': components['schemas']['ZonaDto']
+            'text/json': components['schemas']['ZonaDto']
+          }
+        }
+        /** @description Unauthorized */
+        401: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Forbidden */
+        403: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Not Found */
+        404: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+        /** @description Unprocessable Entity */
+        422: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            'text/plain': components['schemas']['ProblemDetails']
+            'application/json': components['schemas']['ProblemDetails']
+            'text/json': components['schemas']['ProblemDetails']
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v1/auth/login': {
     parameters: {
       query?: never
@@ -4095,6 +4493,7 @@ export interface components {
       permisos: string[]
       alcanceTotalSedes: boolean
       sedesAsignadas: string[]
+      puntosAsignados: string[]
     }
     /** @description Permiso del catálogo con su recurso y acción, para agrupar en la interfaz. */
     DefinicionPermiso: {
@@ -4131,6 +4530,8 @@ export interface components {
       organizacionId: string
       nombre: string
     }
+    /** @enum {unknown} */
+    ModoPuntoAcceso: 'Entrada' | 'Salida' | 'Ambos' | null
     ModuloOpcional: {
       clave: string
       nombre: string
@@ -4244,6 +4645,7 @@ export interface components {
     SolicitudAlcance: {
       alcanceTotalSedes: boolean
       sedes: null | string[]
+      puntos?: null | string[]
     }
     SolicitudAsignacion: {
       usuarios: null | string[]
@@ -4272,6 +4674,12 @@ export interface components {
       ciudad: null | string
       pais: null | string
       zonaHoraria: null | string
+    }
+    SolicitudCrearZona: {
+      nombre: null | string
+      descripcion: null | string
+      esPuntoAcceso: boolean
+      modo: null | components['schemas']['ModoPuntoAcceso']
     }
     SolicitudElemento: {
       clave: null | string
@@ -4327,6 +4735,14 @@ export interface components {
       /** Format: uint32 */
       version: number | string
     }
+    SolicitudModificarZona: {
+      nombre: null | string
+      descripcion: null | string
+      esPuntoAcceso: boolean
+      modo: null | components['schemas']['ModoPuntoAcceso']
+      /** Format: uint32 */
+      version: number | string
+    }
     SolicitudModulos: {
       habilitados: null | string[]
     }
@@ -4377,6 +4793,7 @@ export interface components {
       roles: string[]
       alcanceTotalSedes: boolean
       sedes: string[]
+      puntos: string[]
     }
     ValidationProblemDetails: {
       type?: null | string
@@ -4396,6 +4813,25 @@ export interface components {
       }
       /** Format: uint32 */
       version: number | string
+    }
+    ZonaDto: {
+      /** Format: uuid */
+      id: string
+      /** Format: uuid */
+      sedeId: string
+      nombre: string
+      descripcion: null | string
+      esPuntoAcceso: boolean
+      modo: null | string
+      estado: string
+      /** Format: uint32 */
+      version: number | string
+      /** Format: date-time */
+      creadaEn: string
+      /** Format: date-time */
+      actualizadaEn: string
+      /** Format: date-time */
+      inactivadaEn: null | string
     }
   }
   responses: never

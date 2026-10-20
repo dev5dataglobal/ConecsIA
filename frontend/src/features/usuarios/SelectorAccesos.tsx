@@ -1,6 +1,7 @@
 import { useT } from '../../shared/i18n/traductor'
 import { useRoles } from '../roles/apiRoles'
 import { useSedes } from '../sedes/apiSedes'
+import { useZonas } from '../zonas/apiZonas'
 
 /** Casillas de roles activos de la organización (HU-016). El servidor aplica el anti-escalamiento. */
 export function SelectorRoles({
@@ -77,6 +78,65 @@ export function SelectorAlcance({
       {!total && sedes.size === 0 && (
         <p className="text-xs text-tinta-suave">{t('usuarios.form.alcanceVacio')}</p>
       )}
+    </fieldset>
+  )
+}
+
+function PuntosDeSede({
+  sedeId,
+  puntos,
+  onCambiar,
+}: {
+  sedeId: string
+  puntos: Set<string>
+  onCambiar: (puntos: Set<string>) => void
+}) {
+  const { data } = useZonas(sedeId)
+  return (
+    <>
+      {data
+        ?.filter((z) => z.esPuntoAcceso && z.estado === 'Activa')
+        .map((z) => (
+          <label key={z.id} className="flex items-center gap-2 pl-4 text-sm">
+            <input
+              type="checkbox"
+              checked={puntos.has(z.id)}
+              onChange={() => {
+                const nuevos = new Set(puntos)
+                if (nuevos.has(z.id)) nuevos.delete(z.id)
+                else nuevos.add(z.id)
+                onCambiar(nuevos)
+              }}
+            />
+            {z.nombre}
+          </label>
+        ))}
+    </>
+  )
+}
+
+/**
+ * HU-018 (ADR-019): puntos de acceso dentro de las sedes elegidas. Ninguno = cualquier punto de
+ * esas sedes. El servidor exige que cada punto sea de una sede asignada y del alcance de quien asigna.
+ */
+export function SelectorPuntos({
+  sedes,
+  puntos,
+  onCambiar,
+}: {
+  sedes: Set<string>
+  puntos: Set<string>
+  onCambiar: (puntos: Set<string>) => void
+}) {
+  const t = useT()
+  if (sedes.size === 0) return null
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-medium">{t('usuarios.form.puntos')}</legend>
+      <p className="text-xs text-tinta-suave">{t('usuarios.form.puntosAyuda')}</p>
+      {[...sedes].map((sedeId) => (
+        <PuntosDeSede key={sedeId} sedeId={sedeId} puntos={puntos} onCambiar={onCambiar} />
+      ))}
     </fieldset>
   )
 }

@@ -19,6 +19,9 @@ public interface IContextoSolicitud
 
     IReadOnlySet<Guid> SedesAsignadas { get; }
 
+    /// <summary>HU-018 (ADR-019): puntos de acceso asignados. Vacío = cualquier punto de sus sedes.</summary>
+    IReadOnlySet<Guid> PuntosAsignados { get; }
+
     /// <summary>Permisos del plano SaaS del usuario (HU-009). Solo se cargan en endpoints sin organización resuelta.</summary>
     IReadOnlySet<string> PermisosSaas { get; }
 
@@ -27,4 +30,7 @@ public interface IContextoSolicitud
     bool TienePermisoSaas(string permiso) => EsSistema || PermisosSaas.Contains(permiso);
 
     bool PuedeOperarEnSede(Guid sedeId) => EsSistema || AlcanceTotalSedes || SedesAsignadas.Contains(sedeId);
+
+    bool PuedeOperarEnPunto(Guid puntoId, Guid sedeId) =>
+        EsSistema || (PuedeOperarEnSede(sedeId) && (PuntosAsignados.Count == 0 || PuntosAsignados.Contains(puntoId)));
 }

@@ -69,6 +69,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Sedes]] — primera vertical funcional: HU-013 con aislamiento, contexto por membresía y auditoría
 - [[Organizaciones y plano SaaS]] — HU-009: consola SaaS, alta con primer administrador, inactivación interina (D-16)
 - [[Áreas o destinos]] — HU-014: áreas por sede, FK compuesta y asignaciones con vigencia
+- [[Zonas y puntos de acceso]] — HU-015 (ADR-019): zonas por sede, CHECK modo/punto y alcance por punto
 - [[Roles y permisos]] — HU-017: catálogo cerrado, roles por organización, plantillas y matriz verificada
 
 ## Implementación

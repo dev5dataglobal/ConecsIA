@@ -33,6 +33,7 @@ internal sealed class ConfiguracionMembresia : IEntityTypeConfiguration<Membresi
         builder.Property(m => m.Permisos).HasColumnType("text[]");
         builder.Property(m => m.SedesAsignadas).HasColumnType("uuid[]");
         builder.Property(m => m.Roles).HasColumnType("uuid[]");
+        builder.Property(m => m.PuntosAsignados).HasColumnType("uuid[]");
         builder.Property(m => m.PendienteDeAceptar).HasDefaultValue(false);
         builder.HasOne<Usuario>().WithMany().HasForeignKey(m => m.UsuarioId).OnDelete(DeleteBehavior.Restrict);
         // La FK a organizacion se crea en la migración: la entidad vive en otro módulo (ADR-001).

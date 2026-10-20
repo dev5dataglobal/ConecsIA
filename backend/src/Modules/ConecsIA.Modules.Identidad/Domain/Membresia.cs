@@ -16,6 +16,7 @@ public sealed class Membresia
         Permisos = [];
         Roles = [];
         SedesAsignadas = [];
+        PuntosAsignados = [];
     }
 
     public Guid Id { get; private set; }
@@ -26,6 +27,9 @@ public sealed class Membresia
     public List<Guid> Roles { get; private set; }
     public bool AlcanceTotalSedes { get; private set; }
     public List<Guid> SedesAsignadas { get; private set; }
+
+    /// <summary>HU-018 (ADR-019): puntos de acceso asignados; vacío = cualquier punto de sus sedes.</summary>
+    public List<Guid> PuntosAsignados { get; private set; }
 
     public static Membresia Crear(
         Guid usuarioId,
@@ -71,10 +75,11 @@ public sealed class Membresia
     public void AsignarRoles(IEnumerable<Guid> roles) => Roles = roles.Distinct().ToList();
 
     /// <summary>HU-018: alcance territorial. Vacío y sin alcance total = ningún acceso territorial.</summary>
-    public void AsignarAlcance(bool alcanceTotalSedes, IEnumerable<Guid> sedes)
+    public void AsignarAlcance(bool alcanceTotalSedes, IEnumerable<Guid> sedes, IEnumerable<Guid>? puntos = null)
     {
         AlcanceTotalSedes = alcanceTotalSedes;
         SedesAsignadas = alcanceTotalSedes ? [] : sedes.Distinct().ToList();
+        PuntosAsignados = (puntos ?? []).Distinct().ToList();
     }
 
     public void Inactivar() => Activa = false;

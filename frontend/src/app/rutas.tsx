@@ -4,6 +4,7 @@ import { NoEncontradoPage } from '../features/inicio/NoEncontradoPage'
 import { AreasPage } from '../features/areas/AreasPage'
 import { CatalogosPage } from '../features/catalogos/CatalogosPage'
 import { RolesPage } from '../features/roles/RolesPage'
+import { ZonasPage } from '../features/zonas/ZonasPage'
 import { VocabularioPage } from '../features/vocabulario/VocabularioPage'
 import { AceptarInvitacionPage } from '../features/usuarios/AceptarInvitacionPage'
 import { UsuariosPage } from '../features/usuarios/UsuariosPage'
@@ -28,6 +29,7 @@ export const rutas: RouteObject[] = [
           { path: 'configuracion/vocabulario', element: <VocabularioPage /> },
           { path: 'configuracion/catalogos', element: <CatalogosPage /> },
           { path: 'sedes/:sedeId/areas', element: <AreasPage /> },
+          { path: 'sedes/:sedeId/zonas', element: <ZonasPage /> },
           { path: 'usuarios', element: <UsuariosPage /> },
         ],
       },
