@@ -93,7 +93,7 @@ Implementado y verificado contra PostgreSQL real. Suite: 177/177 (56 unitarias, 
 - **Implementado** en `feature/login`: `IngresarPage.tsx` + `ingresar.css` con el diseño ajustado (commit `7e0e5d8` de `feature/frontend`) y animaciones del mockup; `/ingresar` se renderiza a pantalla completa, fuera de `AppShell`.
 - Se conserva la lógica de HU-006: ingreso real, errores redactados por el servidor, borrado de contraseña tras cada intento y selector de usuarios sintéticos (ADR-022).
 - El panel decorativo muestra solo ejemplos genéricos (sin datos de organizaciones), porque el usuario aún no está autenticado. Respeta `prefers-reduced-motion`.
-- **Verificado:** typecheck, oxlint, 28/28 pruebas Vitest y build. **No verificado** visualmente en el navegador.
+- **Verificado:** typecheck, oxlint, 28/28 pruebas Vitest y build. **Verificado** visualmente en el navegador (escritorio ~800px y móvil 375px, sin errores de consola ni scroll horizontal).
 - Pendiente: «Recordarme», recuperación de contraseña y Microsoft siguen deshabilitados (fuera del alcance actual).
 
 ## HU-006 E2E con el stack real (2026-10-20)

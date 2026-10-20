@@ -300,3 +300,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - `IngresarPage` rediseñado con los ajustes de `feature/frontend` y las animaciones del mockup; nuevo `ingresar.css`; ruta `/ingresar` fuera de `AppShell`.
 - Verificado con typecheck, lint, 28/28 pruebas y build; sin revisión visual en navegador.
 - Página tocada: [[Estado de implementación]].
+
+## [2026-10-20] revision | Revisión visual de /ingresar
+- Revisado en el navegador en escritorio (~800px) y móvil (375px): diseño correcto, sin errores de consola ni scroll horizontal; el selector de usuarios de desarrollo aparece con la API en modo desarrollo.
+- Agregado `.claude/launch.json` (configuración `frontend`) para levantar Vite.
+- Página tocada: [[Estado de implementación]].
