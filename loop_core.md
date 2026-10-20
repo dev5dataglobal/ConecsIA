@@ -49,7 +49,7 @@ tags: [conecsia, loop]
 - [x] **HU-007** Contexto de organización y sede derivado de membresía. — *Selección de organización con multi-membresía (D-03b aprobada). El `organizationId` que envía el cliente se verifica contra la membresía.*
 - [x] **HU-008** Registro de auditoría append-only. — *Cerrar la DoD verificando el append-only en la base de datos. La retención sigue pendiente (D-14).*
 - [x] **HU-017** Roles configurables y catálogo de permisos. — *Catálogo de permisos, roles por organización y plantillas. Nunca se otorgan permisos por el nombre del rol.*
-- [ ] **HU-010** Tipos de organización y plantilla básica de catálogos. — *Plantilla sembrable. Se coordina con HU-020: los catálogos de persona y documento los crea `loop_personas`.*
+- [x] **HU-010** Tipos de organización y plantilla básica de catálogos. — *Plantilla sembrable. Se coordina con HU-020: los catálogos de persona y documento los crea `loop_personas`.*
 - [ ] ⏸ (ADR-019 en Propuesta) **HU-015** Gestionar zonas y puntos de acceso. — *ZONA con `es_punto_acceso`. ⏸ si ADR-019 sigue en Propuesta: pedir confirmación.*
 - [ ] ⏸ (parcial: sedes ✔; destinos D-04; puntos HU-015) **HU-018** Alcance por sede, destino y punto de acceso. — *Filtro de alcance reutilizable por todos los módulos. **Al fusionar HU-017, HU-010 y HU-018 se alcanza M1.***
 - [x] **HU-009** Alta, edición e inactivación de organizaciones. — *Los efectos de la inactivación quedan ⏸ por D-16: aislar la parte afectada.*
@@ -71,6 +71,7 @@ tags: [conecsia, loop]
 ## Registro de evidencia
 | Fecha | Tarea | Evidencia |
 |---|---|---|
+| 2026-10-19 | HU-010 | Backend 340 en verde (`PlantillasTests` 5, `PlantillasOrganizacionTests` 2). Frontend 48/48 (`CatalogosPage.test.tsx`). Migración `CatalogosPlantilla`. Contenido de la plantilla propuesto, D-23. |
 | 2026-10-19 | HU-012 | Backend 336 en verde (`VocabularioTests` 5 de integración y 10 unitarias). Frontend 47/47 (`VocabularioPage.test.tsx`). Migración `VocabularioOrganizacion`. ⏸ Etiquetas por vertical (D-01). |
 | 2026-10-19 | HU-014 | Backend 321 en verde (`AreasTests` 12, `AreaTests` 5; FK compuesta verificada en PostgreSQL). Frontend 45/45 (`AreasPage.test.tsx`). Migración `AreasDestinos`. ⏸ Alcance de autorizadores por destino (D-04). |
 | 2026-10-19 | HU-016 + HU-018 (sedes) | Backend 304 en verde (`UsuariosTests` 17, `InvitacionTests` 5). Frontend 43/43 (`UsuariosPage.test.tsx`). Migración `UsuariosInvitaciones`. HU-018 queda parcial: destinos con HU-014; puntos ⏸ HU-015. |

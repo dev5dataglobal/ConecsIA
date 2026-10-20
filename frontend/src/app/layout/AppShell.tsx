@@ -19,6 +19,7 @@ const enlaces: { to: string; clave: ClaveTexto; icono: NombreIcono }[] = [
   { to: '/usuarios', clave: 'nav.usuarios', icono: 'inicio' },
   { to: '/roles', clave: 'nav.roles', icono: 'escudo' },
   { to: '/configuracion/vocabulario', clave: 'nav.vocabulario', icono: 'editar' },
+  { to: '/configuracion/catalogos', clave: 'nav.catalogos', icono: 'editar' },
 ]
 
 /** Consola del plano SaaS (HU-009): solo para usuarios con permisos de plataforma. */

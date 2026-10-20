@@ -24,7 +24,7 @@ Permitir al Superadministrador SaaS dar de alta, configurar e inactivar [[Organi
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
 | HU-009 | Alta, edición e inactivación de organizaciones | M | **Implementada** 2026-10-19 en `loop/core` (sin fusionar) | Efectos de inactivación: D-16 (interino) |
-| HU-010 | Tipos de organización y plantilla básica de catálogos | M | Lista para refinar | — |
+| HU-010 | Tipos de organización y plantilla básica de catálogos | M | **Implementada** 2026-10-19 en `loop/core`; contenido de la plantilla propuesto (D-23) | D-23 |
 | HU-011 | Planes y habilitación de módulos por organización | M | **Implementada** 2026-10-19 en `loop/core` (módulos); planes ⏸ D-16 | D-16 |
 | HU-012 | Vocabulario configurable por organización | S | **Implementada** 2026-10-19 en `loop/core` (mecanismo); etiquetas por vertical ⏸ D-01 | Etiquetas definitivas: D-01 |
 
@@ -120,20 +120,20 @@ Superadministrador SaaS; Administrador de organización (ajusta catálogos).
 - **Endpoints indicativos:** `GET /api/v1/saas/tipos-organizacion`, `POST /api/v1/saas/organizaciones/{id}/aplicar-plantilla`.
 
 ### Criterios de aceptación
-- [ ] **Dado** una organización con catálogos personalizados **cuando** se cambia su plantilla **entonces** no se modifican permisos ni se eliminan personalizaciones o históricos (CA-26).
-- [ ] **Dado** un catálogo precargado **cuando** el administrador lo edita o inactiva **entonces** se conserva la referencia histórica (CA-03).
-- [ ] **Dado** dos aplicaciones simultáneas de plantilla **cuando** se ejecutan **entonces** no se duplican elementos.
+- [x] **Dado** una organización con catálogos personalizados **cuando** se cambia su plantilla **entonces** no se modifican permisos ni se eliminan personalizaciones o históricos (CA-26).
+- [x] **Dado** un catálogo precargado **cuando** el administrador lo edita o inactiva **entonces** se conserva la referencia histórica (CA-03).
+- [x] **Dado** dos aplicaciones simultáneas de plantilla **cuando** se ejecutan **entonces** no se duplican elementos.
 
 ### Tareas backend
-- [ ] Modelo de tipo de organización y plantilla versionada (datos semilla en migración).
-- [ ] Servicio de aplicación idempotente (clave natural por elemento de plantilla).
+- [x] Modelo de tipo de organización y plantilla versionada (datos semilla en migración). *(Tipos y plantilla v1 en código; su contenido es una propuesta, D-23.)*
+- [x] Servicio de aplicación idempotente (clave natural por elemento de plantilla).
 
 ### Tareas frontend
-- [ ] Selector de tipo en alta de organización; vista de qué elementos vienen de plantilla.
+- [x] Selector de tipo en alta de organización; vista de qué elementos vienen de plantilla.
 
 ### Pruebas
-- [ ] Unitarias: fusión plantilla vs personalizado.
-- [ ] Integración (PostgreSQL real): idempotencia y concurrencia de aplicación.
+- [x] Unitarias: fusión plantilla vs personalizado.
+- [x] Integración (PostgreSQL real): idempotencia y concurrencia de aplicación.
 - [ ] Aislamiento / permisos negativos: aplicar plantilla a otra organización sin permiso SaaS.
 - [ ] E2E / UI: alta con tipo y ajuste de un catálogo.
 

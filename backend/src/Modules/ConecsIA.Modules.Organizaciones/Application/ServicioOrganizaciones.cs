@@ -77,6 +77,7 @@ public interface IRepositorioOrganizaciones
 public sealed class ServicioOrganizacionesSaas(
     IRepositorioOrganizaciones repositorio,
     IProvisionOrganizacion provision,
+    AplicadorPlantillas plantillas,
     IContextoSolicitud contexto,
     IContextoPlanoSaas planoSaas,
     IRegistroAuditoria auditoria,
@@ -118,6 +119,8 @@ public sealed class ServicioOrganizacionesSaas(
         planoSaas.OperarEnOrganizacion(organizacion.Id);
         var administrador = await provision.ProvisionarAsync(
             organizacion.Id, solicitud.Administrador!.Correo!, solicitud.Administrador.Nombre!, cancelacion);
+        // HU-010: la organización nueva recibe la plantilla básica de su tipo.
+        await plantillas.AplicarAsync(organizacion.Id, organizacion.Tipo, cancelacion);
         auditoria.Registrar(new EntradaAuditoria("organizacion.crear", TipoObjeto, organizacion.Id, ResultadoAuditoria.Exitoso,
             ValoresNuevos: new { Organizacion = Instantanea(organizacion), PrimerAdministrador = administrador }));
 

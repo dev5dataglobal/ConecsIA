@@ -574,6 +574,58 @@ namespace ConecsIA.Migrations.Migraciones
                     b.ToTable("usuario", (string)null);
                 });
 
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ElementoCatalogo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<string>("Catalogo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("catalogo");
+
+                    b.Property<string>("Clave")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("clave");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre");
+
+                    b.Property<Guid>("OrganizacionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizacion_id");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("origen");
+
+                    b.HasKey("Id")
+                        .HasName("pk_catalogo_elemento");
+
+                    b.HasIndex("OrganizacionId", "Catalogo", "Clave")
+                        .IsUnique()
+                        .HasDatabaseName("ix_catalogo_elemento_organizacion_id_catalogo_clave");
+
+                    b.ToTable("catalogo_elemento", (string)null);
+                });
+
             modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ModuloOrganizacion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -777,6 +829,16 @@ namespace ConecsIA.Migrations.Migraciones
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_sesion_usuario_usuario_usuario_id");
+                });
+
+            modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ElementoCatalogo", b =>
+                {
+                    b.HasOne("ConecsIA.Modules.Organizaciones.Domain.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_catalogo_elemento_organizacion_organizacion_id");
                 });
 
             modelBuilder.Entity("ConecsIA.Modules.Organizaciones.Domain.ModuloOrganizacion", b =>

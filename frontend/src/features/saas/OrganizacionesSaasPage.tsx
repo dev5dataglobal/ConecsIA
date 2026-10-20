@@ -6,6 +6,7 @@ import { Icono } from '../../shared/ui/Icono'
 import { ProblemDetailsAlert } from '../../shared/ui/ProblemDetailsAlert'
 import { usePlataforma } from '../sesion/useContexto'
 import {
+  useAplicarPlantilla,
   useCambiarEstadoOrganizacion,
   useOrganizacionesSaas,
   useTiposOrganizacion,
@@ -31,6 +32,7 @@ export function OrganizacionesSaasPage() {
   const { data, error, isPending } = useOrganizacionesSaas(pagina)
   const { data: tipos } = useTiposOrganizacion()
   const cambiarEstado = useCambiarEstadoOrganizacion()
+  const aplicarPlantilla = useAplicarPlantilla()
   const puedeAdministrar =
     plataforma?.permisosSaas?.includes('saas.organizaciones.administrar') ?? false
   const paginas = data ? Math.max(1, Math.ceil(data.total / 20)) : 1
@@ -56,6 +58,9 @@ export function OrganizacionesSaasPage() {
       </header>
 
       {error instanceof ApiError && <ProblemDetailsAlert problem={error.problem} />}
+      {aplicarPlantilla.error instanceof ApiError && (
+        <ProblemDetailsAlert problem={aplicarPlantilla.error.problem} />
+      )}
       {cambiarEstado.error instanceof ApiError && (
         <ProblemDetailsAlert problem={cambiarEstado.error.problem} />
       )}
@@ -106,6 +111,13 @@ export function OrganizacionesSaasPage() {
                           className="rounded-lg px-2 py-1 text-xs font-medium text-tinta-suave hover:bg-superficie"
                         >
                           {t('saas.modulos')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => aplicarPlantilla.mutate(org.id)}
+                          className="rounded-lg px-2 py-1 text-xs font-medium text-tinta-suave hover:bg-superficie"
+                        >
+                          {t('saas.plantilla')}
                         </button>
                         <button
                           type="button"

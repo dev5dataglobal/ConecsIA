@@ -315,3 +315,8 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-19] revision | Marcado de historias completadas en loop_core
 - `tablero-scrum`: nueva sección «Implementadas en `loop/core`» con HU-005, 007, 008, 009, 011, 012, 014, 016 y 017. En curso: HU-010, HU-018 (parcial) y HU-015 (⏸ ADR-019).
 - `loop_core.md`: HU-018 y HU-015 marcadas como ⏸ con su motivo. Faltan HU-010 y el cierre de HU-013.
+
+## [2026-10-19] implementacion | HU-010 Tipos de organización y plantilla básica (loop_core)
+- Pruebas primero: `PlantillasTests` (5: copia, reaplicación sin pisar personalizaciones ni roles, concurrencia, alta, permisos) y unitarias. Backend 340 y frontend 48 en verde. Migración `CatalogosPlantilla`.
+- Nueva D-23: el contenido de la plantilla es una propuesta. Incidencia: Docker Desktop se detuvo y se reinició para las pruebas.
+- Wiki: EP-03, `Decisiones pendientes`, [[Organizaciones y plano SaaS]], `tablero-scrum`, `Estado de implementación`, `loop_core.md`.

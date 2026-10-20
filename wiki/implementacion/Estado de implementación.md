@@ -162,3 +162,6 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 
 ## HU-012 cerrada en `loop/core` (2026-10-19)
 - Vocabulario por organización (detalle en [[Organizaciones y plano SaaS]]). Migración `VocabularioOrganizacion`. Nuevo permiso `configuracion.modificar`.
+
+## HU-010 cerrada en `loop/core` (2026-10-19)
+- Catálogos por organización y plantilla básica (detalle en [[Organizaciones y plano SaaS]]). Migración `CatalogosPlantilla`. Nueva decisión D-23 para el contenido de la plantilla.

@@ -46,3 +46,10 @@ tags: [conecsia, modulo, ep-03, saas]
 - **SPA:** `AppShell` envuelve la aplicación con el vocabulario de la organización (`aTextos`): menú, título de sedes, etiquetas de contexto y título de áreas. Pantalla `/configuracion/vocabulario`.
 - **RN-11:** rutas, permisos y contratos conservan los nombres del núcleo.
 - ⏸ **D-01:** las etiquetas por vertical y los valores por defecto de cada plantilla (HU-010).
+
+## Tipos y plantilla básica (HU-010, Implementado 2026-10-19)
+- **Tipos** (`TiposOrganizacion`): empresa, conjunto residencial, club, universidad, coworking, parque industrial y otro.
+- **Plantilla v1** (`PlantillasOrganizacion`): catálogo `tipos-area` por tipo. > [!warning] El contenido es una **propuesta** (D-23). Persona y documento los aporta loop_personas (HU-020).
+- **Tabla** `catalogo_elemento` (organización, catálogo, clave, nombre, origen `plantilla:{tipo}:v1` o `personalizado`, activo). Índice único (organización, catálogo, clave).
+- **Aplicación** idempotente `POST /api/v1/saas/organizaciones/{id}/aplicar-plantilla`: solo agrega lo que falta. No modifica elementos existentes, inactivos ni roles (CA-26). Ante aplicaciones simultáneas, el índice único da 409 sin duplicar. Se aplica también al crear la organización y se audita como `organizacion.aplicar_plantilla`.
+- **Administración:** `GET/POST /api/v1/catalogos/{catalogo}`, `PUT .../{id}` (renombrar) y `POST .../{id}/inactivar` (con `configuracion.modificar`). La SPA tiene `/configuracion/catalogos` y el botón «Aplicar plantilla» en la consola SaaS.

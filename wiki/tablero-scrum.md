@@ -31,9 +31,9 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 - [x] HU-014 Áreas o destinos con responsables y autorizadores — alcance de autorizadores ⏸ D-04
 - [x] HU-016 Invitar y administrar usuarios — envío por correo D-12
 - [x] HU-017 Roles configurables y catálogo de permisos — CA-07 ⏸ EP-07
+- [x] HU-010 Tipos de organización y plantilla básica — contenido propuesto (D-23)
 
 ## En curso (`loop/core`)
-- [ ] HU-010 Tipos de organización y plantilla básica — pruebas escritas; contenido de plantilla propuesto (D-23)
 - [ ] HU-018 Alcance por sede, destino y punto — sedes hecho; destinos ⏸ D-04; puntos ⏸ HU-015
 - [ ] HU-015 Zonas y puntos de acceso — ⏸ ADR-019 en Propuesta (requiere confirmación)
 
@@ -63,7 +63,7 @@ _(vacío)_
 | HU-007 | Contexto de organización y sede derivado de membresía | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso; selección multi-membresía depende de D-03 |
 | HU-008 | Registro de auditoría append-only | [[EP-02 Tenancy, identidad y auditoría base]] | F0 | M | En curso |
 | HU-009 | Alta, edición e inactivación de organizaciones | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core` (sin PR); D-16 interino |
-| HU-010 | Tipos de organización y plantilla básica de catálogos | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
+| HU-010 | Tipos de organización y plantilla básica de catálogos | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core`; contenido D-23 |
 | HU-011 | Planes y habilitación de módulos por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Implementada en `loop/core` (módulos); planes ⏸ D-16 |
 | HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Implementada en `loop/core` (mecanismo); etiquetas ⏸ D-01 |
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | En revisión |

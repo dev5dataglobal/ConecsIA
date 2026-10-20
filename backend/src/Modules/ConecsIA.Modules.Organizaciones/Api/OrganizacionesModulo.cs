@@ -22,6 +22,10 @@ public sealed class OrganizacionesModulo : IModulo
         servicios.AddScoped<ServicioModulos>();
         servicios.AddScoped<IRepositorioVocabulario, RepositorioVocabulario>();
         servicios.AddScoped<ServicioVocabulario>();
+        servicios.AddScoped<IRepositorioCatalogos, RepositorioCatalogos>();
+        servicios.AddScoped<AplicadorPlantillas>();
+        servicios.AddScoped<ServicioPlantillasSaas>();
+        servicios.AddScoped<ServicioCatalogos>();
         servicios.AddScoped<ConecsIA.SharedKernel.Modulos.IModulosHabilitados, ModulosHabilitados>();
     }
 }

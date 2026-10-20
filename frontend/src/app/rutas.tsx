@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router'
 import { InicioPage } from '../features/inicio/InicioPage'
 import { NoEncontradoPage } from '../features/inicio/NoEncontradoPage'
 import { AreasPage } from '../features/areas/AreasPage'
+import { CatalogosPage } from '../features/catalogos/CatalogosPage'
 import { RolesPage } from '../features/roles/RolesPage'
 import { VocabularioPage } from '../features/vocabulario/VocabularioPage'
 import { AceptarInvitacionPage } from '../features/usuarios/AceptarInvitacionPage'
@@ -25,6 +26,7 @@ export const rutas: RouteObject[] = [
           { path: 'sedes', element: <SedesPage /> },
           { path: 'roles', element: <RolesPage /> },
           { path: 'configuracion/vocabulario', element: <VocabularioPage /> },
+          { path: 'configuracion/catalogos', element: <CatalogosPage /> },
           { path: 'sedes/:sedeId/areas', element: <AreasPage /> },
           { path: 'usuarios', element: <UsuariosPage /> },
         ],

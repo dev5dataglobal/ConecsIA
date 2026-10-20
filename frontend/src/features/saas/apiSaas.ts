@@ -90,3 +90,16 @@ export function useCambiarEstadoOrganizacion() {
     onSuccess: invalidar,
   })
 }
+
+/** HU-010: aplica la plantilla del tipo; solo agrega lo que falta. */
+export function useAplicarPlantilla() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: (organizacionId: string) =>
+      apiFetch<{ tipo: string; version: number; agregados: number }>(
+        `${RUTA}/${organizacionId}/aplicar-plantilla`,
+        { method: 'POST' },
+      ),
+    onSuccess: invalidar,
+  })
+}

@@ -87,6 +87,18 @@ export const es = {
   'nav.roles': 'Roles',
   'nav.usuarios': 'Usuarios',
   'nav.vocabulario': 'Vocabulario',
+  'nav.catalogos': 'Catálogos',
+  'catalogos.titulo': 'Tipos de área',
+  'catalogos.descripcion':
+    'Catálogo de tu organización. Los elementos de plantilla son copias propias: puedes renombrarlos o inactivarlos y volver a aplicar la plantilla no los cambia.',
+  'catalogos.lista': 'Elementos del catálogo',
+  'catalogos.clave': 'Clave',
+  'catalogos.nombre': 'Nombre',
+  'catalogos.agregar': 'Agregar',
+  'catalogos.inactivar': 'Inactivar',
+  'catalogos.personalizado': 'Personalizado',
+  'catalogos.dePlantilla': 'De plantilla',
+  'saas.plantilla': 'Aplicar plantilla',
   'vocabulario.titulo': 'Vocabulario de la organización',
   'vocabulario.descripcion':
     'Cambia cómo se llaman los conceptos en la interfaz (por ejemplo, sede por campus). La API y los permisos no cambian. Deja vacío un término para usar el nombre por defecto.',
