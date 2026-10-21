@@ -1,6 +1,7 @@
 using ConecsIA.Application.Interfaces.Repositories;
 using ConecsIA.Infrastructure.Data;
 using ConecsIA.Infrastructure.Repositories;
+using ConecsIA.Infrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ var connectionString = builder.Configuration.GetConnectionString("Conecsia")
 builder.Services.AddDbContext<ConecsiaDbContext>(options => options.UseNpgsql(connectionString ?? "Host=localhost;Port=5432;Database=conecsia_dev;Username=postgres;Password=postgres", npgsql => npgsql.MigrationsAssembly(typeof(ConecsiaDbContext).Assembly.FullName)));
 builder.Services.AddScoped<IOrganizacionRepository, OrganizacionRepository>();
 builder.Services.AddScoped<IPersonaRepository, PersonaRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
 
