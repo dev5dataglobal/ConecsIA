@@ -1,6 +1,8 @@
 using ConecsIA.Application.Interfaces.Repositories;
 using ConecsIA.Infrastructure.Repositories;
 using ConecsIA.Infrastructure.UnitOfWork;
+using ApiConecsia.Profiles;
+using AutoMapper;
 using ConecsIA.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +34,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
         services.AddScoped<IUserService, UserService>();
+        services.AddAutoMapper(typeof(MappingProfiles).Assembly);
         services.AddHttpContextAccessor();
 
         return services;

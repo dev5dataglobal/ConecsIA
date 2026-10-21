@@ -1,5 +1,7 @@
+using ConecsIA.Application.DTOs;
 using ConecsIA.Application.Interfaces.Repositories;
 using ConecsIA.Domain.Entities;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 
 namespace ApiConecsia.Services;
@@ -8,21 +10,23 @@ public sealed class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher<Usuario> _passwordHasher;
+    private readonly IMapper _mapper;
 
     public UserService(
         IUnitOfWork unitOfWork,
-        IPasswordHasher<Usuario> passwordHasher)
+        IPasswordHasher<Usuario> passwordHasher,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
+        _mapper = mapper;
     }
 
-    public async Task<Usuario?> AuthenticateAsync(
-        string correo,
-        string password,
+    public async Task<UsuarioDto?> AuthenticateAsync(
+        LoginDto request,
         CancellationToken cancellationToken = default)
     {
-        var correoNormalizado = NormalizeEmail(correo);
+        var correoNormalizado = NormalizeEmail(request.Correo);
         var usuario = _unitOfWork.UsuarioRepository
             .Find(x => x.CorreoNormalizado == correoNormalizado)
             .SingleOrDefault();
@@ -35,7 +39,7 @@ public sealed class UserService : IUserService
         var result = _passwordHasher.VerifyHashedPassword(
             usuario,
             usuario.PasswordHash,
-            password);
+            request.Password);
 
         if (result == PasswordVerificationResult.Failed)
         {
@@ -46,15 +50,14 @@ public sealed class UserService : IUserService
         _unitOfWork.UsuarioRepository.Update(usuario);
         await _unitOfWork.SaveAsync();
 
-        return usuario;
+        return _mapper.Map<UsuarioDto>(usuario);
     }
 
-    public async Task<Usuario> RegisterAsync(
-        string correo,
-        string password,
+    public async Task<UsuarioDto> RegisterAsync(
+        UsuarioCreateDto request,
         CancellationToken cancellationToken = default)
     {
-        var correoNormalizado = NormalizeEmail(correo);
+        var correoNormalizado = NormalizeEmail(request.Correo);
         var exists = _unitOfWork.UsuarioRepository
             .Find(x => x.CorreoNormalizado == correoNormalizado)
             .Any();
@@ -67,7 +70,7 @@ public sealed class UserService : IUserService
 
         var usuario = new Usuario
         {
-            Correo = correo.Trim(),
+            Correo = request.Correo.Trim(),
             CorreoNormalizado = correoNormalizado,
             CreadoEn = DateTime.UtcNow,
             Activo = true
@@ -75,12 +78,12 @@ public sealed class UserService : IUserService
 
         usuario.PasswordHash = _passwordHasher.HashPassword(
             usuario,
-            password);
+            request.Password);
 
         _unitOfWork.UsuarioRepository.Add(usuario);
         await _unitOfWork.SaveAsync();
 
-        return usuario;
+        return _mapper.Map<UsuarioDto>(usuario);
     }
 
     private static string NormalizeEmail(string correo)

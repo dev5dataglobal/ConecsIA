@@ -1,16 +1,14 @@
-using ConecsIA.Domain.Entities;
+using ConecsIA.Application.DTOs;
 
 namespace ApiConecsia.Services;
 
 public interface IUserService
 {
-    Task<Usuario?> AuthenticateAsync(
-        string correo,
-        string password,
+    Task<UsuarioDto?> AuthenticateAsync(
+        LoginDto request,
         CancellationToken cancellationToken = default);
 
-    Task<Usuario> RegisterAsync(
-        string correo,
-        string password,
+    Task<UsuarioDto> RegisterAsync(
+        UsuarioCreateDto request,
         CancellationToken cancellationToken = default);
 }
