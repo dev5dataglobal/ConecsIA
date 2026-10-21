@@ -1,9 +1,9 @@
+using ConecsIA.Application.Interfaces;
 using ConecsIA.Domain.Entities;
 
 namespace ConecsIA.Application.Interfaces.Repositories;
 
-public interface IOrganizacionRepository
+public interface IOrganizacionRepository : IGenericRepository<Organizacion>
 {
-    Task<Organizacion?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task AddAsync(Organizacion organizacion, CancellationToken cancellationToken = default);
 }
