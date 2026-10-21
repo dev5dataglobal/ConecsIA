@@ -1,0 +1,58 @@
+# Dependencias de Node / frontend
+node_modules/
+frontend/node_modules/
+.npm/
+.yarn/
+.pnp.*
+
+# Salidas y cachés de Vite / TypeScript
+dist/
+frontend/dist/
+.vite/
+frontend/.vite/
+.cache/
+frontend/.cache/
+*.tsbuildinfo
+
+# .NET / ASP.NET
+**/bin/
+**/obj/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Variables y secretos locales
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.local.json
+
+# IDEs y herramientas
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.claude/local/
+
+# Cobertura, pruebas y logs
+coverage/
+.nyc_output/
+*.log
+logs/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporales y archivos generados
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.orig
