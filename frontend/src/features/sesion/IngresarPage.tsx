@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { apiFetch } from '../../shared/api/http'
 import { ApiError } from '../../shared/api/problemDetails'
@@ -74,10 +74,6 @@ export function IngresarPage() {
         </div>
 
         <div className="login-hero-copy">
-          <span className="login-kicker login-in" style={{ animationDelay: '.15s' }}>
-            <span className="login-dot" aria-hidden="true" />
-            Plataforma multiempresa y multisede
-          </span>
           <h1>
             <span className="login-line">
               <span>Gestiona cada acceso</span>
@@ -93,7 +89,6 @@ export function IngresarPage() {
             Visitantes, contratistas, proveedores y autorizaciones bajo un mismo control, en todas
             tus sedes y en tiempo real.
           </p>
-          <DemoAcceso />
         </div>
 
         <div className="login-benefits login-in" style={{ animationDelay: '1s' }}>
@@ -250,53 +245,5 @@ export function IngresarPage() {
         </div>
       </section>
     </main>
-  )
-}
-
-/** Ejemplos ficticios que ilustran el flujo; no provienen de la API. */
-const EJEMPLOS = [
-  { iniciales: 'VI', rol: 'Visitante', lugar: 'Recepción', tipo: 'entrada' },
-  { iniciales: 'PR', rol: 'Proveedor', lugar: 'Bodega', tipo: 'entrada' },
-  { iniciales: 'CO', rol: 'Contratista', lugar: 'Torre B', tipo: 'salida' },
-  { iniciales: 'EM', rol: 'Empleado', lugar: 'Sede principal', tipo: 'entrada' },
-] as const
-
-function DemoAcceso() {
-  const [paso, setPaso] = useState(0)
-  useEffect(() => {
-    const id = window.setInterval(() => setPaso((p) => p + 1), 2600)
-    return () => window.clearInterval(id)
-  }, [])
-  const visibles = [0, 1, 2].map((i) => ({
-    clave: paso + i,
-    ...(EJEMPLOS[(paso + i) % EJEMPLOS.length] as (typeof EJEMPLOS)[number]),
-  }))
-
-  return (
-    <div className="login-stage" aria-hidden="true">
-      <div className="login-card login-feed">
-        <h4>
-          Así se ve tu operación <em>● ejemplo</em>
-        </h4>
-        {visibles.map((e) => (
-          <div key={e.clave} className="login-ev">
-            <span className="login-av">{e.iniciales}</span>
-            <span className="login-ev-meta">
-              {e.rol}
-              <small>{e.lugar}</small>
-            </span>
-            <span className={`login-tag login-tag-${e.tipo}`}>
-              {e.tipo === 'entrada' ? 'Entrada' : 'Salida'}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="login-card login-qr">
-        <div className="login-qrbox">
-          <div className="login-scan" />
-        </div>
-        <small>✓ Autorización válida</small>
-      </div>
-    </div>
   )
 }

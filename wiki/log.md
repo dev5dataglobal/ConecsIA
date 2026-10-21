@@ -313,3 +313,13 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-20] revision | Push de feature/login para PR
 - Rama `feature/login` publicada en origin; el PR lo abre el usuario desde GitHub (gh no está instalado).
 - Sin cambios en otras páginas.
+
+## [2026-10-20] implementacion | Login a pantalla completa
+- `/ingresar` ocupa exactamente el alto de la ventana en escritorio; el panel del formulario hace scroll interno (lista de usuarios de desarrollo) y el formulario se amplía a 30rem.
+- Se eliminó el código de `DemoAcceso` y la etiqueta superior que el usuario quitó del render.
+- Verificado: 1366x640 sin scroll de página ni errores de consola; typecheck, lint, 28/28 pruebas y build. Sin commit.
+
+## [2026-10-20] implementacion | Marca más grande y «Bienvenido» alineado
+- Marca ConecsIA ampliada (ícono 2.9rem, nombre 1.35rem, subtítulo 0.78rem).
+- El panel del formulario usa el mismo padding superior que el panel oscuro: «Bienvenido» queda centrado con la marca (diferencia <1px a 1366x640).
+- Lint, 28/28 pruebas y build OK. Sin commit.
