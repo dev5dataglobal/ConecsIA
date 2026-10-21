@@ -1,30 +1,302 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
+import { apiFetch } from '../../shared/api/http'
 import { ApiError } from '../../shared/api/problemDetails'
+import { useT } from '../../shared/i18n/traductor'
 import { ProblemDetailsAlert } from '../../shared/ui/ProblemDetailsAlert'
 import { ingresar } from './apiSesion'
+import { guardarSesionDesarrollo } from './sesionDesarrollo'
+import type { UsuarioDesarrollo } from './useContexto'
+import './ingresar.css'
 
-/** Inicio de sesión real (HU-006, ADR-006). La API redacta los errores de credenciales. */
+/**
+ * Inicio de sesión (HU-006, ADR-006). El error de credenciales es genérico: lo redacta el
+ * servidor y no revela si el correo existe. El selector de usuarios sintéticos aparece solo
+ * cuando la API tiene habilitado el modo desarrollo (ADR-022); en producción responde 404.
+ *
+ * El panel izquierdo es decorativo (diseño "login animado", 2026-10-20): no muestra datos
+ * reales de ninguna organización, porque el usuario aún no está autenticado.
+ */
 export function IngresarPage() {
-  const navigate = useNavigate(); const location = useLocation(); const queryClient = useQueryClient()
+  const t = useT()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const queryClient = useQueryClient()
   const destino = (location.state as { desde?: string } | null)?.desde ?? '/sedes'
-  const [correo, setCorreo] = useState(''); const [contrasena, setContrasena] = useState(''); const [mostrar, setMostrar] = useState(false)
-  function continuar() { queryClient.removeQueries({ queryKey: ['me'] }); queryClient.removeQueries({ queryKey: ['sedes'] }); void navigate(destino, { replace: true }) }
-  const ingreso = useMutation({ mutationFn: () => ingresar(correo.trim(), contrasena), onSuccess: continuar, onSettled: () => setContrasena('') })
-  function enviar(e: FormEvent) { e.preventDefault(); if (!ingreso.isPending) ingreso.mutate() }
-  return <main className="login-page">
-    <section className="login-hero" aria-label="ConecsIA"><div className="login-orb" aria-hidden="true" />
-      <div className="login-brand"><span className="login-brand-mark">✦</span><span><strong>ConecsIA</strong><small>Visitantes y control de accesos</small></span></div>
-      <div className="login-hero-copy"><span className="login-kicker">Plataforma multiempresa y multisede</span><h1>Gestiona cada acceso<br />de forma segura y<br />eficiente.</h1><p>Visitantes, contratistas, proveedores y autorizaciones bajo un mismo control, en todas tus sedes y en tiempo real.</p></div>
-      <div className="login-benefits"><span><b>01</b><small>Control centralizado</small></span><span><b>24/7</b><small>Visibilidad continua</small></span><span><b>100%</b><small>Trazabilidad</small></span></div>
-    </section>
-    <section className="login-form-panel"><div className="login-form-wrap"><h1 className="sr-only">Ingresar</h1><div className="login-heading"><h2>Bienvenido</h2><p>Inicia sesión para continuar</p></div>
-      <form onSubmit={enviar} className="login-form">{ingreso.error instanceof ApiError && <ProblemDetailsAlert problem={ingreso.error.problem} />}
-        <label className="login-field"><span>Correo electrónico o usuario</span><span className="login-input-wrap"><span className="login-input-icon" aria-hidden="true">✉</span><input aria-label="Correo electrónico" type="email" name="correo" autoComplete="username" required value={correo} onChange={(e) => setCorreo(e.target.value)} /></span></label>
-        <label className="login-field"><span>Contraseña</span><span className="login-input-wrap"><span className="login-input-icon" aria-hidden="true">♙</span><input aria-label="Contraseña" type={mostrar ? 'text' : 'password'} name="contrasena" autoComplete="current-password" required value={contrasena} onChange={(e) => setContrasena(e.target.value)} /><button type="button" className="login-toggle" onClick={() => setMostrar((v) => !v)} aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{mostrar ? '◉' : '◎'}</button></span></label>
-        <div className="login-options"><label><input type="checkbox" disabled title="La política de sesión actual es administrada por el servidor" /> <span>Recordarme</span></label><button type="button" className="login-link" disabled>¿Olvidaste tu contraseña?</button></div>
-        <button type="submit" aria-label="Ingresar" disabled={ingreso.isPending} className="login-submit">{ingreso.isPending ? 'Iniciando sesión…' : 'Iniciar sesión'}</button><div className="login-divider"><span>O continúa con</span></div><button type="button" className="login-microsoft" disabled title="Microsoft no está habilitado en el alcance actual"><span className="ms-logo" aria-hidden="true">▦</span>Iniciar sesión con Microsoft</button>
-      </form><p className="login-note">La sesión está protegida y administrada por ConecsIA.</p></div></section>
-  </main>
+  const [correo, setCorreo] = useState('')
+  const [contrasena, setContrasena] = useState('')
+  const [mostrar, setMostrar] = useState(false)
+
+  const desarrollo = useQuery({
+    queryKey: ['desarrollo', 'usuarios'],
+    queryFn: () => apiFetch<UsuarioDesarrollo[]>('/api/v1/desarrollo/usuarios'),
+    retry: false,
+  })
+
+  function continuar() {
+    queryClient.removeQueries({ queryKey: ['me'] })
+    queryClient.removeQueries({ queryKey: ['sedes'] })
+    void navigate(destino, { replace: true })
+  }
+
+  const ingreso = useMutation({
+    mutationFn: () => ingresar(correo.trim(), contrasena),
+    onSuccess: continuar,
+    onSettled: () => setContrasena(''),
+  })
+
+  function enviar(evento: FormEvent) {
+    evento.preventDefault()
+    if (!ingreso.isPending) ingreso.mutate()
+  }
+
+  function elegir(usuario: UsuarioDesarrollo) {
+    guardarSesionDesarrollo(usuario.id)
+    continuar()
+  }
+
+  return (
+    <main className="login-page">
+      <section className="login-hero" aria-label="ConecsIA">
+        <div className="login-grid" aria-hidden="true" />
+        <div className="login-orb login-orb-1" aria-hidden="true" />
+        <div className="login-orb login-orb-2" aria-hidden="true" />
+        <div className="login-orb login-orb-3" aria-hidden="true" />
+        <div className="login-ring" aria-hidden="true" />
+
+        <div className="login-brand login-in">
+          <span className="login-brand-mark">✦</span>
+          <span>
+            <strong>ConecsIA</strong>
+            <small>Visitantes y control de accesos</small>
+          </span>
+        </div>
+
+        <div className="login-hero-copy">
+          <span className="login-kicker login-in" style={{ animationDelay: '.15s' }}>
+            <span className="login-dot" aria-hidden="true" />
+            Plataforma multiempresa y multisede
+          </span>
+          <h1>
+            <span className="login-line">
+              <span>Gestiona cada acceso</span>
+            </span>
+            <span className="login-line">
+              <span>de forma segura y</span>
+            </span>
+            <span className="login-line">
+              <span className="login-grad">eficiente.</span>
+            </span>
+          </h1>
+          <p className="login-in" style={{ animationDelay: '.45s' }}>
+            Visitantes, contratistas, proveedores y autorizaciones bajo un mismo control, en todas
+            tus sedes y en tiempo real.
+          </p>
+          <DemoAcceso />
+        </div>
+
+        <div className="login-benefits login-in" style={{ animationDelay: '1s' }}>
+          <span>
+            <b>01</b>
+            <small>Control centralizado</small>
+          </span>
+          <span>
+            <b>24/7</b>
+            <small>Visibilidad continua</small>
+          </span>
+          <span>
+            <b>100%</b>
+            <small>Trazabilidad</small>
+          </span>
+        </div>
+      </section>
+
+      <section className="login-form-panel">
+        <div className="login-form-wrap">
+          <h1 className="sr-only">{t('sesion.ingresarTitulo')}</h1>
+          <div className="login-heading login-in" style={{ animationDelay: '.3s' }}>
+            <h2>
+              Bienvenido{' '}
+              <span className="login-wave" aria-hidden="true">
+                👋
+              </span>
+            </h2>
+            <p>Inicia sesión para continuar</p>
+          </div>
+
+          <form onSubmit={enviar} className="login-form">
+            {ingreso.error instanceof ApiError && (
+              <ProblemDetailsAlert problem={ingreso.error.problem} />
+            )}
+            <label className="login-field">
+              <span>Correo electrónico o usuario</span>
+              <span className="login-input-wrap">
+                <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="m3 7 9 6 9-6" />
+                </svg>
+                <input
+                  aria-label={t('sesion.correo')}
+                  type="email"
+                  name="correo"
+                  autoComplete="username"
+                  required
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
+                />
+              </span>
+            </label>
+            <label className="login-field">
+              <span>{t('sesion.contrasena')}</span>
+              <span className="login-input-wrap">
+                <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="11" width="16" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+                <input
+                  aria-label={t('sesion.contrasena')}
+                  type={mostrar ? 'text' : 'password'}
+                  name="contrasena"
+                  autoComplete="current-password"
+                  required
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="login-toggle"
+                  onClick={() => setMostrar((v) => !v)}
+                  aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                    <circle cx="12" cy="12" r="3" />
+                    {mostrar && <path d="M3 3l18 18" />}
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <div className="login-options">
+              <label>
+                <input
+                  type="checkbox"
+                  disabled
+                  title="La política de sesión actual es administrada por el servidor"
+                />
+                <span>Recordarme</span>
+              </label>
+              <button type="button" className="login-link" disabled>
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+            <button
+              type="submit"
+              aria-label={t('sesion.entrar')}
+              disabled={ingreso.isPending}
+              className="login-submit"
+              aria-busy={ingreso.isPending}
+            >
+              {ingreso.isPending ? (
+                <span className="login-spinner" aria-hidden="true" />
+              ) : (
+                <>
+                  Iniciar sesión{' '}
+                  <span className="login-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </>
+              )}
+            </button>
+            <div className="login-divider">
+              <span>O continúa con</span>
+            </div>
+            <button
+              type="button"
+              className="login-microsoft"
+              disabled
+              title="Microsoft no está habilitado en el alcance actual"
+            >
+              <span className="ms-logo" aria-hidden="true">
+                <i style={{ background: '#f25022' }} />
+                <i style={{ background: '#7fba00' }} />
+                <i style={{ background: '#00a4ef' }} />
+                <i style={{ background: '#ffb900' }} />
+              </span>
+              Iniciar sesión con Microsoft
+            </button>
+          </form>
+
+          {desarrollo.data && (
+            <section className="login-dev" aria-labelledby="titulo-desarrollo">
+              <h2 id="titulo-desarrollo">{t('sesion.desarrolloTitulo')}</h2>
+              <p className="login-dev-aviso">{t('sesion.ingresarAviso')}</p>
+              {desarrollo.data.length === 0 && <p>{t('sesion.sinUsuarios')}</p>}
+              <ul>
+                {desarrollo.data.map((usuario) => (
+                  <li key={usuario.id}>
+                    <button type="button" onClick={() => elegir(usuario)}>
+                      <strong>{usuario.nombre}</strong>
+                      <span>{usuario.correo}</span>
+                      <small>{usuario.organizaciones.join(' · ')}</small>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <p className="login-note">La sesión está protegida y administrada por ConecsIA.</p>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+/** Ejemplos ficticios que ilustran el flujo; no provienen de la API. */
+const EJEMPLOS = [
+  { iniciales: 'VI', rol: 'Visitante', lugar: 'Recepción', tipo: 'entrada' },
+  { iniciales: 'PR', rol: 'Proveedor', lugar: 'Bodega', tipo: 'entrada' },
+  { iniciales: 'CO', rol: 'Contratista', lugar: 'Torre B', tipo: 'salida' },
+  { iniciales: 'EM', rol: 'Empleado', lugar: 'Sede principal', tipo: 'entrada' },
+] as const
+
+function DemoAcceso() {
+  const [paso, setPaso] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => setPaso((p) => p + 1), 2600)
+    return () => window.clearInterval(id)
+  }, [])
+  const visibles = [0, 1, 2].map((i) => ({
+    clave: paso + i,
+    ...(EJEMPLOS[(paso + i) % EJEMPLOS.length] as (typeof EJEMPLOS)[number]),
+  }))
+
+  return (
+    <div className="login-stage" aria-hidden="true">
+      <div className="login-card login-feed">
+        <h4>
+          Así se ve tu operación <em>● ejemplo</em>
+        </h4>
+        {visibles.map((e) => (
+          <div key={e.clave} className="login-ev">
+            <span className="login-av">{e.iniciales}</span>
+            <span className="login-ev-meta">
+              {e.rol}
+              <small>{e.lugar}</small>
+            </span>
+            <span className={`login-tag login-tag-${e.tipo}`}>
+              {e.tipo === 'entrada' ? 'Entrada' : 'Salida'}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="login-card login-qr">
+        <div className="login-qrbox">
+          <div className="login-scan" />
+        </div>
+        <small>✓ Autorización válida</small>
+      </div>
+    </div>
+  )
 }
