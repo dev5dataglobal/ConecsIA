@@ -299,3 +299,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Causa confirmada: el proceso `postgres` del sistema (PID 8464) escucha en 5432, y `.env` había vuelto a `POSTGRES_HOST_PORT=5432`.
 - Solución: `.env` con 5434 y stack levantado; la API responde Healthy.
 - Sin cambios en otras páginas (el README ya documenta el caso en «Problemas frecuentes»).
+
+## [2026-10-21] implementacion | Tamaño de marca en feature/frontend
+- En `feature/frontend`, la marca del login usa los tamaños de `feature/login`: ícono 2.9rem, nombre 1.35rem, subtítulo 0.78rem.
+- Los demás cambios sin commit del usuario (fondo, IngresarPage) quedan intactos. Sin commit.
