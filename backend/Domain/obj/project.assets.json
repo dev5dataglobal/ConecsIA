@@ -8,7 +8,7 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\USUARIO\\.nuget\\packages\\": {},
+    "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
@@ -17,7 +17,7 @@
       "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
       "projectName": "Domain",
       "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
-      "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
       "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [

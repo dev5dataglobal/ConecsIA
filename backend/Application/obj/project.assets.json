@@ -27,7 +27,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\USUARIO\\.nuget\\packages\\": {},
+    "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
@@ -36,7 +36,7 @@
       "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
       "projectName": "Application",
       "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
-      "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
       "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
