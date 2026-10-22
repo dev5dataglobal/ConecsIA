@@ -1,10 +1,15 @@
 using ConecsIA.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using ConecsIA.Application.Interfaces;
+using System.Linq.Expressions;
 
 namespace ConecsIA.Infrastructure.Data;
 
-public sealed class ConecsiaDbContext(DbContextOptions<ConecsiaDbContext> options) : DbContext(options)
+public sealed class ConecsiaDbContext(
+    DbContextOptions<ConecsiaDbContext> options,
+    IOrganizationContext? organizationContext = null) : DbContext(options)
 {
+    private readonly int? _organizationId = organizationContext?.OrganizationId;
     public DbSet<Organizacion> Organizaciones => Set<Organizacion>();
     public DbSet<TipoOrganizacion> TiposOrganizacion => Set<TipoOrganizacion>();
     public DbSet<Plan> Planes => Set<Plan>();
@@ -64,5 +69,46 @@ public sealed class ConecsiaDbContext(DbContextOptions<ConecsiaDbContext> option
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("public");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConecsiaDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                     .Where(x => typeof(OrganizacionEntity).IsAssignableFrom(x.ClrType)))
+        {
+            var parameter = Expression.Parameter(entityType.ClrType, "entity");
+            var property = Expression.Call(
+                typeof(EF), nameof(EF.Property), new[] { typeof(int) },
+                parameter, Expression.Constant(nameof(OrganizacionEntity.IdOrganizacion)));
+            var currentOrganization = Expression.Property(
+                Expression.Constant(this), nameof(CurrentOrganizationId));
+            var filter = Expression.Equal(property, currentOrganization);
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(
+                Expression.Lambda(filter, parameter));
+        }
+    }
+
+    public int CurrentOrganizationId => _organizationId ?? -1;
+
+    public override int SaveChanges()
+    {
+        ValidateOrganizationScope();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ValidateOrganizationScope();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ValidateOrganizationScope()
+    {
+        foreach (var entry in ChangeTracker.Entries<OrganizacionEntity>()
+                     .Where(x => x.State is EntityState.Added or EntityState.Modified))
+        {
+            if (_organizationId is null || entry.Entity.IdOrganizacion != _organizationId.Value)
+            {
+                throw new UnauthorizedAccessException(
+                    "La operación no pertenece a la organización autenticada.");
+            }
+        }
     }
 }

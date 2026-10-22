@@ -9,7 +9,8 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Con
     public ConecsiaDbContext CreateDbContext(string[] args)
     {
         var connection = Environment.GetEnvironmentVariable("CONECSIA_CONNECTION_STRING")
-            ?? "Host=localhost;Port=5432;Database=conecsia_dev;Username=postgres;Password=Lau05032015";
+            ?? throw new InvalidOperationException(
+                "Defina CONECSIA_CONNECTION_STRING para ejecutar herramientas de Entity Framework.");
         var options = new DbContextOptionsBuilder<ConecsiaDbContext>().UseNpgsql(connection, npgsql => npgsql.MigrationsAssembly(typeof(DesignTimeDbContextFactory).Assembly.FullName)).Options;
         return new ConecsiaDbContext(options);
     }

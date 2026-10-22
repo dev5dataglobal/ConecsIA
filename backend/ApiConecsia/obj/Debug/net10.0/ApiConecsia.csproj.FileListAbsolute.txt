@@ -138,3 +138,5 @@ D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\System.
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\appsettings.Local.example.json
+D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\appsettings.Local.json

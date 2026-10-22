@@ -4,7 +4,7 @@ namespace ApiConecsia.Services;
 
 public interface IUserService
 {
-    Task<UsuarioDto?> AuthenticateAsync(
+    Task<AuthResponseDto?> AuthenticateAsync(
         LoginDto request,
         CancellationToken cancellationToken = default);
 

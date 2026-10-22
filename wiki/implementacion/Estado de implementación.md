@@ -1,11 +1,13 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-17
+actualizado: 2026-10-21
 tags: [conecsia]
 ---
 
 # Estado de implementación
+
+> [!note] Arranque local 2026-10-21: copiar `backend/ApiConecsia/appsettings.Local.example.json` como `appsettings.Local.json` y completar los valores privados antes de ejecutar `dotnet run`.
 
 > [!note] Al 2026-10-17 existen las **fundaciones técnicas (F0, EP-01)** y la **primera vertical funcional: gestión de sedes** (HU-013 con la base de HU-005, HU-007 y HU-008). La autenticación es provisional ([[ADR-022 Autenticación de desarrollo provisional]]). La carpeta aún no es un repositorio git ni está en GitHub.
 
@@ -135,3 +137,12 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Implementado:** auditoría `Denegado` de las escrituras entre organizaciones (`AuditoriaEscrituraEntreOrganizaciones`, invocada por `ManejadorExcepciones`; responde 404 sin datos ajenos). `EscrituraEntreOrganizacionesException.Entidad` expone solo el tipo.
 - **Pruebas:** `PersistenciaPorModuloTests` (regla de ADR-021 condición 1, con prueba de control), `SuiteAislamientoTests` (suite parametrizada Org A/B reutilizable; registrar cada recurso nuevo), convenciones de índices únicos y FK con organización, y escritura cruzada auditada. `dotnet test`: 196/196.
 - **Limitaciones:** aún no hay FK compuestas porque no existen entidades hijas (la convención fallará cuando aparezcan). El spike RLS es documental (ADR-004) y la adopción queda en D-22. Sin migración y sin cambios de frontend.
+## Seguridad JWT y aislamiento — 2026-10-21
+
+- **Implementado:** login JWT en `AuthController`/`UserService`, hashing existente de ASP.NET Core Identity, bloqueo tras cinco intentos fallidos durante 15 minutos y DTO sin `PasswordHash`.
+- **Implementado:** validación obligatoria de issuer, audience, firma, expiración, claims de usuario, estado activo y `security_stamp`.
+- **Implementado:** política global autenticada, endpoint anónimo explícito para login y políticas reutilizables de autenticación/permisos.
+- **Implementado:** filtros globales de `ConecsiaDbContext` y validación de escrituras para entidades multi-organización.
+- **Pendiente:** matriz definitiva de permisos por endpoint (D-04) y refresh token persistente revocable; no se añadió migración.
+- **Configuración:** secretos y conexión fueron retirados de `appsettings.Development.json`; usar variables `JWT__Key`, `JWT__Issuer`, `JWT__Audience`, `JWT__DurationInMinutes` y `CONECSIA_CONNECTION_STRING`.
+

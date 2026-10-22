@@ -5,7 +5,7 @@ area: seguridad
 origen: PRD §5.2, §12.5
 fuentes: [PRD v0.1]
 relacionados: [D-03, D-14, HU-006, HU-016, ADR-022]
-actualizado: 2026-10-19
+actualizado: 2026-10-21
 tags: [conecsia, adr, seguridad]
 ---
 
@@ -53,6 +53,9 @@ La autenticación provisional ([[ADR-022 Autenticación de desarrollo provisiona
 ## Implementación (2026-10-19)
 - **Implementado y verificado:** piezas de ASP.NET Core Identity sobre el `Usuario` existente (`PasswordHasher`, cookie de autenticación, sello de seguridad), **sin** `IdentityDbContext` ni `UserManager`, para mantener el DbContext compartido ([[ADR-021 DbContext compartido y ensamblado de migraciones]]). *Elección técnica del agente: Propuesta, revisable.*
 - Detalle en [[Estado de implementación]] § HU-006.
+
+> [!warning] Actualización 2026-10-21
+> Para el backend API implementado se usa JWT Bearer en lugar de cookie. La decisión de cookie queda pendiente de revisión formal; no debe interpretarse como comportamiento actual.
 
 ## Pendientes
 - Plazo general de auditoría (D-14), que también rige los eventos de sesión.

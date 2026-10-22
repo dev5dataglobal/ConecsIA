@@ -5,6 +5,7 @@ using ApiConecsia.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ConecsIA.Domain.Entities;
+using ConecsIA.Application.Interfaces;
 
 namespace ApiConecsia.Extensions;
 
@@ -33,6 +34,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
         services.AddScoped<IUserService, UserService>();
         services.AddHttpContextAccessor();
+        services.AddScoped<IOrganizationContext, OrganizationContext>();
 
         return services;
     }

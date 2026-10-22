@@ -5,7 +5,7 @@ area: seguridad
 origen: Implementación de la primera vertical (HU-013)
 fuentes: [PRD v0.1]
 relacionados: [HU-006, HU-007, HU-013, D-03, ADR-005, ADR-006]
-actualizado: 2026-10-19
+actualizado: 2026-10-21
 tags: [conecsia, adr, seguridad]
 ---
 
@@ -30,6 +30,9 @@ La primera vertical ([[Sedes]]) necesita un usuario autenticado para derivar org
 ## Consecuencias
 - Cualquiera con acceso al entorno local puede suplantar a cualquier usuario sintético: aceptable solo con datos sintéticos (D-14).
 - La CI y Docker Compose lo habilitan; un despliegue real debe tenerlo deshabilitado (el arranque lo garantiza).
+
+> [!warning] Obsoleta 2026-10-21
+> El backend actual no activa este esquema provisional; usa JWT Bearer con configuración externa.
 
 ## Pendientes
 D-03 cerrada el 2026-10-19. HU-006 agrega el esquema real (cookie de Identity); este esquema se conserva solo para Development/Testing. La protección de arranque (la API no inicia con el esquema habilitado en otros entornos) es obligatoria.

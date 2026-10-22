@@ -7,6 +7,11 @@ tags: [conecsia]
 
 # Bitácora
 
+## [2026-10-21] implementacion | Configuración local segura para arranque
+- La API carga opcionalmente `appsettings.Local.json` para desarrollo.
+- Se agregó `appsettings.Local.example.json` sin credenciales.
+- `appsettings.Development.json` permanece libre de secretos versionados.
+
 Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 
 ## [2026-10-17] ingesta | Creación de la wiki e ingesta del PRD v0.1
@@ -314,3 +319,9 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-21] implementacion | Tamaño de marca en feature/frontend
 - En `feature/frontend`, la marca del login usa los tamaños de `feature/login`: ícono 2.9rem, nombre 1.35rem, subtítulo 0.78rem.
 - Los demás cambios sin commit del usuario (fondo, IngresarPage) quedan intactos. Sin commit.
+## [2026-10-21] implementacion | Autenticación JWT y aislamiento multi-organización
+- Se implementó login JWT con claims derivados de membresías, roles y permisos existentes.
+- Se protegieron globalmente los endpoints y se validan usuario activo y sello de seguridad.
+- Se centralizó el filtrado y validación de escritura de entidades `OrganizacionEntity`.
+- Se eliminaron secretos de configuración versionada.
+- Pendientes: matriz D-04 por endpoint y refresh tokens revocables; no hay migración requerida.
