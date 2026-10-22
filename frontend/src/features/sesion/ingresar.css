@@ -739,12 +739,13 @@
     display: none;
   }
 }
-@media (max-width: 760px) {
+/* En tabletas usamos la misma composición vertical que en móvil: hero arriba y formulario abajo. */
+@media (max-width: 1024px) {
   .login-page {
     grid-template-columns: 1fr;
   }
   .login-hero {
-    min-height: 15rem;
+    min-height: 23rem;
     padding: 1.5rem 1rem;
   }
   .login-hero-copy {
@@ -758,8 +759,36 @@
     display: none;
   }
   .login-form-panel {
-    padding: 2rem 1rem;
+    min-height: calc(100dvh - 23rem);
+    padding: 3rem 1.25rem;
     align-items: start;
+  }
+  .login-form-wrap {
+    width: min(100%, 31rem);
+  }
+  .login-input-wrap {
+    height: 3.5rem;
+  }
+  .login-submit,
+  .login-microsoft {
+    height: 3.5rem;
+  }
+}
+@media (max-width: 640px) {
+  .login-hero {
+    min-height: 17rem;
+  }
+  .login-form-panel {
+    min-height: calc(100dvh - 17rem);
+    padding: 2rem 1rem;
+  }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+  .login-hero-copy {
+    margin-top: 0;
+  }
+  .login-benefits {
+    display: flex;
   }
 }
 @media (prefers-reduced-motion: reduce) {
