@@ -1,17 +1,19 @@
 # Login de ConecsIA
 
-Esta carpeta contiene únicamente la pantalla de inicio de sesión ajustada y el cliente HTTP
-necesario para el contrato de autenticación real.
+La SPA se comunica con la API; el navegador nunca se conecta directamente a PostgreSQL.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-La API se configura con `VITE_API_BASE_URL` en despliegues separados. En desarrollo, el proxy de
-Vite usa `API_PROXY_TARGET`; consulta `.env.example`. El login realiza `POST /api/v1/auth/login`,
-obtiene el token CSRF desde `GET /api/v1/auth/csrf` y conserva la sesión mediante la cookie del
-servidor. No incluye autenticación simulada.
+En despliegues separados usa `VITE_API_BASE_URL`. En desarrollo, el proxy de Vite usa
+`API_PROXY_TARGET`; consulta `.env.example`.
+
+El login realiza `POST /api/auth/login` con `{ correo, password }`. El access token JWT se conserva
+solo en memoria y las solicitudes posteriores envían `Authorization: Bearer <token>`. Un `401`
+limpia la sesión y un `403` conserva la sesión e informa la falta de permisos. No se guardan tokens
+en `localStorage`.
 
 Comprobaciones locales:
 

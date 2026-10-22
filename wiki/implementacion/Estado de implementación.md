@@ -5,7 +5,31 @@ actualizado: 2026-10-21
 tags: [conecsia]
 ---
 
+## Mensajes controlados de autenticación — 2026-10-21
+
+- Un correo inexistente o inactivo responde `401` con: “El usuario ingresado no está registrado”.
+- Una contraseña incorrecta responde `401` con: “La contraseña ingresada es incorrecta”.
+- Un usuario bloqueado recibe un mensaje temporal en español.
+- El frontend ya no muestra `Unauthorized`, el mensaje genérico de sesión ni referencias `traceId` para errores de credenciales; las referencias quedan reservadas para errores del servidor.
+
 # Estado de implementación
+
+## Integración frontend del login — 2026-10-21
+
+- El frontend usa `POST /api/auth/login` con `{ correo, password }` y mantiene el JWT solo en memoria.
+- `apiFetch` centraliza `Authorization: Bearer`, limpieza de sesión ante `401` y conservación de sesión ante `403`.
+- `RutaProtegida` redirige al ingreso cuando no existe un token en memoria.
+- Se retiró del flujo real el contrato antiguo `/api/v1/auth`, CSRF, cookies y usuarios sintéticos.
+- Variables: `VITE_API_BASE_URL` para despliegues separados y `API_PROXY_TARGET` para el proxy de Vite.
+- En desarrollo local, `API_PROXY_TARGET` debe apuntar a `http://localhost:5191`, que es el perfil HTTP de `ApiConecsia`.
+- Verificado: `npm run build` correcto. Vitest quedó pendiente porque el proceso trabajador no finaliza en este entorno.
+
+## Administrador inicial — 2026-10-21
+
+- **Creado en la base configurada:** organización `dataglobal`, usuario `desarrollador5@dataglobal.com`, membresía activa y rol `Administrador de organización`.
+- El rol recibió los permisos activos ya existentes en el catálogo; no se inventaron códigos nuevos.
+- La operación fue idempotente: una segunda ejecución encontró organización y usuario existentes y no duplicó registros.
+- La contraseña no se guardó en el repositorio ni en la documentación; se almacenó únicamente como hash compatible con `PasswordHasher<Usuario>`.
 
 > [!note] Arranque local 2026-10-21: copiar `backend/ApiConecsia/appsettings.Local.example.json` como `appsettings.Local.json` y completar los valores privados antes de ejecutar `dotnet run`.
 

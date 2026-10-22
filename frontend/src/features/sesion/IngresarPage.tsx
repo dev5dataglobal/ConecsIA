@@ -1,12 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { apiFetch } from '../../shared/api/http'
 import { ApiError } from '../../shared/api/problemDetails'
 import { useT } from '../../shared/i18n/traductor'
 import { ProblemDetailsAlert } from '../../shared/ui/ProblemDetailsAlert'
 import { ingresar } from './apiSesion'
-import { guardarSesionDesarrollo } from './sesionDesarrollo'
 import './ingresar.css'
 
 interface UsuarioDesarrollo {
@@ -21,16 +19,11 @@ export function IngresarPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
-  const destino = (location.state as { desde?: string } | null)?.desde ?? '/sedes'
+  const destino = (location.state as { desde?: string } | null)?.desde ?? '/dashboard'
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [mostrar, setMostrar] = useState(false)
-
-  const desarrollo = useQuery({
-    queryKey: ['desarrollo', 'usuarios'],
-    queryFn: () => apiFetch<UsuarioDesarrollo[]>('/api/v1/desarrollo/usuarios'),
-    retry: false,
-  })
+  const desarrollo: { data?: UsuarioDesarrollo[] } = {}
 
   function continuar() {
     queryClient.removeQueries({ queryKey: ['me'] })
@@ -49,9 +42,8 @@ export function IngresarPage() {
     if (!ingreso.isPending) ingreso.mutate()
   }
 
-  function elegir(usuario: UsuarioDesarrollo) {
-    guardarSesionDesarrollo(usuario.id)
-    continuar()
+  function elegir(_usuario: UsuarioDesarrollo) {
+    // El selector de usuarios sintéticos pertenece al flujo antiguo y permanece deshabilitado.
   }
 
   return (
@@ -126,7 +118,7 @@ export function IngresarPage() {
               <span>Correo electrónico o usuario</span>
               <span className="login-input-wrap">
                 <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <rect x="0" y="1" width="24" height="22" rx="2" />
                   <path d="m3 7 9 6 9-6" />
                 </svg>
                 <input
@@ -144,7 +136,7 @@ export function IngresarPage() {
               <span>{t('sesion.contrasena')}</span>
               <span className="login-input-wrap">
                 <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="4" y="11" width="16" height="10" rx="2" />
+                  <rect x="0" y="1" width="24" height="22" rx="2" />
                   <path d="M8 11V7a4 4 0 0 1 8 0v4" />
                 </svg>
                 <input

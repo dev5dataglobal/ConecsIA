@@ -36,7 +36,7 @@ public sealed class UserService : IUserService
         _jwt = jwt.Value;
     }
 
-    public async Task<AuthResponseDto?> AuthenticateAsync(
+    public async Task<AuthenticationResult> AuthenticateAsync(
         LoginDto request,
         CancellationToken cancellationToken = default)
     {
@@ -46,10 +46,14 @@ public sealed class UserService : IUserService
             .SingleOrDefaultAsync(x => x.CorreoNormalizado == correoNormalizado,
                 cancellationToken);
 
-        if (usuario is null || !usuario.Activo ||
-            usuario.BloqueadoHasta > DateTime.UtcNow)
+        if (usuario is null || !usuario.Activo)
         {
-            return null;
+            return new AuthenticationResult(FailureReason: AuthenticationFailureReason.UserNotRegistered);
+        }
+
+        if (usuario.BloqueadoHasta > DateTime.UtcNow)
+        {
+            return new AuthenticationResult(FailureReason: AuthenticationFailureReason.UserLocked);
         }
 
         var result = _passwordHasher.VerifyHashedPassword(
@@ -66,7 +70,7 @@ public sealed class UserService : IUserService
                 usuario.IntentosFallidos = 0;
             }
             await _db.SaveChangesAsync(cancellationToken);
-            return null;
+            return new AuthenticationResult(FailureReason: AuthenticationFailureReason.InvalidPassword);
         }
 
         usuario.IntentosFallidos = 0;
@@ -123,12 +127,12 @@ public sealed class UserService : IUserService
                 SecurityAlgorithms.HmacSha256)
         });
 
-        return new AuthResponseDto
+        return new AuthenticationResult(new AuthResponseDto
         {
             AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
             ExpiresAtUtc = expires,
             Usuario = _mapper.Map<UsuarioDto>(usuario)
-        };
+        });
     }
 
     public async Task<UsuarioDto> RegisterAsync(

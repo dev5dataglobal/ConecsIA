@@ -4,7 +4,7 @@ namespace ApiConecsia.Services;
 
 public interface IUserService
 {
-    Task<AuthResponseDto?> AuthenticateAsync(
+    Task<AuthenticationResult> AuthenticateAsync(
         LoginDto request,
         CancellationToken cancellationToken = default);
 
@@ -12,3 +12,14 @@ public interface IUserService
         UsuarioCreateDto request,
         CancellationToken cancellationToken = default);
 }
+
+public enum AuthenticationFailureReason
+{
+    UserNotRegistered,
+    InvalidPassword,
+    UserLocked
+}
+
+public sealed record AuthenticationResult(
+    AuthResponseDto? Response = null,
+    AuthenticationFailureReason? FailureReason = null);

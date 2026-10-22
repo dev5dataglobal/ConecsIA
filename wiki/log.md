@@ -5,12 +5,21 @@ actualizado: 2026-10-17
 tags: [conecsia]
 ---
 
+## [2026-10-21] implementacion | Control de errores del login
+- La API distingue usuario no registrado, contraseña incorrecta y usuario bloqueado.
+- El login devuelve `ProblemDetails` en español y el frontend presenta el detalle sin `Unauthorized` ni `traceId` para errores `401`.
+
 # Bitácora
 
 ## [2026-10-21] implementacion | Configuración local segura para arranque
 - La API carga opcionalmente `appsettings.Local.json` para desarrollo.
 - Se agregó `appsettings.Local.example.json` sin credenciales.
 - `appsettings.Development.json` permanece libre de secretos versionados.
+- El frontend se conectó a `POST /api/auth/login` y al JWT Bearer; `npm run build` pasó.
+- Vitest quedó pendiente por un worker que no termina en este entorno.
+- Se creó idempotentemente `dataglobal` y `desarrollador5@dataglobal.com` con membresía activa y rol administrativo.
+- La segunda ejecución confirmó que no se duplicaron registros; el sembrador temporal fue eliminado.
+- Se corrigió el destino predeterminado del proxy Vite de `5080` a `5191`, coincidiendo con `launchSettings.json`.
 
 Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 

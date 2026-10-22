@@ -9,6 +9,13 @@ tags: [conecsia]
 
 # Seguridad y auditoría
 
+## Integración frontend — 2026-10-21
+
+- El navegador solo llama a la API; nunca recibe ni usa credenciales de PostgreSQL.
+- El JWT se conserva en memoria y se envía como `Authorization: Bearer`.
+- `401` limpia la sesión y vuelve al ingreso; `403` informa falta de permisos sin cerrar la sesión.
+- Se creó el administrador inicial de `dataglobal` usando hash de contraseña; la contraseña en claro no se persiste.
+
 > [!note] Desarrollo local 2026-10-21: la API carga opcionalmente `backend/ApiConecsia/appsettings.Local.json`, ignorado por Git. Usa `appsettings.Local.example.json` como plantilla y completa allí la conexión y JWT.
 
 - Aislamiento total por organización → [[Multi-tenancy y aislamiento]].
