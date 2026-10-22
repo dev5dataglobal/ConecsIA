@@ -1,0 +1,6 @@
+@ApiConecsia_HostAddress = http://localhost:5191
+
+GET {{ApiConecsia_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

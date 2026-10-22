@@ -35,6 +35,13 @@ Una historia está **Terminada** solo cuando:
 - [ ] La wiki está actualizada: página del módulo, [[Estado de implementación]], [[tablero-scrum]] y [[log]].
 - [ ] Las decisiones pendientes que surgieron quedaron registradas como D-xx.
 
+## Entrega tÃ©cnica 2026-10-20
+
+- Fase 1: backend reorganizado en cuatro proyectos y migraciÃ³n inicial generada desde `db.md`.
+- Verificado: `dotnet build` correcto; `dotnet ef migrations add InitialCreate` correcto.
+- Pendiente: aplicar la migraciÃ³n con una cadena PostgreSQL vÃ¡lida (`28P01` con las credenciales de ejemplo).
+- Fase 2: unidad de trabajo y DTOs documentados, sin implementaciÃ³n.
+
 ## Fases
 
 ### F0
