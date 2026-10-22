@@ -10,7 +10,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\ApiConecsia\\ApiConecsia.csproj",
         "projectName": "ApiConecsia",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\ApiConecsia\\ApiConecsia.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\ApiConecsia\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
@@ -59,6 +59,14 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[13.0.1, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[10.0.13, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.13, )"
@@ -512,7 +520,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
         "projectName": "Application",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
@@ -857,7 +865,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
         "projectName": "Domain",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
@@ -1198,7 +1206,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Infrastructure\\Infrastructure.csproj",
         "projectName": "Infrastructure",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Infrastructure\\Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [

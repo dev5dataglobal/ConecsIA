@@ -226,7 +226,8 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("IdOrganizacion", "IdArea")
                         .IsUnique();
 
-                    b.HasIndex("IdOrganizacion", "IdSede");
+                    b.HasIndex("IdOrganizacion", "IdSede")
+                        .IsUnique();
 
                     b.ToTable("area", "public");
                 });
@@ -1194,6 +1195,12 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdOrganizacion");
 
+                    b.HasIndex("IdArchivoLogo");
+
+                    b.HasIndex("IdPlan");
+
+                    b.HasIndex("IdTipoOrganizacion");
+
                     b.ToTable("organizacion", "public");
                 });
 
@@ -1465,7 +1472,8 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("IdOrganizacion", "IdPersona")
                         .IsUnique();
 
-                    b.HasIndex("IdOrganizacion", "IdTipoPersona");
+                    b.HasIndex("IdOrganizacion", "IdTipoPersona")
+                        .IsUnique();
 
                     b.HasIndex("IdOrganizacion", "IdTipoDocumento", "NumeroDocumentoNormalizado")
                         .IsUnique();
@@ -2326,7 +2334,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdZona");
 
-                    b.HasIndex("IdOrganizacion", "IdSede");
+                    b.HasIndex("IdOrganizacion", "IdSede")
+                        .IsUnique();
 
                     b.HasIndex("IdOrganizacion", "IdZona")
                         .IsUnique();
@@ -2384,6 +2393,26 @@ namespace Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdZonaPuntoAcceso")
                         .HasPrincipalKey("IdOrganizacion", "IdZona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.Organizacion", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Archivo", null)
+                        .WithMany()
+                        .HasForeignKey("IdArchivoLogo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Plan", null)
+                        .WithMany()
+                        .HasForeignKey("IdPlan")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.TipoOrganizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdTipoOrganizacion")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

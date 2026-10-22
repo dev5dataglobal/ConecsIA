@@ -10,7 +10,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
         "projectName": "Application",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\Application.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
@@ -355,7 +355,7 @@
         "projectUniqueName": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
         "projectName": "Domain",
         "projectPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\Domain.csproj",
-        "packagesPath": "C:\\Users\\CodexSandboxOffline\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
         "outputPath": "D:\\Documentos\\Data Global\\ConecsIA\\backend\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
