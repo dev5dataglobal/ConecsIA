@@ -8,14 +8,29 @@ using ConecsIA.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("Conecsia")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("CONECSIA_CONNECTION_STRING")
-    ?? throw new InvalidOperationException(
+var connectionString = builder.Configuration.GetConnectionString("Conecsia");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString = builder.Configuration.GetConnectionString(
+        "DefaultConnection");
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString = Environment.GetEnvironmentVariable(
+        "CONECSIA_CONNECTION_STRING");
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
         "No se encontró una cadena de conexión para Conecsia.");
+}
 
 builder.Services.AddDbContext<ConecsiaDbContext>(options =>
 {
@@ -26,13 +41,49 @@ builder.Services.AddDbContext<ConecsiaDbContext>(options =>
 });
 
 builder.Services.ConfigureCors();
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+builder.Services.AddAutoMapper(
+    _ => { },
+    Assembly.GetExecutingAssembly());
 builder.Services.AddApplicationServices();
 builder.Services.AddGlobalRateLimiting();
 builder.Services.AddValidationErrors();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "ConecsIA API",
+        Version = "v1",
+        Description = "API para la gestión de accesos y organizaciones."
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Escriba: Bearer {token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var jwtSection = builder.Configuration.GetSection("JWT");
 var jwtSettings = jwtSection.Get<JWT>()
@@ -73,7 +124,14 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/swagger/v1/swagger.json",
+            "ConecsIA API v1");
+        options.RoutePrefix = "swagger";
+    });
 }
 
 app.UseCors("CorsPolicy");

@@ -6,7 +6,6 @@ D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\ApiCone
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\ApiConecsia.runtimeconfig.json
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\ApiConecsia.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\ApiConecsia.pdb
-D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
@@ -136,3 +135,6 @@ D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microso
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Documentos\Data Global\ConecsIA\backend\ApiConecsia\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll

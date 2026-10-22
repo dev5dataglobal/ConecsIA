@@ -5,7 +5,7 @@ public static class SwaggerExtension
     public static IServiceCollection AddSwaggerDocumentation(
         this IServiceCollection services)
     {
-        services.AddOpenApi();
+        services.AddSwaggerGen();
         return services;
     }
 }
