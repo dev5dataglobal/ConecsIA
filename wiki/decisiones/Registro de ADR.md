@@ -34,6 +34,7 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-020 Contratos API y formato de errores]] | backend | **Aprobado 2026-10-17** | — |
 | [[ADR-021 DbContext compartido y ensamblado de migraciones]] | persistencia | **Aprobado 2026-10-19** (con 3 condiciones) | — |
 | [[ADR-022 Autenticación de desarrollo provisional]] | seguridad | **Aprobado 2026-10-19** (solo Development/pruebas) | — |
+| [[ADR-023 Acceso a módulos por rol en base de datos]] | seguridad | **Implementado 2026-10-22** (solicitud del usuario; detalles de diseño del agente por revisar) | D-23 |
 
 ## Origen de cada propuesta
 - **Propuesta explícita del PRD:** ADR-001, 002, 003, 004, 007, 008, 009, 010, 011, 012, 013, 014, 019 (el PRD ya las enuncia; aquí se concretan).

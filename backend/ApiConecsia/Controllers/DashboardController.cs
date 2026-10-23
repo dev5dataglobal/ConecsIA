@@ -1,3 +1,5 @@
+using ApiConecsia.Helpers;
+using ConecsIA.Application.Seguridad;
 using ConecsIA.Application.DTOs;
 using ConecsIA.Application.Interfaces;
 using ConecsIA.Infrastructure.Data;
@@ -7,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ApiConecsia.Controllers;
 
 [Route("api/dashboard")]
+[RequiereModulo(CodigosModulo.Dashboard)]
 public sealed class DashboardController(ConecsiaDbContext db, IOrganizationContext organizationContext) : BaseApiController
 {
     [HttpGet]

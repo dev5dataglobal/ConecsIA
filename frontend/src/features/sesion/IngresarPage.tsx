@@ -1,34 +1,66 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type PointerEvent } from 'react'
+import { useNavigate } from 'react-router'
 import { ApiError } from '../../shared/api/problemDetails'
 import { useT } from '../../shared/i18n/traductor'
 import { ProblemDetailsAlert } from '../../shared/ui/ProblemDetailsAlert'
 import { ingresar } from './apiSesion'
 import './ingresar.css'
 
-interface UsuarioDesarrollo {
-  id: string
-  nombre: string
-  correo: string
-  organizaciones: string[]
+/** Ejemplos ficticios que ilustran el flujo; no provienen de la API. */
+export const EJEMPLOS = [
+  { iniciales: 'VI', rol: 'Visitante', lugar: 'Recepción', tipo: 'entrada' },
+  { iniciales: 'PR', rol: 'Proveedor', lugar: 'Bodega', tipo: 'entrada' },
+  { iniciales: 'CO', rol: 'Contratista', lugar: 'Torre B', tipo: 'salida' },
+  { iniciales: 'EM', rol: 'Empleado', lugar: 'Sede principal', tipo: 'entrada' },
+] as const
+
+/** Patrón decorativo tipo QR (determinista, sin datos). */
+const CELDAS = Array.from({ length: 49 }, (_, i) => {
+  const f = Math.floor(i / 7)
+  const c = i % 7
+  const esquina = (a: number, b: number) =>
+    a <= 2 && b <= 2 && !(a === 1 && b === 1)
+  if (esquina(f, c) || esquina(f, 6 - c) || esquina(6 - f, c)) return true
+  if (f <= 2 && (c <= 2 || c >= 4)) return false
+  if (f >= 4 && c <= 2) return false
+  return ((f * 5 + c * 3 + f * c) % 3) !== 0
+})
+
+function useMovimientoReducido() {
+  const [reducido, setReducido] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
+    if (!mq) return
+    setReducido(mq.matches)
+    const cambio = () => setReducido(mq.matches)
+    mq.addEventListener('change', cambio)
+    return () => mq.removeEventListener('change', cambio)
+  }, [])
+  return reducido
 }
 
 export function IngresarPage() {
   const t = useT()
   const navigate = useNavigate()
-  const location = useLocation()
   const queryClient = useQueryClient()
-  const destino = (location.state as { desde?: string } | null)?.desde ?? '/dashboard'
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [mostrar, setMostrar] = useState(false)
-  const desarrollo: { data?: UsuarioDesarrollo[] } = {}
+  const [indice, setIndice] = useState(0)
+  const pase = useRef<HTMLDivElement>(null)
+  const reducido = useMovimientoReducido()
+
+  useEffect(() => {
+    if (reducido) return
+    const id = window.setInterval(() => setIndice((i) => (i + 1) % EJEMPLOS.length), 2600)
+    return () => window.clearInterval(id)
+  }, [reducido])
 
   function continuar() {
     queryClient.removeQueries({ queryKey: ['me'] })
     queryClient.removeQueries({ queryKey: ['sedes'] })
-    void navigate(destino, { replace: true })
+    void navigate('/dashboard', { replace: true })
   }
 
   const ingreso = useMutation({
@@ -42,207 +74,239 @@ export function IngresarPage() {
     if (!ingreso.isPending) ingreso.mutate()
   }
 
-  function elegir(_usuario: UsuarioDesarrollo) {
-    // El selector de usuarios sintéticos pertenece al flujo antiguo y permanece deshabilitado.
+  // Inclinación 3D sutil: transform directo sobre el elemento, solo con puntero fino.
+  function inclinar(e: PointerEvent<HTMLDivElement>) {
+    const el = pase.current
+    if (!el || reducido || e.pointerType !== 'mouse') return
+    const r = el.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width - 0.5
+    const y = (e.clientY - r.top) / r.height - 0.5
+    el.style.transform = `rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 7).toFixed(2)}deg)`
+    el.style.setProperty('--brillo-x', `${((x + 0.5) * 100).toFixed(1)}%`)
+    el.style.setProperty('--brillo-y', `${((y + 0.5) * 100).toFixed(1)}%`)
   }
 
-  return (
-    <main className="login-page">
-      <section className="login-hero" aria-label="ConecsIA">
-        <div className="login-grid" aria-hidden="true" />
-        <div className="login-orb login-orb-1" aria-hidden="true" />
-        <div className="login-orb login-orb-2" aria-hidden="true" />
-        <div className="login-orb login-orb-3" aria-hidden="true" />
-        <div className="login-ring" aria-hidden="true" />
+  function soltar() {
+    if (pase.current) pase.current.style.transform = ''
+  }
 
-        <div className="login-brand login-in">
-          <span className="login-brand-mark">✦</span>
+  const estadoPase = ingreso.isPending ? 'validando' : ingreso.isError ? 'rechazado' : 'listo'
+  const visibles = [0, 1, 2].map((k) => EJEMPLOS[(indice + k) % EJEMPLOS.length]!)
+
+  return (
+    <main className="lg">
+      <div className="lg-fondo" aria-hidden="true">
+        <div className="lg-aurora" />
+        <div className="lg-puntos" />
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <span key={n} className={`lg-burbuja lg-burbuja-${n}`} />
+        ))}
+      </div>
+
+      <section className="lg-hero" aria-label="ConecsIA">
+        <div className="lg-marca lg-entra" style={{ '--d': 0 } as CSSProperties}>
+          <span className="lg-marca-icono" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4Z" />
+              <path d="m8.5 12 2.5 2.5 4.5-5" />
+            </svg>
+          </span>
           <span>
             <strong>ConecsIA</strong>
             <small>Visitantes y control de accesos</small>
           </span>
         </div>
 
-        <div className="login-hero-copy">
-          <h1>
-            <span className="login-line">
-              <span>Gestiona cada acceso</span>
+        <div className="lg-copy">
+          <p className="lg-eyebrow lg-entra" style={{ '--d': 1 } as CSSProperties}>
+            <span className="lg-pulso" aria-hidden="true" /> Control de accesos en tiempo real
+          </p>
+          <h1 className="lg-titulo">
+            <span className="lg-entra" style={{ '--d': 2 } as CSSProperties}>
+              Gestiona cada acceso
             </span>
-            <span className="login-line">
-              <span>de forma segura y</span>
+            <span className="lg-entra" style={{ '--d': 3 } as CSSProperties}>
+              de forma segura y
             </span>
-            <span className="login-line">
-              <span className="login-grad">eficiente.</span>
+            <span className="lg-entra lg-acento" style={{ '--d': 4 } as CSSProperties}>
+              eficiente.
             </span>
           </h1>
-          <p className="login-in" style={{ animationDelay: '.45s' }}>
-            Visitantes, contratistas, proveedores y autorizaciones bajo un mismo control, en todas
-            tus sedes y en tiempo real.
+          <p className="lg-sub lg-entra" style={{ '--d': 5 } as CSSProperties}>
+            Visitantes, contratistas y proveedores autorizados y trazados en todas tus sedes.
           </p>
         </div>
 
-        <div className="login-benefits login-in" style={{ animationDelay: '1s' }}>
-          <span>
-            <b>01</b>
-            <small>Control centralizado</small>
-          </span>
-          <span>
-            <b>24/7</b>
-            <small>Visibilidad continua</small>
-          </span>
-          <span>
-            <b>100%</b>
-            <small>Trazabilidad</small>
-          </span>
+        <div className="lg-feed lg-entra" style={{ '--d': 6 } as CSSProperties}>
+          <div className="lg-feed-cab">
+            <span>Actividad</span>
+            <small>Vista ilustrativa</small>
+          </div>
+          <ul aria-hidden="true">
+            {visibles.map((ej, k) => (
+              <li key={`${indice}-${k}`} className="lg-feed-item" style={{ '--k': k } as CSSProperties}>
+                <span className="lg-avatar">{ej.iniciales}</span>
+                <span className="lg-feed-texto">
+                  <b>{ej.rol}</b>
+                  <small>{ej.lugar}</small>
+                </span>
+                <span className={`lg-chip lg-chip-${ej.tipo}`}>
+                  {ej.tipo === 'entrada' ? '↘ Entrada' : '↗ Salida'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <section className="login-form-panel">
-        <div className="login-form-wrap">
-          <h1 className="sr-only">{t('sesion.ingresarTitulo')}</h1>
-          <div className="login-heading login-in" style={{ animationDelay: '.3s' }}>
-            <h2>
-              Bienvenido{' '}
-              <span className="login-wave" aria-hidden="true">
-                👋
-              </span>
-            </h2>
-            <p>Inicia sesión para continuar</p>
+      <section className="lg-panel">
+        <div className="lg-escena" onPointerMove={inclinar} onPointerLeave={soltar}>
+          <div className="lg-pila" aria-hidden="true">
+            <span />
+            <span />
           </div>
 
-          <form onSubmit={enviar} className="login-form">
-            {ingreso.error instanceof ApiError && (
-              <ProblemDetailsAlert problem={ingreso.error.problem} />
-            )}
-            <label className="login-field">
-              <span>Correo electrónico o usuario</span>
-              <span className="login-input-wrap">
-                <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="0" y="1" width="24" height="22" rx="2" />
-                  <path d="m3 7 9 6 9-6" />
-                </svg>
+          <div className="lg-pase lg-entra-pase" ref={pase} data-estado={estadoPase}>
+            <span className="lg-ranura" aria-hidden="true" />
+            <span className="lg-brillo" aria-hidden="true" />
+
+            <header className="lg-pase-cab">
+              <div>
+                <span className="lg-etiqueta">Pase de ingreso</span>
+                <h1 className="sr-only">{t('sesion.ingresarTitulo')}</h1>
+                <h2>Bienvenido de nuevo</h2>
+                <p>Identifícate para abrir tu turno.</p>
+              </div>
+              <div className="lg-qr" aria-hidden="true">
+                {CELDAS.map((on, i) => (
+                  <i key={i} data-on={on || undefined} />
+                ))}
+                <span className="lg-qr-scan" />
+              </div>
+            </header>
+
+            <div className="lg-perforado" aria-hidden="true" />
+
+            <form onSubmit={enviar} className="lg-form">
+              {ingreso.error instanceof ApiError && (
+                <div className="lg-error">
+                  <ProblemDetailsAlert problem={ingreso.error.problem} />
+                </div>
+              )}
+
+              <label className="lg-campo">
                 <input
                   aria-label={t('sesion.correo')}
                   type="email"
                   name="correo"
                   autoComplete="username"
+                  placeholder=" "
                   required
                   value={correo}
                   onChange={(e) => setCorreo(e.target.value)}
                 />
-              </span>
-            </label>
-            <label className="login-field">
-              <span>{t('sesion.contrasena')}</span>
-              <span className="login-input-wrap">
-                <svg className="login-input-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="0" y="1" width="24" height="22" rx="2" />
-                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                <span className="lg-flotante">Correo electrónico</span>
+                <svg className="lg-icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="14" rx="3" />
+                  <path d="m4 7 8 6 8-6" />
                 </svg>
+              </label>
+
+              <label className="lg-campo">
                 <input
                   aria-label={t('sesion.contrasena')}
                   type={mostrar ? 'text' : 'password'}
                   name="contrasena"
                   autoComplete="current-password"
+                  placeholder=" "
                   required
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
                 />
+                <span className="lg-flotante">{t('sesion.contrasena')}</span>
+                <svg className="lg-icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="10" width="16" height="11" rx="3" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
                 <button
                   type="button"
-                  className="login-toggle"
+                  className="lg-ojo"
                   onClick={() => setMostrar((v) => !v)}
                   aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={mostrar}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
                     <circle cx="12" cy="12" r="3" />
-                    {mostrar && <path d="M3 3l18 18" />}
+                    <path className="lg-ojo-tachado" d="M3 3l18 18" data-on={mostrar || undefined} />
                   </svg>
                 </button>
-              </span>
-            </label>
-            <div className="login-options">
-              <label>
-                <input
-                  type="checkbox"
-                  disabled
-                  title="La política de sesión actual es administrada por el servidor"
-                />
-                <span>Recordarme</span>
               </label>
-              <button type="button" className="login-link" disabled>
-                ¿Olvidaste tu contraseña?
+
+              <div className="lg-opciones">
+                <label>
+                  <input
+                    type="checkbox"
+                    disabled
+                    title="La política de sesión actual es administrada por el servidor"
+                  />
+                  <span>Recordarme</span>
+                </label>
+                <button type="button" className="lg-link" disabled>
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                aria-label={t('sesion.entrar')}
+                disabled={ingreso.isPending}
+                className="lg-enviar"
+                aria-busy={ingreso.isPending}
+              >
+                <span className="lg-enviar-texto" data-oculto={ingreso.isPending || undefined}>
+                  Iniciar sesión
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </span>
+                <span className="lg-spinner" data-on={ingreso.isPending || undefined} aria-hidden="true" />
               </button>
-            </div>
-            <button
-              type="submit"
-              aria-label={t('sesion.entrar')}
-              disabled={ingreso.isPending}
-              className="login-submit"
-              aria-busy={ingreso.isPending}
-            >
-              {ingreso.isPending ? (
-                <span className="login-spinner" aria-hidden="true" />
-              ) : (
-                <>
-                  Iniciar sesión{' '}
-                  <span className="login-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </>
-              )}
-            </button>
-            <div className="login-divider">
-              <span>O continúa con</span>
-            </div>
-            <button
-              type="button"
-              className="login-microsoft"
-              disabled
-              title="Microsoft no está habilitado en el alcance actual"
-            >
-              <span className="ms-logo" aria-hidden="true">
-                <i style={{ background: '#f25022' }} />
-                <i style={{ background: '#7fba00' }} />
-                <i style={{ background: '#00a4ef' }} />
-                <i style={{ background: '#ffb900' }} />
+
+              <div className="lg-divisor">
+                <span>o</span>
+              </div>
+
+              <button
+                type="button"
+                className="lg-microsoft"
+                disabled
+                title="Microsoft no está habilitado en el alcance actual"
+              >
+                <span className="ms-logo" aria-hidden="true">
+                  <i style={{ background: '#f25022' }} />
+                  <i style={{ background: '#7fba00' }} />
+                  <i style={{ background: '#00a4ef' }} />
+                  <i style={{ background: '#ffb900' }} />
+                </span>
+                Continuar con Microsoft
+              </button>
+            </form>
+
+            <footer className="lg-pase-pie">
+              <span className="lg-estado">
+                <i aria-hidden="true" />
+                {estadoPase === 'validando'
+                  ? 'Validando credenciales…'
+                  : estadoPase === 'rechazado'
+                    ? 'Acceso no concedido'
+                    : 'Canal cifrado · sesión administrada'}
               </span>
-              Iniciar sesión con Microsoft
-            </button>
-          </form>
-
-          {desarrollo.data && (
-            <section className="login-dev" aria-labelledby="titulo-desarrollo">
-              <h2 id="titulo-desarrollo">{t('sesion.desarrolloTitulo')}</h2>
-              <p className="login-dev-aviso">{t('sesion.ingresarAviso')}</p>
-              {desarrollo.data.length === 0 && <p>{t('sesion.sinUsuarios')}</p>}
-              <ul>
-                {desarrollo.data.map((usuario) => (
-                  <li key={usuario.id}>
-                    <button type="button" onClick={() => elegir(usuario)}>
-                      <strong>{usuario.nombre}</strong>
-                      <span>{usuario.correo}</span>
-                      <small>{usuario.organizaciones.join(' · ')}</small>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <p className="login-note">La sesión está protegida y administrada por ConecsIA.</p>
+              <span className="lg-serie">CNX-01</span>
+            </footer>
+          </div>
         </div>
       </section>
     </main>
   )
 }
-
-/** Ejemplos ficticios que ilustran el flujo; no provienen de la API. */
-export const EJEMPLOS = [
-  { iniciales: 'VI', rol: 'Visitante', lugar: 'Recepción', tipo: 'entrada' },
-  { iniciales: 'PR', rol: 'Proveedor', lugar: 'Bodega', tipo: 'entrada' },
-  { iniciales: 'CO', rol: 'Contratista', lugar: 'Torre B', tipo: 'salida' },
-  { iniciales: 'EM', rol: 'Empleado', lugar: 'Sede principal', tipo: 'entrada' },
-] as const
-

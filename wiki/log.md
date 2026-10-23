@@ -334,3 +334,44 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Se centralizó el filtrado y validación de escritura de entidades `OrganizacionEntity`.
 - Se eliminaron secretos de configuración versionada.
 - Pendientes: matriz D-04 por endpoint y refresh tokens revocables; no hay migración requerida.
+
+## [2026-10-22] implementacion | Rediseño visual del login «Pase de acceso»
+- `IngresarPage.tsx` e `ingresar.css` reescritos: credencial con profundidad, inclinación 3D, QR decorativo con estados, etiquetas flotantes, feed ilustrativo.
+- Animaciones siguiendo la skill de Emil Kowalski (ease-out fuerte, transform/opacity, reduced-motion).
+- Contrato de autenticación sin cambios; pruebas de componente 2/2 y `tsc` en verde.
+- Páginas: [[Estado de implementación]]. Pendiente: revisión visual y limpiar `.login-*` en `styles.css`.
+
+## [2026-10-22] revision | Revisión visual del login en escritorio y tablet
+- Revisado en navegador a 1440×900, 768×1024 y 1024×768; estado de error comprobado contra la API local.
+- Corregido: patrón QR a rayas (ahora con esquinas tipo QR), peso del título, contraste del divisor y entrada que dependía de JS (ahora solo CSS).
+- Se agregó `.claude/launch.json` (servidor `frontend`). Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Ajustes de layout del login y burbujas flotantes
+- Tablet (≤1024px): titular y etiqueta centrados y más arriba; pase de ingreso más ancho (32rem).
+- Pase más grande en escritorio (30rem, campos 3.6rem, QR 4.8rem); en pantallas anchas el contenido se agrupa en 1360px para reducir el vacío central.
+- Seis burbujas de colores flotando (solo transform, se detienen con movimiento reducido); la etiqueta flotante ya no se superpone al autocompletado.
+- Verificado en navegador a 1900×950 y 820×1180; pruebas 2/2. Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Shell autenticado (menú) y dashboard con el lenguaje del login
+- Nuevo `AppShell` como layout protegido de `/dashboard` y `/administracion`; menú por permisos, colapsable y deslizable en móvil; módulos sin pantalla marcados «Pronto».
+- Dashboard rediseñado solo con datos de `GET /api/dashboard`; se retiraron controles sin funcionalidad (buscador, selectores de la barra, notificaciones).
+- Tokens `--ui-*` en `styles.css` y limpieza de las reglas `.login-*` sin uso.
+- Pruebas 4/4, build OK, revisión visual en escritorio/tablet/móvil con datos de demostración. Páginas: [[Estado de implementación]].
+- Pendiente: probar con usuario real y datos reales; crear pantallas para los módulos «Pronto».
+
+## [2026-10-22] implementacion | Rediseño del módulo de Administración
+- Administración con banda oscura, pestañas por permiso, tablas/tarjetas y modal coherentes con el dashboard.
+- Mensaje específico para 403; pruebas nuevas en `AdministracionPage.test.tsx` (6/6 en total).
+- Pendiente: diagnosticar el 403 del usuario real en `GET /api/administracion/usuarios`. Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Acceso dinámico a módulos por rol (app_modulos / modulos_permisos)
+- Backend: entidades, configuraciones, migración con catálogo y traslado desde rol_permiso, servicios, endpoints, política `[RequiereModulo]` en 55 controladores, caché invalidable y auditoría.
+- Frontend: menú y rutas desde `/api/app-modulos/mios`; gestión de módulos por perfil en Administración.
+- Corregidos dos errores previos: filtro de organización del DbContext fijado en -1 y migración manual de zonas con argumentos mal ubicados.
+- Pruebas: backend 10/10 (nuevo proyecto ConecsIA.Tests sobre PostgreSQL temporal), frontend 9/9. Migración no aplicada a la base local.
+- Páginas: [[ADR-023 Acceso a módulos por rol en base de datos]], [[Decisiones pendientes]] (D-23), [[Registro de ADR]], [[Estado de implementación]], [[index]].
+
+## [2026-10-22] implementacion | Migraciones aplicadas a la base local
+- Aplicadas `AddBusinessZonesAndAuthorizationScopes` y `AddAppModulosYModulosPermisos` en `conecsia` (respaldo `pg_dump` previo).
+- Verificado: 4 migraciones en el historial, 12 módulos, tabla `zona_empresarial` creada, datos existentes intactos.
+- Pendiente: reiniciar la API en ejecución para cargar el código nuevo. Páginas: [[Estado de implementación]].

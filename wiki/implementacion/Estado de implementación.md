@@ -14,6 +14,39 @@ tags: [conecsia]
 
 # Estado de implementación
 
+## Acceso a módulos por rol (app_modulos / modulos_permisos) — 2026-10-22
+
+- **Implementado (backend):** entidades `AppModulo` y `ModuloPermiso` con configuraciones EF separadas; migración `20261022235936_AddAppModulosYModulosPermisos` (catálogo de 12 módulos + traslado desde `rol_permiso`); repositorios en `UnitOfWork`; `ModuloAccesoService` con caché invalidable; `ModuloPermisoService` (validaciones, anti-escalamiento, auditoría); endpoints `GET /api/app-modulos/mios`, `GET|POST /api/app-modulos`, `PUT /api/app-modulos/{id}`, `PATCH /api/app-modulos/{id}/estado`, `GET|PUT /api/roles/{idRol}/modulos`, `POST|DELETE /api/roles/{idRol}/modulos/{idModulo}`; política `[RequiereModulo]` en 55 controladores. Ver [[ADR-023 Acceso a módulos por rol en base de datos]].
+- **Implementado (frontend):** menú construido desde `/api/app-modulos/mios`; `RutaModulo` muestra «Acceso denegado» si el servidor no concede el módulo; Administración → Perfiles → «Módulos» reemplaza las asignaciones del rol.
+- **Corregido (errores previos):** `ConecsiaDbContext` capturaba la organización al construirse (durante `OnTokenValidated`, sin usuario) y el filtro quedaba en `-1` toda la petición; ahora se evalúa por consulta. Migración manual de zonas empresariales con argumentos posicionales erróneos (no aplicable en ninguna base).
+- **Verificado:** proyecto nuevo `backend/ConecsIA.Tests` (xUnit + WebApplicationFactory + PostgreSQL temporal creado con las migraciones y eliminado al final): **10/10**. Cubre catálogo inicial, unicidad/FK en BD, denegación por defecto vía API directa, asignar/retirar con efecto inmediato y auditoría, reemplazo atómico, aislamiento entre organizaciones, anti-escalamiento, catálogo solo para el administrador general. Frontend Vitest **9/9**, `tsc`, `vite build`, `oxlint` sin errores.
+- **Aplicado 2026-10-22 en la base local `conecsia`:** `20261022120000_AddBusinessZonesAndAuthorizationScopes` y `20261022235936_AddAppModulosYModulosPermisos` (respaldo previo con `pg_dump`). Resultado: 12 módulos, rol «Administrador plataforma» con `dashboard`; usuarios, roles y organizaciones intactos (1/1/1). El usuario 1 accede como administrador general; los demás necesitan módulos asignados.
+- **Hallazgo:** en la base local `permiso` y `rol_permiso` están vacías; por eso el usuario 1 recibía 403 en Administración (sus endpoints exigen permisos que no existen). Con este cambio el módulo `administracion` queda cubierto por el administrador general, pero las pestañas siguen dependiendo de permisos `usuarios.*`/`roles.*` que no están sembrados.
+
+## Módulo de Administración rediseñado — 2026-10-22
+
+- **Implementado:** `features/administracion/AdministracionPage.tsx` y `administracion.css` con el lenguaje del dashboard (banda oscura con pestañas y conteos, tarjeta clara, tablas con avatar, etiquetas de perfil, estados de color, tarjetas de perfil, modal con `Escape`, «Cancelar» y doble envío bloqueado).
+- Pestañas y botones de creación se muestran según los permisos que exige el backend (`AdministracionAuthorization`): `usuarios.consultar`/`usuarios.crear`, `saas.organizaciones.consultar` o `configuracion.consultar`/`saas.organizaciones.administrar`, `roles.consultar`/`roles.administrar` (también con prefijo `saas.`). Solo presentación: el servidor sigue autorizando.
+- Estados: un 403 muestra «Tu perfil no tiene permiso…» distinto del error genérico; vacíos según búsqueda.
+- **Verificado:** Vitest 6/6 (incluye `AdministracionPage.test.tsx`), `tsc`, `vite build`; revisión visual 1440×900 y 375×812 con datos de demostración en el navegador.
+- **Observación:** el error que se ve con el usuario real en Usuarios es un 403 del backend (`Forbid()` en `GET /api/administracion/usuarios`); falta revisar los permisos/organización de ese usuario. Lógica de creación sin cambios (usuario se crea en la primera organización listada y sin perfiles).
+
+## Shell autenticado y dashboard rediseñados — 2026-10-22
+
+- **Implementado:** `frontend/src/app/shell/` (`AppShell.tsx`, `navegacion.ts`, `contextoShell.ts`, `appShell.css`) como ruta de layout protegida para `/dashboard` y `/administracion` (antes Administración no tenía menú). Iconos SVG compartidos en `shared/ui/Icono.tsx`; tokens `--ui-*` en `styles.css`.
+- Menú: lateral oscuro con el lenguaje del login, grupos General/Operación/Gestión, ítem activo con `NavLink` (`aria-current`), colapsable en escritorio (preferencia en `localStorage`), panel deslizable con velo y `Escape` en <1024px. Se filtra por permiso del token (`tienePermiso`/`esAdministradorGeneral`); los módulos sin pantalla se muestran deshabilitados con «Pronto» (no navegan).
+- Dashboard: banda oscura con saludo, organización, sede, hora de consulta, filtros (sede, Hoy/7 días) y accesos rápidos reales (Actualizar, Administración si hay permiso, Mi perfil). Indicadores, visitas por día, ingresos por tipo, personas dentro y actividad provienen solo de `GET /api/dashboard` (alcance filtrado en el backend por organización).
+- Retirado: buscador, selectores de organización/sede de la barra, campana de notificaciones y tendencia «—» de las métricas (no tenían funcionalidad), y el contador de alertas del menú.
+- **Verificado:** `tsc -b`, `vite build`, Vitest 4/4 (incluye `DashboardPage.test.tsx`: filtrado del menú por permiso, sección activa, indicadores y estados vacíos). Revisión visual a 1440×900, 820×1180 y 375×812 con datos de demostración inyectados solo en la pestaña del navegador (sin cuenta de prueba en el backend local).
+- **No verificado:** con datos reales de la API y con un usuario sin `usuarios.consultar` contra el backend.
+
+## Rediseño visual del login «Pase de acceso» — 2026-10-22
+
+- **Implementado:** `frontend/src/features/sesion/IngresarPage.tsx` + `ingresar.css` (clases `lg-*`). Fondo oscuro con aurora y malla de puntos; el formulario es una credencial física (ranura, QR decorativo, perforado, pila de tarjetas detrás) con inclinación 3D sutil al mover el mouse; campos con etiqueta flotante; estado del pase (listo / validando / rechazado) con escaneo del QR y sacudida ante error.
+- Movimiento según la skill de Emil Kowalski: solo `transform`/`opacity`, `cubic-bezier(0.23, 1, 0.32, 1)`, presión `scale(0.97)`, hover tras `(hover: hover) and (pointer: fine)`, `prefers-reduced-motion` quita desplazamientos y conserva fundidos.
+- El feed de actividad del héroe usa `EJEMPLOS` ficticios y se rotula «Vista ilustrativa»; no consume la API. Se retiró el bloque muerto del selector de usuarios sintéticos.
+- **Verificado:** `tsc -b` sin errores y `IngresarPage.test.tsx` 2/2. **Verificado en navegador (2026-10-22):** escritorio 1440×900, tablet vertical 768×1024 y horizontal 1024×768; estado de error (QR rojo, alerta, contraseña limpiada). La entrada se hace solo con CSS (`animation … both`) para que no quede invisible si `requestAnimationFrame` se demora. Las reglas viejas `.login-*` de `styles.css` quedan sin uso.
+
 ## Integración frontend del login — 2026-10-21
 
 - El frontend usa `POST /api/auth/login` con `{ correo, password }` y mantiene el JWT solo en memoria.

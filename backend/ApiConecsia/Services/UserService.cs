@@ -103,6 +103,15 @@ public sealed class UserService : IUserService
                                  where roleIds.Contains(rp.IdRol) && p.Activo
                                  select p.Codigo).Distinct().ToListAsync(cancellationToken);
 
+        if (UserAuthorization.EsUsuarioAdministradorGeneral(usuario.IdUsuario))
+        {
+            permissions = await _db.Permisos.IgnoreQueryFilters()
+                .Where(x => x.Activo)
+                .Select(x => x.Codigo)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+        }
+
         var now = DateTime.UtcNow;
         var expires = now.AddMinutes(_jwt.DurationInMinutes);
         var claims = new List<Claim>
@@ -114,6 +123,10 @@ public sealed class UserService : IUserService
         claims.AddRange(organizationIds.Select(id => new Claim("organization_id", id.ToString())));
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
+        if (UserAuthorization.EsUsuarioAdministradorGeneral(usuario.IdUsuario))
+        {
+            claims.Add(new Claim(UserAuthorization.Claims.PlatformAdmin, "true"));
+        }
 
         var token = new JwtSecurityTokenHandler().CreateToken(new SecurityTokenDescriptor
         {

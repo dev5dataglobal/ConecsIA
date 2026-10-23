@@ -347,6 +347,22 @@ erDiagram
 
 
     %% =====================================================
+    %% ZONA EMPRESARIAL: agrupación administrativa distinta de ZONA (espacio físico)
+    ZONA_EMPRESARIAL {
+        int id_zona_empresarial PK
+        string nombre UK
+        string descripcion
+        boolean activa
+        timestamptz creada_en
+    }
+    ZONA_EMPRESARIAL_ORGANIZACION {
+        int id_organizacion PK, FK
+        int id_zona_empresarial PK, FK
+        boolean es_administradora
+        boolean activa
+    }
+    %% La pertenencia se define en sede; una sede tiene cero o una zona empresarial.
+
     %% AUTORIZACIONES (ADR-007, ADR-009, ADR-010)
     %% =====================================================
 
@@ -355,6 +371,9 @@ erDiagram
         int id_organizacion FK
         int id_persona FK
         int id_sede FK "una sede por autorización (PRD 6.2); confirmar"
+        string tipo_emisor "Empresa | ZonaEmpresarial"
+        int id_zona_empresarial_emisora FK "nullable; obligatorio para emisor zona"
+        string alcance "Privado | Comun"
         int id_area FK "destino"
         int id_membresia_responsable FK
         int id_usuario_crea FK

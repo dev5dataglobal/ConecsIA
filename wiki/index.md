@@ -35,6 +35,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-006 Identidad y sesiones]] — Aprobada 2026-10-19: opción A (ASP.NET Core Identity + cookie); cierra D-03
 - [[ADR-021 DbContext compartido y ensamblado de migraciones]] — Propuesta, implementada de forma provisional en HU-001
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
+- [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
 
 ## Backlog Scrum
 - [[PLAN-DE-TRABAJO]] — fases F0–F7, DoR/DoD, ruta crítica, bloqueos y sprints propuestos

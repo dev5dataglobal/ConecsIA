@@ -9,7 +9,9 @@ public sealed class ConecsiaDbContext(
     DbContextOptions<ConecsiaDbContext> options,
     IOrganizationContext? organizationContext = null) : DbContext(options)
 {
-    private readonly int? _organizationId = organizationContext?.OrganizationId;
+    // Se evalúa en cada consulta/guardado: el contexto puede crearse antes de autenticar al usuario
+    // (p. ej. en OnTokenValidated), cuando la organización aún no está disponible.
+    private int? _organizationId => organizationContext?.OrganizationId;
     public DbSet<Organizacion> Organizaciones => Set<Organizacion>();
     public DbSet<TipoOrganizacion> TiposOrganizacion => Set<TipoOrganizacion>();
     public DbSet<Plan> Planes => Set<Plan>();
@@ -19,6 +21,8 @@ public sealed class ConecsiaDbContext(
     public DbSet<ParametroOrganizacion> ParametrosOrganizacion => Set<ParametroOrganizacion>();
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Sede> Sedes => Set<Sede>();
+    public DbSet<ZonaEmpresarial> ZonasEmpresariales => Set<ZonaEmpresarial>();
+    public DbSet<ZonaEmpresarialOrganizacion> ZonasEmpresarialesOrganizaciones => Set<ZonaEmpresarialOrganizacion>();
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<AreaResponsable> AreasResponsables => Set<AreaResponsable>();
     public DbSet<Zona> Zonas => Set<Zona>();
@@ -63,6 +67,8 @@ public sealed class ConecsiaDbContext(
     public DbSet<NotificacionDestinatario> NotificacionesDestinatarios => Set<NotificacionDestinatario>();
     public DbSet<Outbox> Outbox => Set<Outbox>();
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
+    public DbSet<AppModulo> AppModulos => Set<AppModulo>();
+    public DbSet<ModuloPermiso> ModulosPermisos => Set<ModuloPermiso>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

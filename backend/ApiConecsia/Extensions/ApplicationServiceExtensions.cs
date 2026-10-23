@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ConecsIA.Domain.Entities;
 using ConecsIA.Application.Interfaces;
+using ConecsIA.Infrastructure.Services;
+using ApiConecsia.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ApiConecsia.Extensions;
 
@@ -35,6 +38,15 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddHttpContextAccessor();
         services.AddScoped<IOrganizationContext, OrganizationContext>();
+
+        // Autorización dinámica por módulo (app_modulos / modulos_permisos).
+        services.AddMemoryCache();
+        services.AddSingleton<ModuloAccesoCacheTokens>();
+        services.AddScoped<IModuloPermisoRepository, ModuloPermisoRepository>();
+        services.AddScoped<IModuloAccesoService, ModuloAccesoService>();
+        services.AddScoped<ModuloPermisoService>();
+        services.AddSingleton<IAuthorizationPolicyProvider, ModuloPolicyProvider>();
+        services.AddScoped<IAuthorizationHandler, ModuloAuthorizationHandler>();
 
         return services;
     }
