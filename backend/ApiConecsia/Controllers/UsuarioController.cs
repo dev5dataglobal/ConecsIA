@@ -76,7 +76,7 @@ public class UsuarioController : BaseApiController
     private static bool PoliticaContrasenaValida(string value) => value.Any(char.IsUpper) && value.Any(char.IsLower) && value.Any(char.IsDigit);
 
     [HttpGet]
-    [RequiereModulo(CodigosModulo.Administracion)]
+    [RequiereModulo(CodigosModulo.Usuarios)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Usuario>>> Get()
     {
@@ -86,7 +86,7 @@ public class UsuarioController : BaseApiController
     }
 
     [HttpGet("{id:int}")]
-    [RequiereModulo(CodigosModulo.Administracion)]
+    [RequiereModulo(CodigosModulo.Usuarios)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Usuario>> Get(int id)
@@ -104,7 +104,7 @@ public class UsuarioController : BaseApiController
     }
 
     [HttpPost]
-    [RequiereModulo(CodigosModulo.Administracion)]
+    [RequiereModulo(CodigosModulo.Usuarios)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Usuario>> Post([FromBody] Usuario entity)
@@ -121,7 +121,7 @@ public class UsuarioController : BaseApiController
     }
 
     [HttpPut("{id:int}")]
-    [RequiereModulo(CodigosModulo.Administracion)]
+    [RequiereModulo(CodigosModulo.Usuarios)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -148,7 +148,7 @@ public class UsuarioController : BaseApiController
     }
 
     [HttpDelete("{id:int}")]
-    [RequiereModulo(CodigosModulo.Administracion)]
+    [RequiereModulo(CodigosModulo.Usuarios)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)

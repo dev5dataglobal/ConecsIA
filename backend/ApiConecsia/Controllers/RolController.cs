@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApiConecsia.Controllers;
 
 [Route("api/[controller]")]
-[RequiereModulo(CodigosModulo.Administracion)]
+[RequiereModulo(CodigosModulo.Perfiles)]
 public class RolController : BaseApiController
 {
     private readonly IUnitOfWork _unitOfWork;

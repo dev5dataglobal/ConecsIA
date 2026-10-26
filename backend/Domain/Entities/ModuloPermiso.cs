@@ -8,4 +8,8 @@ public class ModuloPermiso : OrganizacionEntity
     public int IdAppModulo { get; set; }
     public DateTime AsignadoEn { get; set; }
     public int? IdUsuarioAsigna { get; set; }
+    /// <summary>Acciones concedidas; ninguna implica a otra.</summary>
+    public bool PuedeConsultar { get; set; }
+    public bool PuedeAnadir { get; set; }
+    public bool PuedeEditar { get; set; }
 }

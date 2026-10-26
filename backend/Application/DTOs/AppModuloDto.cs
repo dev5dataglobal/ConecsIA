@@ -12,6 +12,19 @@ public sealed class AppModuloDto
     public string? Icono { get; set; }
     public int Orden { get; set; }
     public bool Activo { get; set; }
+    /// <summary>Acciones concedidas (en /mios: las del usuario; en /roles/{id}/modulos: las del rol). En el catálogo, false.</summary>
+    public bool Consultar { get; set; }
+    public bool Anadir { get; set; }
+    public bool Editar { get; set; }
+}
+
+/// <summary>Acciones de un rol sobre un módulo. Ninguna implica a otra.</summary>
+public sealed class AsignacionModuloDto
+{
+    [Range(1, int.MaxValue)] public int IdAppModulo { get; set; }
+    public bool Consultar { get; set; }
+    public bool Anadir { get; set; }
+    public bool Editar { get; set; }
 }
 
 public sealed class AppModuloGuardarDto
@@ -44,8 +57,17 @@ public sealed class AppModuloEstadoDto
     public bool? Activo { get; set; }
 }
 
-public sealed class ReemplazarModulosRolDto
+public sealed class ReemplazarModulosRolDto : IValidatableObject
 {
-    [Required(ErrorMessage = "Debe enviar la lista de módulos (puede estar vacía).")]
+    /// <summary>Matriz de acciones por módulo. Un módulo sin acciones marcadas se retira del rol.</summary>
+    public List<AsignacionModuloDto>? Asignaciones { get; set; }
+
+    /// <summary>Compatibilidad: lista de módulos con las tres acciones. Se ignora si llega <see cref="Asignaciones"/>.</summary>
     public List<int>? IdsModulos { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Asignaciones is null && IdsModulos is null)
+            yield return new ValidationResult("Debe enviar la lista de módulos (puede estar vacía).", [nameof(Asignaciones)]);
+    }
 }

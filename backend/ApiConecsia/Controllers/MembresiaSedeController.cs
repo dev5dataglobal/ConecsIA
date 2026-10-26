@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApiConecsia.Controllers;
 
 [Route("api/[controller]")]
-[RequiereModulo(CodigosModulo.Administracion)]
+[RequiereModulo(CodigosModulo.Usuarios)]
 public class MembresiaSedeController : BaseApiController
 {
     private readonly IUnitOfWork _unitOfWork;

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ConecsIA.Application.Interfaces;
 using ConecsIA.Application.Interfaces.Repositories;
+using ConecsIA.Application.Seguridad;
 using Microsoft.EntityFrameworkCore;
 using ConecsIA.Infrastructure.Data;
 using Microsoft.Extensions.Caching.Memory;
@@ -39,26 +40,33 @@ public sealed class ModuloAccesoService(
 {
     private static readonly TimeSpan Duracion = TimeSpan.FromMinutes(5);
 
-    public async Task<IReadOnlySet<string>> ObtenerCodigosPermitidosAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlySet<string>> ObtenerCodigosPermitidosAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, CancellationToken cancellationToken = default) =>
+        (await ObtenerAccesosAsync(idUsuario, idOrganizacion, esAdministradorGeneral, cancellationToken)).Keys.ToHashSet(StringComparer.Ordinal);
+
+    public async Task<IReadOnlyDictionary<string, AccionesModulo>> ObtenerAccesosAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, CancellationToken cancellationToken = default)
     {
         var clave = $"modulos:{idOrganizacion}:{idUsuario}:{(esAdministradorGeneral ? "admin" : "rol")}";
-        if (cache.TryGetValue(clave, out IReadOnlySet<string>? codigos) && codigos is not null) return codigos;
+        if (cache.TryGetValue(clave, out IReadOnlyDictionary<string, AccionesModulo>? accesos) && accesos is not null) return accesos;
 
-        var lista = esAdministradorGeneral
-            // El administrador general accede a todos los módulos activos sin depender de asignaciones.
-            ? await db.AppModulos.AsNoTracking().Where(x => x.Activo).Select(x => x.Codigo).ToListAsync(cancellationToken)
-            : await modulosPermisos.ObtenerCodigosDeUsuarioAsync(idUsuario, idOrganizacion, cancellationToken);
-        codigos = lista.ToHashSet(StringComparer.Ordinal);
+        accesos = esAdministradorGeneral
+            // El administrador general accede a todos los módulos activos, con todas las acciones, sin depender de asignaciones.
+            ? (await db.AppModulos.AsNoTracking().Where(x => x.Activo).Select(x => x.Codigo).ToListAsync(cancellationToken))
+                .ToDictionary(x => x, _ => AccionesModulo.Todas, StringComparer.Ordinal)
+            : await modulosPermisos.ObtenerAccesosDeUsuarioAsync(idUsuario, idOrganizacion, cancellationToken);
 
         var opciones = new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = Duracion }
             .AddExpirationToken(tokens.TokenOrganizacion(idOrganizacion))
             .AddExpirationToken(tokens.TokenGlobal());
-        cache.Set(clave, codigos, opciones);
-        return codigos;
+        cache.Set(clave, accesos, opciones);
+        return accesos;
     }
 
+    public async Task<bool> PuedeAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, string codigoModulo, AccionModulo accion, CancellationToken cancellationToken = default) =>
+        (await ObtenerAccesosAsync(idUsuario, idOrganizacion, esAdministradorGeneral, cancellationToken)).TryGetValue(codigoModulo, out var acciones)
+        && acciones.Permite(accion);
+
     public async Task<bool> TieneAccesoAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, string codigoModulo, CancellationToken cancellationToken = default) =>
-        (await ObtenerCodigosPermitidosAsync(idUsuario, idOrganizacion, esAdministradorGeneral, cancellationToken)).Contains(codigoModulo);
+        (await ObtenerAccesosAsync(idUsuario, idOrganizacion, esAdministradorGeneral, cancellationToken)).ContainsKey(codigoModulo);
 
     public void InvalidarOrganizacion(int idOrganizacion) => tokens.InvalidarOrganizacion(idOrganizacion);
 

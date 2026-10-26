@@ -24,8 +24,12 @@ const GRUPO_POR_CODIGO: Record<string, string> = {
   vehiculos: 'Operación',
   dispositivos: 'Operación',
   alertas: 'Operación',
+  usuarios: 'Administración',
+  perfiles: 'Administración',
+  organizaciones: 'Administración',
+  zonas_empresariales: 'Administración',
 }
-const ORDEN_GRUPOS = ['General', 'Operación', 'Gestión']
+const ORDEN_GRUPOS = ['General', 'Operación', 'Gestión', 'Administración']
 
 const ICONOS: Record<string, NombreIcono> = {
   dashboard: 'dashboard', accesos: 'accesos', visitas: 'visitas', autorizaciones: 'autorizaciones',
@@ -34,7 +38,14 @@ const ICONOS: Record<string, NombreIcono> = {
 }
 
 /** Rutas con pantalla en este frontend; un módulo con otra ruta se muestra como «Pronto». */
-const RUTAS_IMPLEMENTADAS = new Set(['/dashboard', '/administracion'])
+const RUTAS_IMPLEMENTADAS = new Set([
+  '/dashboard',
+  '/administracion',
+  '/administracion/usuarios',
+  '/administracion/perfiles',
+  '/administracion/organizaciones',
+  '/administracion/zonas-empresariales',
+])
 
 export function construirNavegacion(modulos: AppModulo[]): GrupoNavegacion[] {
   const grupos = new Map<string, ItemNavegacion[]>()

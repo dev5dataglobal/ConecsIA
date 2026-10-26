@@ -45,6 +45,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IModuloPermisoRepository, ModuloPermisoRepository>();
         services.AddScoped<IModuloAccesoService, ModuloAccesoService>();
         services.AddScoped<ModuloPermisoService>();
+        services.AddScoped<AlmacenamientoArchivos>();
         services.AddSingleton<IAuthorizationPolicyProvider, ModuloPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, ModuloAuthorizationHandler>();
 

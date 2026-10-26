@@ -1,3 +1,5 @@
+using ConecsIA.Application.Seguridad;
+
 namespace ConecsIA.Application.Interfaces;
 
 /// <summary>
@@ -7,6 +9,9 @@ namespace ConecsIA.Application.Interfaces;
 public interface IModuloAccesoService
 {
     Task<IReadOnlySet<string>> ObtenerCodigosPermitidosAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, CancellationToken cancellationToken = default);
+    /// <summary>Acciones concedidas por módulo (el administrador general las tiene todas).</summary>
+    Task<IReadOnlyDictionary<string, AccionesModulo>> ObtenerAccesosAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, CancellationToken cancellationToken = default);
+    Task<bool> PuedeAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, string codigoModulo, AccionModulo accion, CancellationToken cancellationToken = default);
     Task<bool> TieneAccesoAsync(int idUsuario, int idOrganizacion, bool esAdministradorGeneral, string codigoModulo, CancellationToken cancellationToken = default);
     /// <summary>Invalida la caché de una organización (cambio de asignaciones de sus roles).</summary>
     void InvalidarOrganizacion(int idOrganizacion);

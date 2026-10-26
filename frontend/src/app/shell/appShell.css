@@ -178,3 +178,14 @@ a.sh-item.active .sh-item-icono { color: var(--ui-lima); }
 @media (prefers-reduced-motion: reduce) {
   .sh-lateral, .sh[data-drawer] .sh-lateral { transition: visibility 0s; }
 }
+
+/* Selector de organización (solo administrador de plataforma). */
+.sh-organizacion {
+  display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; max-width: min(18rem, 45vw); padding: 0 0.7rem;
+  border: 1px solid var(--ui-linea); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); color: var(--ui-violeta-2);
+}
+.sh-organizacion:focus-within { border-color: var(--ui-violeta); box-shadow: var(--ui-foco); }
+.sh-organizacion select { min-width: 0; flex: 1; height: 2.3rem; border: 0; outline: 0; background: transparent; color: var(--ui-texto); font: inherit; font-size: 0.85rem; font-weight: 600; text-overflow: ellipsis; cursor: pointer; }
+@media (max-width: 560px) {
+  .sh-organizacion { max-width: 50vw; }
+}

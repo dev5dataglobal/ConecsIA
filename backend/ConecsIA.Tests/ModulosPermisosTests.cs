@@ -22,8 +22,7 @@ public sealed class ModulosPermisosTests(ApiFactory api) : IClassFixture<ApiFact
         _rolAdminA = await api.CrearRolAsync(_orgA, "Administrador de organización");
         _rolOperadorA = await api.CrearRolAsync(_orgA, "Operador");
         _rolOperadorB = await api.CrearRolAsync(_orgB, "Operador B");
-        await api.AsignarPermisoAsync(_orgA, _rolAdminA, "roles.administrar");
-        await api.AsignarModuloAsync(_orgA, _rolAdminA, "administracion");
+        await api.AsignarModuloAsync(_orgA, _rolAdminA, "perfiles");
         await api.AsignarModuloAsync(_orgA, _rolAdminA, "personas");
         await api.CrearUsuarioAsync(Correo("admin"), _orgA, _rolAdminA);
         await api.CrearUsuarioAsync(Correo("operador"), _orgA, _rolOperadorA);
@@ -40,8 +39,10 @@ public sealed class ModulosPermisosTests(ApiFactory api) : IClassFixture<ApiFact
     [Fact]
     public async Task Catalogo_inicial_contiene_los_modulos_reales_sin_duplicados()
     {
-        var codigos = await api.ScalarAsync<string>("SELECT string_agg(codigo, ',' ORDER BY codigo) FROM app_modulos");
-        Assert.Equal("administracion,alertas,auditoria,autorizaciones,configuracion,control_accesos,dashboard,dispositivos,personas,sedes,vehiculos,visitas", codigos);
+        var codigos = await api.ScalarAsync<string>("SELECT string_agg(codigo, ',' ORDER BY codigo) FROM app_modulos WHERE activo");
+        Assert.Equal("alertas,auditoria,autorizaciones,configuracion,control_accesos,dashboard,dispositivos,organizaciones,perfiles,personas,sedes,usuarios,vehiculos,visitas,zonas_empresariales", codigos);
+        // «administracion» se conserva inactivo (se dividió en cuatro módulos).
+        Assert.False(await api.ScalarAsync<bool>("SELECT activo FROM app_modulos WHERE codigo = 'administracion'"));
     }
 
     [Fact]
@@ -173,7 +174,7 @@ public sealed class ModulosPermisosTests(ApiFactory api) : IClassFixture<ApiFact
     }
 
     [Fact]
-    public async Task Un_operador_sin_el_modulo_de_administracion_no_gestiona_asignaciones()
+    public async Task Un_operador_sin_el_modulo_de_perfiles_no_gestiona_asignaciones()
     {
         var operador = await api.ClienteAutenticadoAsync(Correo("operador"));
         var idPersonas = await IdModulo("personas");

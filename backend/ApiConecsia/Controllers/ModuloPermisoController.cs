@@ -28,7 +28,9 @@ public sealed class ModuloPermisoController(ModuloPermisoService servicio) : Bas
     public async Task<ActionResult<IEnumerable<AppModuloDto>>> Put(int idRol, [FromBody] ReemplazarModulosRolDto dto, CancellationToken ct)
     {
         if (!await servicio.PuedeAdministrarRolesAsync(User, ct)) return Prohibido();
-        return this.Respuesta(await servicio.ReemplazarAsync(User, idRol, dto.IdsModulos!, ct));
+        var asignaciones = dto.Asignaciones
+            ?? dto.IdsModulos!.Select(id => new AsignacionModuloDto { IdAppModulo = id, Consultar = true, Anadir = true, Editar = true }).ToList();
+        return this.Respuesta(await servicio.ReemplazarAsync(User, idRol, asignaciones, ct));
     }
 
     [HttpPost("{idModulo:int}")]

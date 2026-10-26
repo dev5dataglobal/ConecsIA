@@ -1,7 +1,7 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-21
+actualizado: 2026-10-24
 tags: [conecsia]
 ---
 
@@ -13,6 +13,39 @@ tags: [conecsia]
 - El frontend ya no muestra `Unauthorized`, el mensaje genérico de sesión ni referencias `traceId` para errores de credenciales; las referencias quedan reservadas para errores del servidor.
 
 # Estado de implementación
+
+## Administración completa, acciones por módulo y zonas empresariales — 2026-10-24
+
+- **Implementado (backend):**
+  - Acciones `puede_consultar`, `puede_anadir` y `puede_editar` en `modulos_permisos`; `[RequiereModulo]` deduce la acción del verbo HTTP o la recibe explícita.
+  - Módulos `usuarios`, `perfiles`, `organizaciones` y `zonas_empresariales`; `administracion` quedó inactivo.
+  - `ContextoOrganizacionMiddleware` (`X-Organizacion-Id`, solo plataforma). La sesión se valida por membresía y organización activas.
+  - Login rechaza usuarios sin membresía activa (`UserInactive`).
+  - Controladores nuevos `UsuariosAdministracionController`, `PerfilesAdministracionController`, `OrganizacionesAdministracionController` (con logo) y `ZonaEmpresarialController` reescrito. Se retiró `AdministracionController`.
+  - `AlmacenamientoArchivos` (local y privado); `ReglasOrganizacion`.
+  - El `DbContext` tiene `PermitirEscrituraEn`; `UnauthorizedAccessException` responde 403.
+  - Detalle en [[ADR-024 Acciones por módulo y contexto de organización]] y [[Administración]].
+- **Migración `20261024213105_AccionesModuloYZonasEmpresariales`:**
+  - Agrega las tres columnas (las filas existentes quedan en `true`).
+  - Siembra los 4 módulos y los copia a los perfiles que tenían `administracion`, que se inactiva.
+  - Crea los índices únicos parciales de zona: administradora única por zona y zona única por empresa.
+  - No borra datos. Se aplica con `dotnet ef database update --project backend/Infrastructure --startup-project backend/ApiConecsia` (la fábrica de diseño lee `appsettings*.json` del proyecto de inicio o `CONECSIA_CONNECTION_STRING`; ver entrada 2026-10-26 en [[log]]). Revertir: `dotnet ef database update 20261022235936_AddAppModulosYModulosPermisos`.
+- **Aplicado 2026-10-24 en la base local `conecsia`.** El rol 1 conserva solo `dashboard` (no tenía `administracion`); el usuario 1 accede a todo como administrador de plataforma.
+- **Implementado (frontend):**
+  - Rutas `/administracion/{usuarios|perfiles|organizaciones|zonas-empresariales}` con `RutaModulo` por código; `/administracion` redirige a la primera permitida.
+  - Secciones con búsqueda, filtros, formularios validados, confirmación de inactivación y avisos.
+  - Matriz de permisos ampliada y responsiva. Selector de organización en la barra solo para plataforma (`sessionStorage` por usuario, caché reiniciada al cambiar).
+  - `esAdministradorGeneral` usa el claim `platform_admin`.
+- **Verificado:**
+  - Backend xUnit **24/24**: 14 nuevas en `AdministracionTests` (crear y editar usuario con perfil, duplicados, inactivar usuario, organización y perfil, acciones separadas, matriz y anti-escalamiento, organizaciones, logo, zonas con empresas y exclusividad, visibilidad entre empresas, selector solo para plataforma y aislamiento por ruta y cuerpo) y 10 existentes ajustadas.
+  - Frontend Vitest **12/12**; `tsc -b` sin errores; `oxlint` sin avisos nuevos (persisten avisos previos en `PerfilModal`, `IngresarPage` y `rutas.tsx`).
+  - Navegador (API de verificación en el puerto 5192 contra la base desechable `conecsia_verificacion`, sembrada con `backend/scripts/seed-verificacion-administracion.sql`; frontend `frontend-verificacion` en el 5174):
+    - Un administrador de empresa ve solo sus usuarios, crea un usuario con perfil, edita la matriz y ve solo su organización.
+    - La plataforma crea una zona con 2 empresas y, al seleccionar otra organización, ve solo sus usuarios.
+    - La matriz se revisó en 375×812 sin recortes. Sin errores de consola.
+- `vite build` de producción sin errores.
+- **No verificado en la interfaz:** la carga de logo (sí por prueba de API).
+- **Pendiente:** [[Decisiones pendientes|D-24]]..[[Decisiones pendientes|D-28]]; la multi-membresía con selector para usuarios normales sigue en [[Decisiones pendientes|D-03]].
 
 ## Acceso a módulos por rol (app_modulos / modulos_permisos) — 2026-10-22
 

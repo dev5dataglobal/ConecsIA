@@ -14,5 +14,10 @@ public static class CodigosModulo
     public const string Sedes = "sedes";
     public const string Auditoria = "auditoria";
     public const string Configuracion = "configuracion";
+    /// <summary>Módulo contenedor anterior; se inactivó al dividirse en usuarios, perfiles, organizaciones y zonas empresariales.</summary>
     public const string Administracion = "administracion";
+    public const string Usuarios = "usuarios";
+    public const string Perfiles = "perfiles";
+    public const string Organizaciones = "organizaciones";
+    public const string ZonasEmpresariales = "zonas_empresariales";
 }

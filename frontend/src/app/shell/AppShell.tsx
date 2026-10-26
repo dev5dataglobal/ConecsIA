@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { cerrarSesion } from '../../features/sesion/apiSesion'
 import { useMisModulos } from '../../features/modulos/apiModulos'
-import { leerCorreo } from '../../features/sesion/sesion'
+import { consultarOrganizaciones } from '../../features/administracion/apiAdministracion'
+import { esAdministradorGeneral, leerCorreo, leerOrganizacion, leerOrganizacionSeleccionada, seleccionarOrganizacion } from '../../features/sesion/sesion'
 import { PerfilModal } from '../../features/usuario/PerfilModal'
 import { Icono } from '../../shared/ui/Icono'
 import type { ContextoShell } from './contextoShell'
@@ -151,6 +153,7 @@ export function AppShell() {
             <Icono nombre="menu" />
           </button>
           <span className="sh-barra-marca">ConecsIA</span>
+          {esAdministradorGeneral() && <SelectorOrganizacion />}
 
           <div className="sh-usuario" ref={menuUsuarioRef}>
             <button
@@ -218,5 +221,47 @@ export function AppShell() {
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Solo el administrador de plataforma cambia de organización. La selección viaja en cada petición
+ * (cabecera validada por el servidor) y, al cambiarla, se descartan los datos en caché de la anterior.
+ */
+function SelectorOrganizacion() {
+  const queryClient = useQueryClient()
+  const [, refrescar] = useReducer((n: number) => n + 1, 0)
+  const seleccion = leerOrganizacionSeleccionada() ?? leerOrganizacion()
+  const organizaciones = useQuery({
+    queryKey: ['organizaciones-selector'],
+    queryFn: () => consultarOrganizaciones({ estado: 'Activa' }),
+    staleTime: 60_000,
+  })
+
+  // Si la organización elegida dejó de estar activa, se vuelve a la propia.
+  useEffect(() => {
+    const lista = organizaciones.data
+    if (lista && seleccion !== undefined && !lista.some((o) => o.idOrganizacion === seleccion) && leerOrganizacionSeleccionada() !== undefined) {
+      seleccionarOrganizacion(undefined)
+      void queryClient.resetQueries()
+    }
+  }, [organizaciones.data, seleccion, queryClient])
+
+  function cambiar(id: number) {
+    seleccionarOrganizacion(id === leerOrganizacion() ? undefined : id)
+    refrescar()
+    // Evita mostrar datos de la organización anterior: se descartan y se vuelven a consultar.
+    void queryClient.resetQueries()
+  }
+
+  if (!organizaciones.data?.length) return null
+  return (
+    <label className="sh-organizacion" title="Organización con la que trabajas">
+      <Icono nombre="sede" />
+      <span className="sr-only">Organización activa</span>
+      <select value={seleccion ?? ''} onChange={(event) => cambiar(Number(event.target.value))}>
+        {organizaciones.data.map((o) => <option key={o.idOrganizacion} value={o.idOrganizacion}>{o.nombre}</option>)}
+      </select>
+    </label>
   )
 }

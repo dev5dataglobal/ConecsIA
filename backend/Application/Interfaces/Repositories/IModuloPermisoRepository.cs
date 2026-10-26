@@ -1,4 +1,5 @@
 using ConecsIA.Application.Interfaces;
+using ConecsIA.Application.Seguridad;
 using ConecsIA.Domain.Entities;
 
 namespace ConecsIA.Application.Interfaces.Repositories;
@@ -11,4 +12,6 @@ public interface IModuloPermisoRepository : IGenericRepository<ModuloPermiso>
     Task<List<AppModulo>> ObtenerModulosDeRolAsync(int idRol, CancellationToken cancellationToken = default);
     /// <summary>Códigos de módulos activos permitidos a un usuario en una organización (membresía y roles activos).</summary>
     Task<List<string>> ObtenerCodigosDeUsuarioAsync(int idUsuario, int idOrganizacion, CancellationToken cancellationToken = default);
+    /// <summary>Acciones por módulo activo del usuario en la organización, ya unidas entre roles.</summary>
+    Task<Dictionary<string, AccionesModulo>> ObtenerAccesosDeUsuarioAsync(int idUsuario, int idOrganizacion, CancellationToken cancellationToken = default);
 }

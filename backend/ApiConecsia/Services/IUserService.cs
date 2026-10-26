@@ -17,7 +17,9 @@ public enum AuthenticationFailureReason
 {
     UserNotRegistered,
     InvalidPassword,
-    UserLocked
+    UserLocked,
+    /// <summary>Contraseña correcta, pero sin ninguna membresía activa en una organización activa.</summary>
+    UserInactive
 }
 
 public sealed record AuthenticationResult(

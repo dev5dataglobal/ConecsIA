@@ -11,6 +11,8 @@ tags: [conecsia, adr, seguridad, autorizacion]
 
 # ADR-023 Acceso a módulos por rol en base de datos
 
+> [!warning] Ampliado 2026-10-24 por [[ADR-024 Acciones por módulo y contexto de organización]]: cada asignación tiene acciones Consultar/Añadir/Editar y `administracion` se dividió en `usuarios`, `perfiles`, `organizaciones` y `zonas_empresariales` (inactivo, no borrado). La regla 5 («`administracion` + `roles.administrar`») queda sustituida por «`perfiles` con Editar».
+
 ## Contexto
 - El acceso por módulo vivía en listas codificadas: permisos del token (`permission`) revisados a mano en unos pocos controladores (`AdministracionAuthorization`) y un menú del frontend con códigos de permiso fijos.
 - Casi todos los controladores CRUD (`PersonaController`, `VisitaController`…) **solo exigían autenticación**: cualquier usuario autenticado podía invocarlos.

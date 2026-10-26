@@ -105,11 +105,30 @@ public sealed class ConecsiaDbContext(
         return base.SaveChangesAsync(cancellationToken);
     }
 
+    private HashSet<int>? _organizacionesPermitidas;
+
+    /// <summary>
+    /// Permite, mientras dure el ámbito, escribir filas de las organizaciones indicadas además de la activa.
+    /// Solo para operaciones de plataforma ya autorizadas (p. ej. vincular empresas a una zona empresarial).
+    /// </summary>
+    public IDisposable PermitirEscrituraEn(IEnumerable<int> organizaciones)
+    {
+        var anterior = _organizacionesPermitidas;
+        _organizacionesPermitidas = [.. organizaciones];
+        return new Ambito(() => _organizacionesPermitidas = anterior);
+    }
+
+    private sealed class Ambito(Action alCerrar) : IDisposable
+    {
+        public void Dispose() => alCerrar();
+    }
+
     private void ValidateOrganizationScope()
     {
         foreach (var entry in ChangeTracker.Entries<OrganizacionEntity>()
                      .Where(x => x.State is EntityState.Added or EntityState.Modified))
         {
+            if (_organizacionesPermitidas?.Contains(entry.Entity.IdOrganizacion) == true) continue;
             if (_organizationId is null || entry.Entity.IdOrganizacion != _organizationId.Value)
             {
                 throw new UnauthorizedAccessException(

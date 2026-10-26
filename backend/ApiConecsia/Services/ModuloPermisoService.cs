@@ -21,9 +21,9 @@ public sealed record Resultado<T>(ResultadoGestion Estado, T? Valor = default, s
 
 /// <summary>
 /// Catálogo global de módulos y asignación de módulos a roles.
-/// Reglas: el catálogo solo lo modifica el administrador general; un administrador de organización
-/// (módulo «administracion» + permiso «roles.administrar») gestiona solo roles de su organización
-/// y solo puede otorgar o retirar módulos a los que él mismo tiene acceso.
+/// Reglas: el catálogo solo lo modifica el administrador general; quien tenga el módulo «perfiles» con
+/// Consultar ve las asignaciones y con Editar las cambia, solo en roles de su organización activa
+/// y solo para las acciones que él mismo tiene sobre cada módulo (evita escalamiento).
 /// </summary>
 public sealed class ModuloPermisoService(
     IUnitOfWork unitOfWork,
@@ -31,17 +31,21 @@ public sealed class ModuloPermisoService(
     IOrganizationContext organizationContext,
     IHttpContextAccessor httpContextAccessor)
 {
-    public const string PermisoAdministrarRoles = "roles.administrar";
-
     // ---------- Autorización de la gestión ----------
 
-    public async Task<bool> PuedeConsultarAsync(ClaimsPrincipal user, CancellationToken ct = default) =>
-        user.EsAdministradorGeneral() || await TieneModuloAsync(user, CodigosModulo.Administracion, ct);
+    public Task<bool> PuedeConsultarAsync(ClaimsPrincipal user, CancellationToken ct = default) =>
+        PuedeAsync(user, CodigosModulo.Perfiles, AccionModulo.Consultar, ct);
 
-    public async Task<bool> PuedeAdministrarRolesAsync(ClaimsPrincipal user, CancellationToken ct = default) =>
-        user.EsAdministradorGeneral()
-        || (user.HasClaim(UserAuthorization.Claims.Permission, PermisoAdministrarRoles)
-            && await TieneModuloAsync(user, CodigosModulo.Administracion, ct));
+    public Task<bool> PuedeAdministrarRolesAsync(ClaimsPrincipal user, CancellationToken ct = default) =>
+        PuedeAsync(user, CodigosModulo.Perfiles, AccionModulo.Editar, ct);
+
+    private async Task<bool> PuedeAsync(ClaimsPrincipal user, string codigo, AccionModulo accion, CancellationToken ct)
+    {
+        var idUsuario = user.IdUsuario();
+        var idOrganizacion = organizationContext.OrganizationId;
+        return idUsuario is not null && idOrganizacion is not null
+            && await accesos.PuedeAsync(idUsuario.Value, idOrganizacion.Value, user.EsAdministradorGeneral(), codigo, accion, ct);
+    }
 
     // ---------- Catálogo ----------
 
@@ -53,9 +57,10 @@ public sealed class ModuloPermisoService(
         var idUsuario = user.IdUsuario();
         var idOrganizacion = organizationContext.OrganizationId;
         if (idUsuario is null || idOrganizacion is null) return [];
-        var codigos = await accesos.ObtenerCodigosPermitidosAsync(idUsuario.Value, idOrganizacion.Value, user.EsAdministradorGeneral(), ct);
+        var propios = await accesos.ObtenerAccesosAsync(idUsuario.Value, idOrganizacion.Value, user.EsAdministradorGeneral(), ct);
         return (await unitOfWork.AppModuloRepository.ListarAsync(ct))
-            .Where(x => x.Activo && codigos.Contains(x.Codigo)).Select(Mapear).ToList();
+            .Where(x => x.Activo && propios.ContainsKey(x.Codigo))
+            .Select(x => Mapear(x, propios[x.Codigo])).ToList();
     }
 
     public async Task<Resultado<AppModuloDto>> CrearModuloAsync(ClaimsPrincipal user, AppModuloGuardarDto dto, CancellationToken ct = default)
@@ -114,21 +119,24 @@ public sealed class ModuloPermisoService(
     {
         if (await BuscarRolAsync(idRol, ct) is null)
             return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.NoEncontrado, "El rol no existe en tu organización.");
-        return Resultado<List<AppModuloDto>>.Exito((await unitOfWork.ModuloPermisoRepository.ObtenerModulosDeRolAsync(idRol, ct)).Select(Mapear).ToList());
+        var asignaciones = (await unitOfWork.ModuloPermisoRepository.ObtenerPorRolAsync(idRol, ct)).ToDictionary(x => x.IdAppModulo);
+        return Resultado<List<AppModuloDto>>.Exito((await unitOfWork.ModuloPermisoRepository.ObtenerModulosDeRolAsync(idRol, ct))
+            .Select(x => Mapear(x, Acciones(asignaciones[x.IdAppModulo]))).ToList());
     }
 
+    /// <summary>Asigna el módulo con las tres acciones.</summary>
     public async Task<Resultado<bool>> AsignarAsync(ClaimsPrincipal user, int idRol, int idModulo, CancellationToken ct = default)
     {
         var rol = await BuscarRolAsync(idRol, ct);
         if (rol is null) return Resultado<bool>.Falla(ResultadoGestion.NoEncontrado, "El rol no existe en tu organización.");
         var modulo = (await unitOfWork.AppModuloRepository.ObtenerActivosPorIdsAsync([idModulo], ct)).SingleOrDefault();
         if (modulo is null) return Resultado<bool>.Falla(ResultadoGestion.NoEncontrado, "El módulo no existe o está inactivo.");
-        if (!await PuedeOtorgarAsync(user, [modulo.Codigo], ct))
-            return Resultado<bool>.Falla(ResultadoGestion.Prohibido, "No puedes otorgar un módulo al que no tienes acceso.");
+        if (!await PuedeOtorgarAsync(user, [(modulo.Codigo, AccionesModulo.Todas)], ct))
+            return Resultado<bool>.Falla(ResultadoGestion.Prohibido, "No puedes otorgar un módulo o acción que no tienes.");
         if ((await unitOfWork.ModuloPermisoRepository.ObtenerPorRolAsync(idRol, ct)).Any(x => x.IdAppModulo == idModulo))
             return Resultado<bool>.Falla(ResultadoGestion.Conflicto, "El módulo ya está asignado a este rol.");
 
-        unitOfWork.ModuloPermisoRepository.Add(NuevaAsignacion(user, rol, idModulo));
+        unitOfWork.ModuloPermisoRepository.Add(NuevaAsignacion(user, rol, idModulo, AccionesModulo.Todas));
         Auditar(user, rol.IdOrganizacion, "AsignarModulo", "modulos_permisos", idRol.ToString(), null, new { idRol, modulo = modulo.Codigo });
         if (!await GuardarAsync(ct)) return Resultado<bool>.Falla(ResultadoGestion.Conflicto, "El módulo ya está asignado a este rol.");
         accesos.InvalidarOrganizacion(rol.IdOrganizacion);
@@ -142,8 +150,8 @@ public sealed class ModuloPermisoService(
         var asignacion = (await unitOfWork.ModuloPermisoRepository.ObtenerPorRolAsync(idRol, ct)).SingleOrDefault(x => x.IdAppModulo == idModulo);
         if (asignacion is null) return Resultado<bool>.Falla(ResultadoGestion.NoEncontrado, "El módulo no está asignado a este rol.");
         var codigo = (await unitOfWork.AppModuloRepository.ObtenerPorIdAsync(idModulo, ct))?.Codigo ?? idModulo.ToString();
-        if (!await PuedeOtorgarAsync(user, [codigo], ct))
-            return Resultado<bool>.Falla(ResultadoGestion.Prohibido, "No puedes retirar un módulo al que no tienes acceso.");
+        if (!await PuedeOtorgarAsync(user, [(codigo, Acciones(asignacion))], ct))
+            return Resultado<bool>.Falla(ResultadoGestion.Prohibido, "No puedes retirar un módulo o acción que no tienes.");
 
         unitOfWork.ModuloPermisoRepository.Remove(asignacion);
         Auditar(user, rol.IdOrganizacion, "RetirarModulo", "modulos_permisos", idRol.ToString(), new { idRol, modulo = codigo }, null);
@@ -152,54 +160,73 @@ public sealed class ModuloPermisoService(
         return Resultado<bool>.Exito(true);
     }
 
-    /// <summary>Reemplaza todas las asignaciones del rol en una sola transacción (todo o nada).</summary>
-    public async Task<Resultado<List<AppModuloDto>>> ReemplazarAsync(ClaimsPrincipal user, int idRol, IReadOnlyCollection<int> idsModulos, CancellationToken ct = default)
+    /// <summary>
+    /// Reemplaza la matriz de acciones del rol en una sola transacción (todo o nada).
+    /// Un módulo sin acciones marcadas se retira; solo se pueden cambiar acciones que el usuario tiene.
+    /// </summary>
+    public async Task<Resultado<List<AppModuloDto>>> ReemplazarAsync(ClaimsPrincipal user, int idRol, IReadOnlyCollection<AsignacionModuloDto> solicitud, CancellationToken ct = default)
     {
         var rol = await BuscarRolAsync(idRol, ct);
         if (rol is null) return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.NoEncontrado, "El rol no existe en tu organización.");
-        var solicitados = idsModulos.Distinct().ToList();
-        var modulos = await unitOfWork.AppModuloRepository.ObtenerActivosPorIdsAsync(solicitados, ct);
-        if (modulos.Count != solicitados.Count)
+
+        // Duplicados del mismo módulo: se unen sus acciones.
+        var deseadas = new Dictionary<int, AccionesModulo>();
+        foreach (var item in solicitud)
+        {
+            var acciones = new AccionesModulo(item.Consultar, item.Anadir, item.Editar);
+            deseadas[item.IdAppModulo] = deseadas.TryGetValue(item.IdAppModulo, out var previas) ? previas.Unir(acciones) : acciones;
+        }
+        foreach (var id in deseadas.Where(x => !x.Value.Alguna).Select(x => x.Key).ToList()) deseadas.Remove(id);
+
+        var modulos = await unitOfWork.AppModuloRepository.ObtenerActivosPorIdsAsync(deseadas.Keys.ToList(), ct);
+        if (modulos.Count != deseadas.Count)
             return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.Invalido, "Uno o más módulos no existen o están inactivos.");
 
-        var actuales = await unitOfWork.ModuloPermisoRepository.ObtenerPorRolAsync(idRol, ct);
+        var actuales = (await unitOfWork.ModuloPermisoRepository.ObtenerPorRolAsync(idRol, ct)).ToDictionary(x => x.IdAppModulo);
         var catalogo = (await unitOfWork.AppModuloRepository.ListarAsync(ct)).ToDictionary(x => x.IdAppModulo, x => x.Codigo);
-        var agregar = solicitados.Except(actuales.Select(x => x.IdAppModulo)).ToList();
-        var retirar = actuales.Where(x => !solicitados.Contains(x.IdAppModulo)).ToList();
-        var afectados = agregar.Concat(retirar.Select(x => x.IdAppModulo)).Select(id => catalogo.GetValueOrDefault(id, id.ToString())).ToList();
-        if (!await PuedeOtorgarAsync(user, afectados, ct))
-            return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.Prohibido, "Solo puedes otorgar o retirar módulos a los que tienes acceso.");
 
-        var anterior = actuales.Select(x => catalogo.GetValueOrDefault(x.IdAppModulo)).OrderBy(x => x).ToList();
-        unitOfWork.ModuloPermisoRepository.RemoveRange(retirar);
-        unitOfWork.ModuloPermisoRepository.AddRange(agregar.Select(id => NuevaAsignacion(user, rol, id)));
+        // Acciones que cambian por módulo (añadidas o retiradas): deben estar entre las propias.
+        var cambios = new List<(string Codigo, AccionesModulo Acciones)>();
+        foreach (var id in deseadas.Keys.Union(actuales.Keys))
+        {
+            var antes = actuales.TryGetValue(id, out var fila) ? Acciones(fila) : default;
+            var despues = deseadas.GetValueOrDefault(id);
+            var diferencia = new AccionesModulo(antes.Consultar != despues.Consultar, antes.Anadir != despues.Anadir, antes.Editar != despues.Editar);
+            if (diferencia.Alguna) cambios.Add((catalogo.GetValueOrDefault(id, id.ToString()), diferencia));
+        }
+        if (!await PuedeOtorgarAsync(user, cambios, ct))
+            return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.Prohibido, "Solo puedes otorgar o retirar acciones de módulos que tú mismo tienes.");
+
+        var anterior = actuales.Values.Select(x => new { modulo = catalogo.GetValueOrDefault(x.IdAppModulo), acciones = Acciones(x) }).OrderBy(x => x.modulo).ToList();
+        foreach (var (id, fila) in actuales)
+        {
+            if (!deseadas.TryGetValue(id, out var acciones)) { unitOfWork.ModuloPermisoRepository.Remove(fila); continue; }
+            if (Acciones(fila) == acciones) continue;
+            fila.PuedeConsultar = acciones.Consultar; fila.PuedeAnadir = acciones.Anadir; fila.PuedeEditar = acciones.Editar;
+            fila.AsignadoEn = DateTime.UtcNow; fila.IdUsuarioAsigna = user.IdUsuario();
+            unitOfWork.ModuloPermisoRepository.Update(fila);
+        }
+        unitOfWork.ModuloPermisoRepository.AddRange(deseadas.Where(x => !actuales.ContainsKey(x.Key)).Select(x => NuevaAsignacion(user, rol, x.Key, x.Value)));
         Auditar(user, rol.IdOrganizacion, "ReemplazarModulos", "modulos_permisos", idRol.ToString(),
-            new { idRol, modulos = anterior }, new { idRol, modulos = modulos.Select(x => x.Codigo).OrderBy(x => x) });
+            new { idRol, modulos = anterior },
+            new { idRol, modulos = modulos.Select(x => new { modulo = x.Codigo, acciones = deseadas[x.IdAppModulo] }).OrderBy(x => x.modulo) });
         if (!await GuardarAsync(ct))
             return Resultado<List<AppModuloDto>>.Falla(ResultadoGestion.Conflicto, "Las asignaciones cambiaron mientras se guardaban. Inténtalo de nuevo.");
         accesos.InvalidarOrganizacion(rol.IdOrganizacion);
-        return Resultado<List<AppModuloDto>>.Exito(modulos.OrderBy(x => x.Orden).Select(Mapear).ToList());
+        return Resultado<List<AppModuloDto>>.Exito(modulos.OrderBy(x => x.Orden).Select(x => Mapear(x, deseadas[x.IdAppModulo])).ToList());
     }
 
     // ---------- Auxiliares ----------
 
-    private async Task<bool> TieneModuloAsync(ClaimsPrincipal user, string codigo, CancellationToken ct)
+    /// <summary>Evita escalamiento: fuera del administrador general, solo se otorgan o retiran acciones propias.</summary>
+    private async Task<bool> PuedeOtorgarAsync(ClaimsPrincipal user, IReadOnlyCollection<(string Codigo, AccionesModulo Acciones)> cambios, CancellationToken ct)
     {
-        var idUsuario = user.IdUsuario();
-        var idOrganizacion = organizationContext.OrganizationId;
-        return idUsuario is not null && idOrganizacion is not null
-            && await accesos.TieneAccesoAsync(idUsuario.Value, idOrganizacion.Value, user.EsAdministradorGeneral(), codigo, ct);
-    }
-
-    /// <summary>Evita escalamiento: fuera del administrador general, solo se gestionan módulos propios.</summary>
-    private async Task<bool> PuedeOtorgarAsync(ClaimsPrincipal user, IReadOnlyCollection<string> codigos, CancellationToken ct)
-    {
-        if (user.EsAdministradorGeneral() || codigos.Count == 0) return true;
+        if (user.EsAdministradorGeneral() || cambios.Count == 0) return true;
         var idUsuario = user.IdUsuario();
         var idOrganizacion = organizationContext.OrganizationId;
         if (idUsuario is null || idOrganizacion is null) return false;
-        var propios = await accesos.ObtenerCodigosPermitidosAsync(idUsuario.Value, idOrganizacion.Value, false, ct);
-        return codigos.All(propios.Contains);
+        var propios = await accesos.ObtenerAccesosAsync(idUsuario.Value, idOrganizacion.Value, false, ct);
+        return cambios.All(c => propios.TryGetValue(c.Codigo, out var mias) && !c.Acciones.ExcedeA(mias));
     }
 
     // El filtro global de organización hace que un rol de otra organización no se encuentre.
@@ -207,10 +234,13 @@ public sealed class ModuloPermisoService(
         Task.FromResult(organizationContext.OrganizationId is null ? null
             : unitOfWork.RolRepository.Find(x => x.IdRol == idRol).SingleOrDefault());
 
-    private static ModuloPermiso NuevaAsignacion(ClaimsPrincipal user, Rol rol, int idModulo) => new()
+    private static AccionesModulo Acciones(ModuloPermiso x) => new(x.PuedeConsultar, x.PuedeAnadir, x.PuedeEditar);
+
+    private static ModuloPermiso NuevaAsignacion(ClaimsPrincipal user, Rol rol, int idModulo, AccionesModulo acciones) => new()
     {
         IdOrganizacion = rol.IdOrganizacion, IdRol = rol.IdRol, IdAppModulo = idModulo,
         AsignadoEn = DateTime.UtcNow, IdUsuarioAsigna = user.IdUsuario(),
+        PuedeConsultar = acciones.Consultar, PuedeAnadir = acciones.Anadir, PuedeEditar = acciones.Editar,
     };
 
     private void Auditar(ClaimsPrincipal user, int? idOrganizacion, string accion, string entidad, string idRegistro, object? anterior, object? nuevo)
@@ -247,9 +277,12 @@ public sealed class ModuloPermisoService(
         }
     }
 
-    private static AppModuloDto Mapear(AppModulo x) => new()
+    private static AppModuloDto Mapear(AppModulo x) => Mapear(x, default);
+
+    private static AppModuloDto Mapear(AppModulo x, AccionesModulo acciones) => new()
     {
         IdAppModulo = x.IdAppModulo, Codigo = x.Codigo, Nombre = x.Nombre, Descripcion = x.Descripcion,
         Ruta = x.Ruta, Icono = x.Icono, Orden = x.Orden, Activo = x.Activo,
+        Consultar = acciones.Consultar, Anadir = acciones.Anadir, Editar = acciones.Editar,
     };
 }

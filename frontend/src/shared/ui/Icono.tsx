@@ -21,6 +21,9 @@ const TRAZOS = {
   salida: 'M17 17 7 7M7 15V7h8',
   sede: 'M4 20V8l8-4 8 4v12M9 20v-6h6v6M3 20h18',
   buscar: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',
+  editar: 'M4 20h4L19 9l-4-4L4 16v4ZM14 6l4 4',
+  check: 'M5 12.5l4.5 4.5L19 7.5',
+  imagen: 'M4 5h16v14H4zM4 16l5-5 4 4 2-2 5 5M15 9.5h.01',
   flecha: 'M5 12h14M13 6l6 6-6 6',
   vacio: 'M4 13h4l2 3h4l2-3h4M5.5 6.5 4 13v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5l-1.5-6.5A1 1 0 0 0 17.5 6h-11a1 1 0 0 0-1 .5Z',
 } as const

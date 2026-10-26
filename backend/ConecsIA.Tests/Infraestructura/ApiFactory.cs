@@ -97,7 +97,16 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await EjecutarAsync("INSERT INTO rol_permiso (id_organizacion, id_rol, id_permiso) VALUES (@p0, @p1, @p2)", idOrganizacion, idRol, idPermiso);
     }
 
-    /// <summary>Asignación directa en BD (preparación de escenarios, no pasa por la API).</summary>
+    /// <summary>Asignación directa en BD con acciones explícitas.</summary>
+    public async Task AsignarModuloAsync(int idOrganizacion, int idRol, string codigoModulo, bool consultar, bool anadir, bool editar)
+    {
+        var idModulo = await ScalarAsync<int>("SELECT id_app_modulo FROM app_modulos WHERE codigo = @p0", codigoModulo);
+        await EjecutarAsync(
+            "INSERT INTO modulos_permisos (id_organizacion, id_rol, id_app_modulo, asignado_en, puede_consultar, puede_anadir, puede_editar) VALUES (@p0, @p1, @p2, now(), @p3, @p4, @p5)",
+            idOrganizacion, idRol, idModulo, consultar, anadir, editar);
+    }
+
+    /// <summary>Asignación directa en BD (preparación de escenarios, no pasa por la API). Sin acciones explícitas: las tres (valor por defecto de la columna).</summary>
     public async Task AsignarModuloAsync(int idOrganizacion, int idRol, string codigoModulo)
     {
         var idModulo = await ScalarAsync<int>("SELECT id_app_modulo FROM app_modulos WHERE codigo = @p0", codigoModulo);

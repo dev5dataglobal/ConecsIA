@@ -375,3 +375,25 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Aplicadas `AddBusinessZonesAndAuthorizationScopes` y `AddAppModulosYModulosPermisos` en `conecsia` (respaldo `pg_dump` previo).
 - Verificado: 4 migraciones en el historial, 12 módulos, tabla `zona_empresarial` creada, datos existentes intactos.
 - Pendiente: reiniciar la API en ejecución para cargar el código nuevo. Páginas: [[Estado de implementación]].
+
+## [2026-10-24] consulta | Comandos de ejecución
+- Se entregaron comandos para levantar backend (dotnet, puertos 5191/7127), migraciones EF y frontend (Vite).
+- Sin cambios en otras páginas de la wiki.
+
+## [2026-10-24] implementacion | Permisos de administración para el perfil 1
+- Catálogo `permiso` estaba vacío en la BD local: se sembraron 19 códigos usados por `AdministracionAuthorization` (incluye variantes `saas.*` de plataforma).
+- Asignados todos al rol 1 "Administrador plataforma" (org 1) vía `backend/scripts/seed-permisos-perfil-1.sql` (idempotente).
+- Pendiente: llevar el catálogo de permisos a un seed/migración EF y definir qué perfiles de plantilla reciben cada permiso.
+
+## [2026-10-24] implementacion | Administración completa, acciones por módulo y zonas empresariales
+- Consultar/Añadir/Editar por módulo en `modulos_permisos`, validado en backend por verbo HTTP o acción explícita; `administracion` dividido en usuarios, perfiles, organizaciones y zonas_empresariales (migración `20261024213105`, aplicada en la base local).
+- Usuarios, perfiles, organizaciones (con logo privado) y zonas empresariales con organización superior: CRUD con inactivación, confirmaciones y aislamiento; selector de organización solo para plataforma (`X-Organizacion-Id` validado por petición).
+- Pruebas: backend 24/24, frontend 12/12, verificación en navegador con base desechable `conecsia_verificacion`.
+- Páginas: nuevas [[ADR-024 Acciones por módulo y contexto de organización]], [[Administración]], [[Zona empresarial]]; actualizadas [[ADR-023 Acceso a módulos por rol en base de datos]], [[Registro de ADR]], [[Decisiones pendientes]] (D-24..D-28), [[Estado de implementación]], [[index]].
+
+## [2026-10-26] implementacion | Fábrica de diseño EF alineada con Program.cs
+- Error: `dotnet ef database update` fallaba con "Defina CONECSIA_CONNECTION_STRING…" porque `DesignTimeDbContextFactory` solo leía esa variable, mientras la API usa `appsettings.Local.json`/`DefaultConnection`.
+- Cambio: la fábrica lee `appsettings*.json` del proyecto de inicio + variables de entorno con la precedencia de `Program.cs`; se agregaron `Microsoft.Extensions.Configuration.Json` y `.EnvironmentVariables` 9.0.6 a Infrastructure.
+- Verificado: `migrations list` (5 migraciones, ninguna pendiente), `database update` → "already up to date", `has-pending-model-changes` → sin cambios.
+- Pendiente (seguridad): `appsettings.Development.json` y `appsettings.Local.example.json` están versionados con la contraseña real de PostgreSQL; retirarla y rotarla.
+- Páginas: [[Estado de implementación]], [[Fase 1 backend hexagonal]].

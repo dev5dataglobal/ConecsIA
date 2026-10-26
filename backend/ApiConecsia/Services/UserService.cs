@@ -73,18 +73,25 @@ public sealed class UserService : IUserService
             return new AuthenticationResult(FailureReason: AuthenticationFailureReason.InvalidPassword);
         }
 
+        // Solo cuentan membresías activas en organizaciones activas; sin ninguna, el usuario está inactivo.
+        var organizationIds = await _db.MembresiasOrganizacion
+            .IgnoreQueryFilters()
+            .Where(x => x.IdUsuario == usuario.IdUsuario &&
+                (x.Estado == "Activa" || x.Estado == "Aceptada") &&
+                _db.Organizaciones.Any(o => o.IdOrganizacion == x.IdOrganizacion && o.Estado == "Activa"))
+            .Select(x => x.IdOrganizacion)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (organizationIds.Count == 0 && !UserAuthorization.EsUsuarioAdministradorGeneral(usuario.IdUsuario))
+        {
+            return new AuthenticationResult(FailureReason: AuthenticationFailureReason.UserInactive);
+        }
+
         usuario.IntentosFallidos = 0;
         usuario.BloqueadoHasta = null;
         usuario.UltimoAcceso = DateTime.UtcNow;
         await _db.SaveChangesAsync(cancellationToken);
-
-        var organizationIds = await _db.MembresiasOrganizacion
-            .IgnoreQueryFilters()
-            .Where(x => x.IdUsuario == usuario.IdUsuario &&
-                (x.Estado == "Activa" || x.Estado == "Aceptada"))
-            .Select(x => x.IdOrganizacion)
-            .Distinct()
-            .ToListAsync(cancellationToken);
 
         var roleIds = await _db.MembresiasRoles
             .IgnoreQueryFilters()

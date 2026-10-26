@@ -149,6 +149,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 if (user is null || !user.Activo || user.SelloSeguridad != stamp)
                 {
                     context.Fail("La sesión ya no es válida.");
+                    return;
+                }
+
+                // Una membresía inactivada (o una organización inactivada) cierra las sesiones abiertas en ella.
+                if (!UserAuthorization.EsUsuarioAdministradorGeneral(userId)
+                    && int.TryParse(context.Principal?.FindFirstValue(UserAuthorization.Claims.OrganizationId), out var orgId)
+                    && !await db.MembresiasOrganizacion.IgnoreQueryFilters().AnyAsync(m =>
+                        m.IdUsuario == userId && m.IdOrganizacion == orgId && (m.Estado == "Activa" || m.Estado == "Aceptada")
+                        && db.Organizaciones.Any(o => o.IdOrganizacion == orgId && o.Estado == "Activa")))
+                {
+                    context.Fail("La sesión ya no es válida.");
                 }
             }
         };
@@ -183,6 +194,7 @@ app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<ApiConecsia.Services.ContextoOrganizacionMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

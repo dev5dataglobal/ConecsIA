@@ -28,6 +28,7 @@ public sealed class AuthController(IUserService userService) : ControllerBase
             AuthenticationFailureReason.UserNotRegistered => "El usuario ingresado no está registrado",
             AuthenticationFailureReason.InvalidPassword => "La contraseña ingresada es incorrecta",
             AuthenticationFailureReason.UserLocked => "El usuario está temporalmente bloqueado. Inténtalo más tarde",
+            AuthenticationFailureReason.UserInactive => "El usuario está inactivo. Comunícate con el administrador de tu organización",
             _ => "No se pudo iniciar sesión"
         };
 

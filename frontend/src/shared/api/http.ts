@@ -1,4 +1,4 @@
-import { EVENTO_SESION_EXPIRADA, leerAccessToken, olvidarSesion } from '../../features/sesion/sesion'
+import { EVENTO_SESION_EXPIRADA, leerAccessToken, leerOrganizacionSeleccionada, olvidarSesion } from '../../features/sesion/sesion'
 import { ApiError, parseProblemDetails } from './problemDetails'
 
 const baseUrl: string = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -6,13 +6,16 @@ const baseUrl: string = import.meta.env.VITE_API_BASE_URL ?? ''
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Accept', 'application/json')
-  if (init.body !== undefined && !headers.has('Content-Type')) {
+  // FormData define su propio Content-Type (multipart con boundary).
+  if (init.body !== undefined && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
   const token = leerAccessToken()
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`)
   }
+  const organizacion = leerOrganizacionSeleccionada()
+  if (token && organizacion !== undefined) headers.set('X-Organizacion-Id', String(organizacion))
 
   let response: Response
   try {

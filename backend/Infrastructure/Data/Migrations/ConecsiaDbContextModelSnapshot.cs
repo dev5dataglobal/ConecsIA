@@ -959,6 +959,18 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_usuario_asigna");
 
+                    b.Property<bool>("PuedeAnadir")
+                        .HasColumnType("boolean")
+                        .HasColumnName("puede_anadir");
+
+                    b.Property<bool>("PuedeConsultar")
+                        .HasColumnType("boolean")
+                        .HasColumnName("puede_consultar");
+
+                    b.Property<bool>("PuedeEditar")
+                        .HasColumnType("boolean")
+                        .HasColumnName("puede_editar");
+
                     b.HasKey("IdModuloPermiso");
 
                     b.HasIndex("IdAppModulo");
@@ -2537,7 +2549,15 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdOrganizacion", "IdZonaEmpresarial");
 
-                    b.HasIndex("IdZonaEmpresarial");
+                    b.HasIndex("IdOrganizacion")
+                        .IsUnique()
+                        .HasDatabaseName("UX_zona_empresarial_organizacion_empresa")
+                        .HasFilter("NOT es_administradora AND activa");
+
+                    b.HasIndex("IdZonaEmpresarial")
+                        .IsUnique()
+                        .HasDatabaseName("UX_zona_empresarial_organizacion_administradora")
+                        .HasFilter("es_administradora AND activa");
 
                     b.HasIndex("IdOrganizacion", "IdZonaEmpresarial", "EsAdministradora")
                         .IsUnique();
