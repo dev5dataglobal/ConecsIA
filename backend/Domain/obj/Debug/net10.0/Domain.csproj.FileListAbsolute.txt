@@ -10,3 +10,18 @@ D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.dll
 D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\refint\Domain.dll
 D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\Domain.pdb
 D:\Documentos\Data Global\ConecsIA\backend\Domain\obj\Debug\net10.0\ref\Domain.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Domain.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Domain.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Domain.pdb
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Domain.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Domain.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Domain.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Domain.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Domain.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Domain.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Domain.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Domain.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Domain.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Domain.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Domain.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Domain.pdb

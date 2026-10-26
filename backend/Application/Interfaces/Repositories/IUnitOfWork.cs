@@ -5,6 +5,7 @@ namespace ConecsIA.Application.Interfaces.Repositories;
 public interface IUnitOfWork : IDisposable
 {
     IAlertaRepository AlertaRepository { get; }
+    IAppModuloRepository AppModuloRepository { get; }
     IAlertaTransicionRepository AlertaTransicionRepository { get; }
     IArchivoRepository ArchivoRepository { get; }
     IAreaRepository AreaRepository { get; }
@@ -24,6 +25,7 @@ public interface IUnitOfWork : IDisposable
     IMembresiaRolRepository MembresiaRolRepository { get; }
     IMembresiaSedeRepository MembresiaSedeRepository { get; }
     IModuloRepository ModuloRepository { get; }
+    IModuloPermisoRepository ModuloPermisoRepository { get; }
     IMovimientoAccesoRepository MovimientoAccesoRepository { get; }
     IMovimientoDispositivoRepository MovimientoDispositivoRepository { get; }
     IMovimientoVehiculoRepository MovimientoVehiculoRepository { get; }
@@ -57,5 +59,6 @@ public interface IUnitOfWork : IDisposable
     IVehiculoRepository VehiculoRepository { get; }
     IVisitaRepository VisitaRepository { get; }
     IZonaRepository ZonaRepository { get; }
+    IZonaEmpresarialRepository ZonaEmpresarialRepository { get; }
     Task<int> SaveAsync();
 }

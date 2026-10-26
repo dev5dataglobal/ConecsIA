@@ -1,10 +1,17 @@
 using ConecsIA.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using ConecsIA.Application.Interfaces;
+using System.Linq.Expressions;
 
 namespace ConecsIA.Infrastructure.Data;
 
-public sealed class ConecsiaDbContext(DbContextOptions<ConecsiaDbContext> options) : DbContext(options)
+public sealed class ConecsiaDbContext(
+    DbContextOptions<ConecsiaDbContext> options,
+    IOrganizationContext? organizationContext = null) : DbContext(options)
 {
+    // Se evalúa en cada consulta/guardado: el contexto puede crearse antes de autenticar al usuario
+    // (p. ej. en OnTokenValidated), cuando la organización aún no está disponible.
+    private int? _organizationId => organizationContext?.OrganizationId;
     public DbSet<Organizacion> Organizaciones => Set<Organizacion>();
     public DbSet<TipoOrganizacion> TiposOrganizacion => Set<TipoOrganizacion>();
     public DbSet<Plan> Planes => Set<Plan>();
@@ -14,6 +21,8 @@ public sealed class ConecsiaDbContext(DbContextOptions<ConecsiaDbContext> option
     public DbSet<ParametroOrganizacion> ParametrosOrganizacion => Set<ParametroOrganizacion>();
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Sede> Sedes => Set<Sede>();
+    public DbSet<ZonaEmpresarial> ZonasEmpresariales => Set<ZonaEmpresarial>();
+    public DbSet<ZonaEmpresarialOrganizacion> ZonasEmpresarialesOrganizaciones => Set<ZonaEmpresarialOrganizacion>();
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<AreaResponsable> AreasResponsables => Set<AreaResponsable>();
     public DbSet<Zona> Zonas => Set<Zona>();
@@ -58,11 +67,75 @@ public sealed class ConecsiaDbContext(DbContextOptions<ConecsiaDbContext> option
     public DbSet<NotificacionDestinatario> NotificacionesDestinatarios => Set<NotificacionDestinatario>();
     public DbSet<Outbox> Outbox => Set<Outbox>();
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
+    public DbSet<AppModulo> AppModulos => Set<AppModulo>();
+    public DbSet<ModuloPermiso> ModulosPermisos => Set<ModuloPermiso>();
+    public DbSet<SesionRefresco> SesionesRefresco => Set<SesionRefresco>();
+    public DbSet<RecuperacionContrasena> RecuperacionesContrasena => Set<RecuperacionContrasena>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("public");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ConecsiaDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                     .Where(x => typeof(OrganizacionEntity).IsAssignableFrom(x.ClrType)))
+        {
+            var parameter = Expression.Parameter(entityType.ClrType, "entity");
+            var property = Expression.Call(
+                typeof(EF), nameof(EF.Property), new[] { typeof(int) },
+                parameter, Expression.Constant(nameof(OrganizacionEntity.IdOrganizacion)));
+            var currentOrganization = Expression.Property(
+                Expression.Constant(this), nameof(CurrentOrganizationId));
+            var filter = Expression.Equal(property, currentOrganization);
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(
+                Expression.Lambda(filter, parameter));
+        }
+    }
+
+    public int CurrentOrganizationId => _organizationId ?? -1;
+
+    public override int SaveChanges()
+    {
+        ValidateOrganizationScope();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ValidateOrganizationScope();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private HashSet<int>? _organizacionesPermitidas;
+
+    /// <summary>
+    /// Permite, mientras dure el ámbito, escribir filas de las organizaciones indicadas además de la activa.
+    /// Solo para operaciones de plataforma ya autorizadas (p. ej. vincular empresas a una zona empresarial).
+    /// </summary>
+    public IDisposable PermitirEscrituraEn(IEnumerable<int> organizaciones)
+    {
+        var anterior = _organizacionesPermitidas;
+        _organizacionesPermitidas = [.. organizaciones];
+        return new Ambito(() => _organizacionesPermitidas = anterior);
+    }
+
+    private sealed class Ambito(Action alCerrar) : IDisposable
+    {
+        public void Dispose() => alCerrar();
+    }
+
+    private void ValidateOrganizationScope()
+    {
+        foreach (var entry in ChangeTracker.Entries<OrganizacionEntity>()
+                     .Where(x => x.State is EntityState.Added or EntityState.Modified))
+        {
+            if (_organizacionesPermitidas?.Contains(entry.Entity.IdOrganizacion) == true) continue;
+            if (_organizationId is null || entry.Entity.IdOrganizacion != _organizationId.Value)
+            {
+                throw new UnauthorizedAccessException(
+                    "La operación no pertenece a la organización autenticada.");
+            }
+        }
     }
 }

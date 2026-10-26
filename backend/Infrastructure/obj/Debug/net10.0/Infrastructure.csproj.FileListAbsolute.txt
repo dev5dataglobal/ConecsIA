@@ -18,3 +18,23 @@ D:\Documentos\Data Global\ConecsIA\backend\Infrastructure\obj\Debug\net10.0\refi
 D:\Documentos\Data Global\ConecsIA\backend\Infrastructure\obj\Debug\net10.0\Infrastructure.pdb
 D:\Documentos\Data Global\ConecsIA\backend\Infrastructure\obj\Debug\net10.0\Infrastructure.genruntimeconfig.cache
 D:\Documentos\Data Global\ConecsIA\backend\Infrastructure\obj\Debug\net10.0\ref\Infrastructure.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Infrastructure.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Infrastructure.runtimeconfig.json
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Infrastructure.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Infrastructure.pdb
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Infrastructure.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Infrastructure.runtimeconfig.json
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Infrastructure.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Infrastructure.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Infrastructure.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Infrastructure.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Infrastructure.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Infrastructure.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Infrastructure.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Infrastructure.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Infrastructure.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Infrastructure.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Infrastructure.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Infrastructure.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Infrastructure.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Infrastructure.pdb

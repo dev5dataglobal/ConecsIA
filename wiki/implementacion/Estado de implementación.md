@@ -1,11 +1,119 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-17
+actualizado: 2026-10-26
 tags: [conecsia]
 ---
 
+## Mensajes controlados de autenticación — 2026-10-21
+
+- Un correo inexistente o inactivo responde `401` con: “El usuario ingresado no está registrado”.
+- Una contraseña incorrecta responde `401` con: “La contraseña ingresada es incorrecta”.
+- Un usuario bloqueado recibe un mensaje temporal en español.
+- El frontend ya no muestra `Unauthorized`, el mensaje genérico de sesión ni referencias `traceId` para errores de credenciales; las referencias quedan reservadas para errores del servidor.
+
 # Estado de implementación
+
+## Sesión renovable, recuperación de contraseña y ajustes de Perfiles — 2026-10-26
+
+- **Implementado (backend):** [[ADR-025 Sesión renovable y recuperación de contraseña]].
+  - `AuthController`: `login` (acepta `recordarme`), `renovar`, `cerrar-sesion`, `recuperar-contrasena`, `restablecer-contrasena`.
+  - `UserService` emite el acceso con un método común (`EmitirAccesoAsync`) para login y renovación; los claims `permission` ya no incluyen perfiles inactivos.
+  - Nuevos: `RecuperacionContrasenaService`, `IEnviadorCorreo` + `SmtpEnviadorCorreo` (`Correo`), `SesionOptions` (`Sesion`), `PoliticaContrasena` (también usada por `PUT /api/usuario/me/contrasena`), `TokensSeguros`, política de límite `recuperacion`.
+  - Entidades `SesionRefresco` y `RecuperacionContrasena`; migración `20261026132034_SesionesRefrescoYRecuperacionContrasena` (solo crea 2 tablas).
+- **Implementado (frontend):** `http.ts` renueva una vez ante `401` y reintenta; `main.tsx` restaura la sesión antes de montar las rutas; login con «Recordarme» activo y rutas `/recuperar-contrasena` y `/restablecer-contrasena` con el mismo diseño del pase; la caché de React Query se vacía al iniciar y cerrar sesión; `Selector` accesible; tarjetas y botones de Perfiles (ver [[Administración]]).
+- **Causa del problema de permisos:** ver [[Administración]] § Diagnóstico 2026-10-26.
+- **Verificado:**
+  - `dotnet test`: 35/35 (11 nuevas en `SesionTests`: cookie de sesión vs persistente, rotación, cierre, cabecera obligatoria, pestañas simultáneas, módulos al iniciar sesión, cambio de perfil aplicado a la sesión activa y al renovar, 503 sin correo, misma respuesta exista o no la cuenta, un solo uso + revocación de sesiones, token desconocido).
+  - `vitest`: 16/16 (nuevas: selector con teclado y mouse, «Recordarme» + renovación tras 401 sin tokens en almacenamiento, enlace de recuperación).
+  - Navegador (API de verificación en 5192 contra `conecsia_verificacion`, migrada; frontend 5174): login con «Recordarme», cookie no visible para JS, recarga restaura la sesión, cerrar sesión revoca (renovar posterior → 401), selector con teclado/mouse, tarjetas en escritorio y 375px, recuperación → 503 con mensaje claro (correo sin configurar), enlace inválido → mensaje de error.
+- **No verificado:** cerrar y reabrir el navegador real (la persistencia se comprobó por el atributo `Expires` de la cookie en pruebas de integración); envío SMTP real (no hay servidor configurado).
+- **Pendiente:** configurar `Correo` y `Sesion:UrlFrontend` ([[Decisiones pendientes|D-30]]); cierre por inactividad ([[Decisiones pendientes|D-29]]).
+
+## Administración completa, acciones por módulo y zonas empresariales — 2026-10-24
+
+- **Implementado (backend):**
+  - Acciones `puede_consultar`, `puede_anadir` y `puede_editar` en `modulos_permisos`; `[RequiereModulo]` deduce la acción del verbo HTTP o la recibe explícita.
+  - Módulos `usuarios`, `perfiles`, `organizaciones` y `zonas_empresariales`; `administracion` quedó inactivo.
+  - `ContextoOrganizacionMiddleware` (`X-Organizacion-Id`, solo plataforma). La sesión se valida por membresía y organización activas.
+  - Login rechaza usuarios sin membresía activa (`UserInactive`).
+  - Controladores nuevos `UsuariosAdministracionController`, `PerfilesAdministracionController`, `OrganizacionesAdministracionController` (con logo) y `ZonaEmpresarialController` reescrito. Se retiró `AdministracionController`.
+  - `AlmacenamientoArchivos` (local y privado); `ReglasOrganizacion`.
+  - El `DbContext` tiene `PermitirEscrituraEn`; `UnauthorizedAccessException` responde 403.
+  - Detalle en [[ADR-024 Acciones por módulo y contexto de organización]] y [[Administración]].
+- **Migración `20261024213105_AccionesModuloYZonasEmpresariales`:**
+  - Agrega las tres columnas (las filas existentes quedan en `true`).
+  - Siembra los 4 módulos y los copia a los perfiles que tenían `administracion`, que se inactiva.
+  - Crea los índices únicos parciales de zona: administradora única por zona y zona única por empresa.
+  - No borra datos. Se aplica con `dotnet ef database update --project backend/Infrastructure --startup-project backend/ApiConecsia` (la fábrica de diseño lee `appsettings*.json` del proyecto de inicio o `CONECSIA_CONNECTION_STRING`; ver entrada 2026-10-26 en [[log]]). Revertir: `dotnet ef database update 20261022235936_AddAppModulosYModulosPermisos`.
+- **Aplicado 2026-10-24 en la base local `conecsia`.** El rol 1 conserva solo `dashboard` (no tenía `administracion`); el usuario 1 accede a todo como administrador de plataforma.
+- **Implementado (frontend):**
+  - Rutas `/administracion/{usuarios|perfiles|organizaciones|zonas-empresariales}` con `RutaModulo` por código; `/administracion` redirige a la primera permitida.
+  - Secciones con búsqueda, filtros, formularios validados, confirmación de inactivación y avisos.
+  - Matriz de permisos ampliada y responsiva. Selector de organización en la barra solo para plataforma (`sessionStorage` por usuario, caché reiniciada al cambiar).
+  - `esAdministradorGeneral` usa el claim `platform_admin`.
+- **Verificado:**
+  - Backend xUnit **24/24**: 14 nuevas en `AdministracionTests` (crear y editar usuario con perfil, duplicados, inactivar usuario, organización y perfil, acciones separadas, matriz y anti-escalamiento, organizaciones, logo, zonas con empresas y exclusividad, visibilidad entre empresas, selector solo para plataforma y aislamiento por ruta y cuerpo) y 10 existentes ajustadas.
+  - Frontend Vitest **12/12**; `tsc -b` sin errores; `oxlint` sin avisos nuevos (persisten avisos previos en `PerfilModal`, `IngresarPage` y `rutas.tsx`).
+  - Navegador (API de verificación en el puerto 5192 contra la base desechable `conecsia_verificacion`, sembrada con `backend/scripts/seed-verificacion-administracion.sql`; frontend `frontend-verificacion` en el 5174):
+    - Un administrador de empresa ve solo sus usuarios, crea un usuario con perfil, edita la matriz y ve solo su organización.
+    - La plataforma crea una zona con 2 empresas y, al seleccionar otra organización, ve solo sus usuarios.
+    - La matriz se revisó en 375×812 sin recortes. Sin errores de consola.
+- `vite build` de producción sin errores.
+- **No verificado en la interfaz:** la carga de logo (sí por prueba de API).
+- **Pendiente:** [[Decisiones pendientes|D-24]]..[[Decisiones pendientes|D-28]]; la multi-membresía con selector para usuarios normales sigue en [[Decisiones pendientes|D-03]].
+
+## Acceso a módulos por rol (app_modulos / modulos_permisos) — 2026-10-22
+
+- **Implementado (backend):** entidades `AppModulo` y `ModuloPermiso` con configuraciones EF separadas; migración `20261022235936_AddAppModulosYModulosPermisos` (catálogo de 12 módulos + traslado desde `rol_permiso`); repositorios en `UnitOfWork`; `ModuloAccesoService` con caché invalidable; `ModuloPermisoService` (validaciones, anti-escalamiento, auditoría); endpoints `GET /api/app-modulos/mios`, `GET|POST /api/app-modulos`, `PUT /api/app-modulos/{id}`, `PATCH /api/app-modulos/{id}/estado`, `GET|PUT /api/roles/{idRol}/modulos`, `POST|DELETE /api/roles/{idRol}/modulos/{idModulo}`; política `[RequiereModulo]` en 55 controladores. Ver [[ADR-023 Acceso a módulos por rol en base de datos]].
+- **Implementado (frontend):** menú construido desde `/api/app-modulos/mios`; `RutaModulo` muestra «Acceso denegado» si el servidor no concede el módulo; Administración → Perfiles → «Módulos» reemplaza las asignaciones del rol.
+- **Corregido (errores previos):** `ConecsiaDbContext` capturaba la organización al construirse (durante `OnTokenValidated`, sin usuario) y el filtro quedaba en `-1` toda la petición; ahora se evalúa por consulta. Migración manual de zonas empresariales con argumentos posicionales erróneos (no aplicable en ninguna base).
+- **Verificado:** proyecto nuevo `backend/ConecsIA.Tests` (xUnit + WebApplicationFactory + PostgreSQL temporal creado con las migraciones y eliminado al final): **10/10**. Cubre catálogo inicial, unicidad/FK en BD, denegación por defecto vía API directa, asignar/retirar con efecto inmediato y auditoría, reemplazo atómico, aislamiento entre organizaciones, anti-escalamiento, catálogo solo para el administrador general. Frontend Vitest **9/9**, `tsc`, `vite build`, `oxlint` sin errores.
+- **Aplicado 2026-10-22 en la base local `conecsia`:** `20261022120000_AddBusinessZonesAndAuthorizationScopes` y `20261022235936_AddAppModulosYModulosPermisos` (respaldo previo con `pg_dump`). Resultado: 12 módulos, rol «Administrador plataforma» con `dashboard`; usuarios, roles y organizaciones intactos (1/1/1). El usuario 1 accede como administrador general; los demás necesitan módulos asignados.
+- **Hallazgo:** en la base local `permiso` y `rol_permiso` están vacías; por eso el usuario 1 recibía 403 en Administración (sus endpoints exigen permisos que no existen). Con este cambio el módulo `administracion` queda cubierto por el administrador general, pero las pestañas siguen dependiendo de permisos `usuarios.*`/`roles.*` que no están sembrados.
+
+## Módulo de Administración rediseñado — 2026-10-22
+
+- **Implementado:** `features/administracion/AdministracionPage.tsx` y `administracion.css` con el lenguaje del dashboard (banda oscura con pestañas y conteos, tarjeta clara, tablas con avatar, etiquetas de perfil, estados de color, tarjetas de perfil, modal con `Escape`, «Cancelar» y doble envío bloqueado).
+- Pestañas y botones de creación se muestran según los permisos que exige el backend (`AdministracionAuthorization`): `usuarios.consultar`/`usuarios.crear`, `saas.organizaciones.consultar` o `configuracion.consultar`/`saas.organizaciones.administrar`, `roles.consultar`/`roles.administrar` (también con prefijo `saas.`). Solo presentación: el servidor sigue autorizando.
+- Estados: un 403 muestra «Tu perfil no tiene permiso…» distinto del error genérico; vacíos según búsqueda.
+- **Verificado:** Vitest 6/6 (incluye `AdministracionPage.test.tsx`), `tsc`, `vite build`; revisión visual 1440×900 y 375×812 con datos de demostración en el navegador.
+- **Observación:** el error que se ve con el usuario real en Usuarios es un 403 del backend (`Forbid()` en `GET /api/administracion/usuarios`); falta revisar los permisos/organización de ese usuario. Lógica de creación sin cambios (usuario se crea en la primera organización listada y sin perfiles).
+
+## Shell autenticado y dashboard rediseñados — 2026-10-22
+
+- **Implementado:** `frontend/src/app/shell/` (`AppShell.tsx`, `navegacion.ts`, `contextoShell.ts`, `appShell.css`) como ruta de layout protegida para `/dashboard` y `/administracion` (antes Administración no tenía menú). Iconos SVG compartidos en `shared/ui/Icono.tsx`; tokens `--ui-*` en `styles.css`.
+- Menú: lateral oscuro con el lenguaje del login, grupos General/Operación/Gestión, ítem activo con `NavLink` (`aria-current`), colapsable en escritorio (preferencia en `localStorage`), panel deslizable con velo y `Escape` en <1024px. Se filtra por permiso del token (`tienePermiso`/`esAdministradorGeneral`); los módulos sin pantalla se muestran deshabilitados con «Pronto» (no navegan).
+- Dashboard: banda oscura con saludo, organización, sede, hora de consulta, filtros (sede, Hoy/7 días) y accesos rápidos reales (Actualizar, Administración si hay permiso, Mi perfil). Indicadores, visitas por día, ingresos por tipo, personas dentro y actividad provienen solo de `GET /api/dashboard` (alcance filtrado en el backend por organización).
+- Retirado: buscador, selectores de organización/sede de la barra, campana de notificaciones y tendencia «—» de las métricas (no tenían funcionalidad), y el contador de alertas del menú.
+- **Verificado:** `tsc -b`, `vite build`, Vitest 4/4 (incluye `DashboardPage.test.tsx`: filtrado del menú por permiso, sección activa, indicadores y estados vacíos). Revisión visual a 1440×900, 820×1180 y 375×812 con datos de demostración inyectados solo en la pestaña del navegador (sin cuenta de prueba en el backend local).
+- **No verificado:** con datos reales de la API y con un usuario sin `usuarios.consultar` contra el backend.
+
+## Rediseño visual del login «Pase de acceso» — 2026-10-22
+
+- **Implementado:** `frontend/src/features/sesion/IngresarPage.tsx` + `ingresar.css` (clases `lg-*`). Fondo oscuro con aurora y malla de puntos; el formulario es una credencial física (ranura, QR decorativo, perforado, pila de tarjetas detrás) con inclinación 3D sutil al mover el mouse; campos con etiqueta flotante; estado del pase (listo / validando / rechazado) con escaneo del QR y sacudida ante error.
+- Movimiento según la skill de Emil Kowalski: solo `transform`/`opacity`, `cubic-bezier(0.23, 1, 0.32, 1)`, presión `scale(0.97)`, hover tras `(hover: hover) and (pointer: fine)`, `prefers-reduced-motion` quita desplazamientos y conserva fundidos.
+- El feed de actividad del héroe usa `EJEMPLOS` ficticios y se rotula «Vista ilustrativa»; no consume la API. Se retiró el bloque muerto del selector de usuarios sintéticos.
+- **Verificado:** `tsc -b` sin errores y `IngresarPage.test.tsx` 2/2. **Verificado en navegador (2026-10-22):** escritorio 1440×900, tablet vertical 768×1024 y horizontal 1024×768; estado de error (QR rojo, alerta, contraseña limpiada). La entrada se hace solo con CSS (`animation … both`) para que no quede invisible si `requestAnimationFrame` se demora. Las reglas viejas `.login-*` de `styles.css` quedan sin uso.
+
+## Integración frontend del login — 2026-10-21
+
+- El frontend usa `POST /api/auth/login` con `{ correo, password }` y mantiene el JWT solo en memoria.
+- `apiFetch` centraliza `Authorization: Bearer`, limpieza de sesión ante `401` y conservación de sesión ante `403`.
+- `RutaProtegida` redirige al ingreso cuando no existe un token en memoria.
+- Se retiró del flujo real el contrato antiguo `/api/v1/auth`, CSRF, cookies y usuarios sintéticos.
+- Variables: `VITE_API_BASE_URL` para despliegues separados y `API_PROXY_TARGET` para el proxy de Vite.
+- En desarrollo local, `API_PROXY_TARGET` debe apuntar a `http://localhost:5191`, que es el perfil HTTP de `ApiConecsia`.
+- Verificado: `npm run build` correcto. Vitest quedó pendiente porque el proceso trabajador no finaliza en este entorno.
+
+## Administrador inicial — 2026-10-21
+
+- **Creado en la base configurada:** organización `dataglobal`, usuario `desarrollador5@dataglobal.com`, membresía activa y rol `Administrador de organización`.
+- El rol recibió los permisos activos ya existentes en el catálogo; no se inventaron códigos nuevos.
+- La operación fue idempotente: una segunda ejecución encontró organización y usuario existentes y no duplicó registros.
+- La contraseña no se guardó en el repositorio ni en la documentación; se almacenó únicamente como hash compatible con `PasswordHasher<Usuario>`.
+
+> [!note] Arranque local 2026-10-21: copiar `backend/ApiConecsia/appsettings.Local.example.json` como `appsettings.Local.json` y completar los valores privados antes de ejecutar `dotnet run`.
 
 > [!note] Al 2026-10-17 existen las **fundaciones técnicas (F0, EP-01)** y la **primera vertical funcional: gestión de sedes** (HU-013 con la base de HU-005, HU-007 y HU-008). La autenticación es provisional ([[ADR-022 Autenticación de desarrollo provisional]]). La carpeta aún no es un repositorio git ni está en GitHub.
 
@@ -135,3 +243,12 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Implementado:** auditoría `Denegado` de las escrituras entre organizaciones (`AuditoriaEscrituraEntreOrganizaciones`, invocada por `ManejadorExcepciones`; responde 404 sin datos ajenos). `EscrituraEntreOrganizacionesException.Entidad` expone solo el tipo.
 - **Pruebas:** `PersistenciaPorModuloTests` (regla de ADR-021 condición 1, con prueba de control), `SuiteAislamientoTests` (suite parametrizada Org A/B reutilizable; registrar cada recurso nuevo), convenciones de índices únicos y FK con organización, y escritura cruzada auditada. `dotnet test`: 196/196.
 - **Limitaciones:** aún no hay FK compuestas porque no existen entidades hijas (la convención fallará cuando aparezcan). El spike RLS es documental (ADR-004) y la adopción queda en D-22. Sin migración y sin cambios de frontend.
+## Seguridad JWT y aislamiento — 2026-10-21
+
+- **Implementado:** login JWT en `AuthController`/`UserService`, hashing existente de ASP.NET Core Identity, bloqueo tras cinco intentos fallidos durante 15 minutos y DTO sin `PasswordHash`.
+- **Implementado:** validación obligatoria de issuer, audience, firma, expiración, claims de usuario, estado activo y `security_stamp`.
+- **Implementado:** política global autenticada, endpoint anónimo explícito para login y políticas reutilizables de autenticación/permisos.
+- **Implementado:** filtros globales de `ConecsiaDbContext` y validación de escrituras para entidades multi-organización.
+- **Pendiente:** matriz definitiva de permisos por endpoint (D-04) y refresh token persistente revocable; no se añadió migración.
+- **Configuración:** secretos y conexión fueron retirados de `appsettings.Development.json`; usar variables `JWT__Key`, `JWT__Issuer`, `JWT__Audience`, `JWT__DurationInMinutes` y `CONECSIA_CONNECTION_STRING`.
+

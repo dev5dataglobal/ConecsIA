@@ -12,5 +12,6 @@ public sealed class SedeConfiguration : EntityConfigurationBase<Sede>, IEntityTy
         builder.HasKey(x => x.IdSede);
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdSede }).IsUnique();
         builder.HasOne<Ciudad>().WithMany().HasForeignKey(x => x.IdCiudad).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ZonaEmpresarial>().WithMany().HasForeignKey(x => x.IdZonaEmpresarial).OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -5,7 +5,21 @@ actualizado: 2026-10-17
 tags: [conecsia]
 ---
 
+## [2026-10-21] implementacion | Control de errores del login
+- La API distingue usuario no registrado, contraseña incorrecta y usuario bloqueado.
+- El login devuelve `ProblemDetails` en español y el frontend presenta el detalle sin `Unauthorized` ni `traceId` para errores `401`.
+
 # Bitácora
+
+## [2026-10-21] implementacion | Configuración local segura para arranque
+- La API carga opcionalmente `appsettings.Local.json` para desarrollo.
+- Se agregó `appsettings.Local.example.json` sin credenciales.
+- `appsettings.Development.json` permanece libre de secretos versionados.
+- El frontend se conectó a `POST /api/auth/login` y al JWT Bearer; `npm run build` pasó.
+- Vitest quedó pendiente por un worker que no termina en este entorno.
+- Se creó idempotentemente `dataglobal` y `desarrollador5@dataglobal.com` con membresía activa y rol administrativo.
+- La segunda ejecución confirmó que no se duplicaron registros; el sembrador temporal fue eliminado.
+- Se corrigió el destino predeterminado del proxy Vite de `5080` a `5191`, coincidiendo con `launchSettings.json`.
 
 Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 
@@ -314,3 +328,89 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 ## [2026-10-21] implementacion | Tamaño de marca en feature/frontend
 - En `feature/frontend`, la marca del login usa los tamaños de `feature/login`: ícono 2.9rem, nombre 1.35rem, subtítulo 0.78rem.
 - Los demás cambios sin commit del usuario (fondo, IngresarPage) quedan intactos. Sin commit.
+## [2026-10-21] implementacion | Autenticación JWT y aislamiento multi-organización
+- Se implementó login JWT con claims derivados de membresías, roles y permisos existentes.
+- Se protegieron globalmente los endpoints y se validan usuario activo y sello de seguridad.
+- Se centralizó el filtrado y validación de escritura de entidades `OrganizacionEntity`.
+- Se eliminaron secretos de configuración versionada.
+- Pendientes: matriz D-04 por endpoint y refresh tokens revocables; no hay migración requerida.
+
+## [2026-10-22] implementacion | Rediseño visual del login «Pase de acceso»
+- `IngresarPage.tsx` e `ingresar.css` reescritos: credencial con profundidad, inclinación 3D, QR decorativo con estados, etiquetas flotantes, feed ilustrativo.
+- Animaciones siguiendo la skill de Emil Kowalski (ease-out fuerte, transform/opacity, reduced-motion).
+- Contrato de autenticación sin cambios; pruebas de componente 2/2 y `tsc` en verde.
+- Páginas: [[Estado de implementación]]. Pendiente: revisión visual y limpiar `.login-*` en `styles.css`.
+
+## [2026-10-22] revision | Revisión visual del login en escritorio y tablet
+- Revisado en navegador a 1440×900, 768×1024 y 1024×768; estado de error comprobado contra la API local.
+- Corregido: patrón QR a rayas (ahora con esquinas tipo QR), peso del título, contraste del divisor y entrada que dependía de JS (ahora solo CSS).
+- Se agregó `.claude/launch.json` (servidor `frontend`). Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Ajustes de layout del login y burbujas flotantes
+- Tablet (≤1024px): titular y etiqueta centrados y más arriba; pase de ingreso más ancho (32rem).
+- Pase más grande en escritorio (30rem, campos 3.6rem, QR 4.8rem); en pantallas anchas el contenido se agrupa en 1360px para reducir el vacío central.
+- Seis burbujas de colores flotando (solo transform, se detienen con movimiento reducido); la etiqueta flotante ya no se superpone al autocompletado.
+- Verificado en navegador a 1900×950 y 820×1180; pruebas 2/2. Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Shell autenticado (menú) y dashboard con el lenguaje del login
+- Nuevo `AppShell` como layout protegido de `/dashboard` y `/administracion`; menú por permisos, colapsable y deslizable en móvil; módulos sin pantalla marcados «Pronto».
+- Dashboard rediseñado solo con datos de `GET /api/dashboard`; se retiraron controles sin funcionalidad (buscador, selectores de la barra, notificaciones).
+- Tokens `--ui-*` en `styles.css` y limpieza de las reglas `.login-*` sin uso.
+- Pruebas 4/4, build OK, revisión visual en escritorio/tablet/móvil con datos de demostración. Páginas: [[Estado de implementación]].
+- Pendiente: probar con usuario real y datos reales; crear pantallas para los módulos «Pronto».
+
+## [2026-10-22] implementacion | Rediseño del módulo de Administración
+- Administración con banda oscura, pestañas por permiso, tablas/tarjetas y modal coherentes con el dashboard.
+- Mensaje específico para 403; pruebas nuevas en `AdministracionPage.test.tsx` (6/6 en total).
+- Pendiente: diagnosticar el 403 del usuario real en `GET /api/administracion/usuarios`. Páginas: [[Estado de implementación]].
+
+## [2026-10-22] implementacion | Acceso dinámico a módulos por rol (app_modulos / modulos_permisos)
+- Backend: entidades, configuraciones, migración con catálogo y traslado desde rol_permiso, servicios, endpoints, política `[RequiereModulo]` en 55 controladores, caché invalidable y auditoría.
+- Frontend: menú y rutas desde `/api/app-modulos/mios`; gestión de módulos por perfil en Administración.
+- Corregidos dos errores previos: filtro de organización del DbContext fijado en -1 y migración manual de zonas con argumentos mal ubicados.
+- Pruebas: backend 10/10 (nuevo proyecto ConecsIA.Tests sobre PostgreSQL temporal), frontend 9/9. Migración no aplicada a la base local.
+- Páginas: [[ADR-023 Acceso a módulos por rol en base de datos]], [[Decisiones pendientes]] (D-23), [[Registro de ADR]], [[Estado de implementación]], [[index]].
+
+## [2026-10-22] implementacion | Migraciones aplicadas a la base local
+- Aplicadas `AddBusinessZonesAndAuthorizationScopes` y `AddAppModulosYModulosPermisos` en `conecsia` (respaldo `pg_dump` previo).
+- Verificado: 4 migraciones en el historial, 12 módulos, tabla `zona_empresarial` creada, datos existentes intactos.
+- Pendiente: reiniciar la API en ejecución para cargar el código nuevo. Páginas: [[Estado de implementación]].
+
+## [2026-10-24] consulta | Comandos de ejecución
+- Se entregaron comandos para levantar backend (dotnet, puertos 5191/7127), migraciones EF y frontend (Vite).
+- Sin cambios en otras páginas de la wiki.
+
+## [2026-10-24] implementacion | Permisos de administración para el perfil 1
+- Catálogo `permiso` estaba vacío en la BD local: se sembraron 19 códigos usados por `AdministracionAuthorization` (incluye variantes `saas.*` de plataforma).
+- Asignados todos al rol 1 "Administrador plataforma" (org 1) vía `backend/scripts/seed-permisos-perfil-1.sql` (idempotente).
+- Pendiente: llevar el catálogo de permisos a un seed/migración EF y definir qué perfiles de plantilla reciben cada permiso.
+
+## [2026-10-24] implementacion | Administración completa, acciones por módulo y zonas empresariales
+- Consultar/Añadir/Editar por módulo en `modulos_permisos`, validado en backend por verbo HTTP o acción explícita; `administracion` dividido en usuarios, perfiles, organizaciones y zonas_empresariales (migración `20261024213105`, aplicada en la base local).
+- Usuarios, perfiles, organizaciones (con logo privado) y zonas empresariales con organización superior: CRUD con inactivación, confirmaciones y aislamiento; selector de organización solo para plataforma (`X-Organizacion-Id` validado por petición).
+- Pruebas: backend 24/24, frontend 12/12, verificación en navegador con base desechable `conecsia_verificacion`.
+- Páginas: nuevas [[ADR-024 Acciones por módulo y contexto de organización]], [[Administración]], [[Zona empresarial]]; actualizadas [[ADR-023 Acceso a módulos por rol en base de datos]], [[Registro de ADR]], [[Decisiones pendientes]] (D-24..D-28), [[Estado de implementación]], [[index]].
+
+## [2026-10-26] implementacion | Fábrica de diseño EF alineada con Program.cs
+- Error: `dotnet ef database update` fallaba con "Defina CONECSIA_CONNECTION_STRING…" porque `DesignTimeDbContextFactory` solo leía esa variable, mientras la API usa `appsettings.Local.json`/`DefaultConnection`.
+- Cambio: la fábrica lee `appsettings*.json` del proyecto de inicio + variables de entorno con la precedencia de `Program.cs`; se agregaron `Microsoft.Extensions.Configuration.Json` y `.EnvironmentVariables` 9.0.6 a Infrastructure.
+- Verificado: `migrations list` (5 migraciones, ninguna pendiente), `database update` → "already up to date", `has-pending-model-changes` → sin cambios.
+- Pendiente (seguridad): `appsettings.Development.json` y `appsettings.Local.example.json` están versionados con la contraseña real de PostgreSQL; retirarla y rotarla.
+- Páginas: [[Estado de implementación]], [[Fase 1 backend hexagonal]].
+
+## [2026-10-26] implementacion | Sesión renovable, recuperación de contraseña y ajustes de Perfiles
+- Permisos: el servidor los aplicaba bien; causas reales = usuario 2 creado con el perfil 1 (solo `dashboard`) mientras la matriz se configuró en el perfil 2, y caché `mis-modulos` de la SPA que sobrevivía al cambio de usuario (corregido). Claims `permission` sin perfiles inactivos y recalculados al renovar.
+- Nuevo [[ADR-025 Sesión renovable y recuperación de contraseña]]: cookie HttpOnly de renovación («Recordarme» dentro de las 8 h de D-03c), recuperación por correo de un solo uso; sin correo configurado responde 503. Migración `20261026132034_SesionesRefrescoYRecuperacionContrasena`.
+- Perfiles: rejilla de tarjetas responsiva, botones Editar/Inactivar/Activar con color, selector personalizado accesible en los filtros de Administración.
+- Páginas: [[Estado de implementación]], [[Administración]], [[ADR-006 Identidad y sesiones]], [[Decisiones pendientes]] (D-29, D-30), [[Registro de ADR]], [[index]].
+- Pendientes: migrar la base `conecsia`, configurar SMTP/`Sesion:UrlFrontend` (D-30), inactividad de 30 min (D-29).
+
+## [2026-10-26] implementacion | Migración aplicada en la base de trabajo
+- Aplicada `20261026132034_SesionesRefrescoYRecuperacionContrasena` en `conecsia`.
+- Con `--startup-project Infrastructure` la fábrica de diseño no encuentra `appsettings.Local.json` (EF usa el directorio de Infrastructure): hay que definir `CONECSIA_CONNECTION_STRING`.
+
+## [2026-10-26] implementacion | Desplegables personalizados en toda la plataforma
+- Reemplazados los `<select>` nativos restantes por `Selector` (Organizaciones: tipo, plan, organización superior; Dashboard: sede; barra superior: organización activa).
+- `Selector`: props `invalido` e `icono`; variantes `sel-campo`, `sel-shell`, `sel-oscuro`; abre hacia arriba si no cabe; se corrigió la doble apertura dentro de `<label>`.
+- Verificado: `tsc` y `vitest` 16/16; navegador (5174/5192) con mouse y teclado en modal, barra y dashboard.
+- Página tocada: [[Administración]].

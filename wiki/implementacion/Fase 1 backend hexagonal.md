@@ -23,6 +23,9 @@ La migración `backend/Infrastructure/Data/Migrations/20261020205103_InitialCrea
 | `dotnet ef migrations add InitialCreate ...` | Correcto |
 | `dotnet ef database update ...` | Pendiente: PostgreSQL local rechazó `postgres`/`postgres` con `28P01` |
 
+> [!note] 2026-10-26
+> `DesignTimeDbContextFactory` resuelve la conexión con la misma precedencia que `Program.cs`: `ConnectionStrings:Conecsia` → `ConnectionStrings:DefaultConnection` (`appsettings.json`, `appsettings.{ASPNETCORE_ENVIRONMENT|Development}.json`, `appsettings.Local.json` del proyecto de inicio, variables de entorno) → `CONECSIA_CONNECTION_STRING`. La variable ya no es obligatoria si existe `appsettings.Local.json`.
+
 La aplicación de la migración debe ejecutarse con una cadena válida, por ejemplo:
 
 ```powershell

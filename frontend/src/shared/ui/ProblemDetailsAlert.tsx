@@ -1,10 +1,7 @@
 import { esClaveTexto, useT } from '../i18n/traductor'
 import type { ProblemDetails } from '../api/problemDetails'
 
-/**
- * Presenta un Problem Details sin exponer detalles internos.
- * Los 500 muestran solo la referencia (traceId) para soporte (HU-004).
- */
+/** Presenta los errores de la API con mensajes comprensibles para la persona usuaria. */
 export function ProblemDetailsAlert({ problem }: { problem: ProblemDetails }) {
   const t = useT()
   const esErrorServidor = problem.status === undefined || problem.status >= 500
@@ -13,6 +10,11 @@ export function ProblemDetailsAlert({ problem }: { problem: ProblemDetails }) {
       ? t(problem.title)
       : (problem.title ?? t('error.titulo'))
   const tieneCampos = problem.errors && Object.keys(problem.errors).length > 0
+  const mensajeEstado =
+    problem.status === 403
+      ? 'No tienes permisos para realizar esta acción.'
+      : undefined
+  const mostrarReferencia = Boolean(problem.traceId) && esErrorServidor
 
   return (
     <div
@@ -23,11 +25,12 @@ export function ProblemDetailsAlert({ problem }: { problem: ProblemDetails }) {
         {esErrorServidor && problem.status !== 0 ? t('error.titulo') : titulo}
       </p>
       {!esErrorServidor && problem.detail && <p className="mt-1">{problem.detail}</p>}
+      {mensajeEstado && <p className="mt-1">{mensajeEstado}</p>}
       {tieneCampos && <p className="mt-1">{t('error.revisarCampos')}</p>}
       {problem.status === 0 && <p className="mt-1">{t('error.sinConexion')}</p>}
-      {problem.traceId && (
+      {mostrarReferencia && (
         <p className="mt-2 font-mono text-xs text-red-800">
-          {t('error.referencia', { traceId: problem.traceId })}
+          {t('error.referencia', { traceId: problem.traceId ?? '' })}
         </p>
       )}
     </div>

@@ -7,6 +7,8 @@ namespace ConecsIA.Infrastructure.UnitOfWork;
 public class UnitOfWork : IUnitOfWork
 {
     private IAlertaRepository? _alertaRepository;
+    private IAppModuloRepository? _appModuloRepository;
+    private IModuloPermisoRepository? _moduloPermisoRepository;
     private IAlertaTransicionRepository? _alertaTransicionRepository;
     private IArchivoRepository? _archivoRepository;
     private IAreaRepository? _areaRepository;
@@ -59,6 +61,7 @@ public class UnitOfWork : IUnitOfWork
     private IVehiculoRepository? _vehiculoRepository;
     private IVisitaRepository? _visitaRepository;
     private IZonaRepository? _zonaRepository;
+    private IZonaEmpresarialRepository? _zonaEmpresarialRepository;
 
     private readonly ConecsiaDbContext _context;
 
@@ -753,6 +756,33 @@ public class UnitOfWork : IUnitOfWork
             }
 
             return _zonaRepository;
+        }
+    }
+
+    public IAppModuloRepository AppModuloRepository
+    {
+        get
+        {
+            _appModuloRepository ??= new AppModuloRepository(_context);
+            return _appModuloRepository;
+        }
+    }
+
+    public IModuloPermisoRepository ModuloPermisoRepository
+    {
+        get
+        {
+            _moduloPermisoRepository ??= new ModuloPermisoRepository(_context);
+            return _moduloPermisoRepository;
+        }
+    }
+
+    public IZonaEmpresarialRepository ZonaEmpresarialRepository
+    {
+        get
+        {
+            _zonaEmpresarialRepository ??= new ZonaEmpresarialRepository(_context);
+            return _zonaEmpresarialRepository;
         }
     }
 

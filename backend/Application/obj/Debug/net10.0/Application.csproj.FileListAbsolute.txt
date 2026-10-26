@@ -14,3 +14,18 @@ D:\Documentos\Data Global\ConecsIA\backend\Application\obj\Debug\net10.0\Applica
 D:\Documentos\Data Global\ConecsIA\backend\Application\obj\Debug\net10.0\refint\Application.dll
 D:\Documentos\Data Global\ConecsIA\backend\Application\obj\Debug\net10.0\Application.pdb
 D:\Documentos\Data Global\ConecsIA\backend\Application\obj\Debug\net10.0\ref\Application.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Application.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Application.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-buildDebug\net10.0\Application.pdb
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Application.deps.json
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Application.dll
+D:\Documentos\Data Global\ConecsIA\.tmp-build\Application.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Application.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Application.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\3e9fc1c3-9910-47e6-9e50-880be67c0aa7\scratchpad\infra\Application.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Application.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Application.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\testout\Application.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Application.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Application.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\Application.pdb

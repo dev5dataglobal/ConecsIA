@@ -1,28 +1,50 @@
-import { apiFetch, reiniciarCsrf } from '../../shared/api/http'
-import { marcarSesionIniciada, olvidarSesion } from './sesion'
-import { leerSesionDesarrollo } from './sesionDesarrollo'
+import { apiFetch, CABECERA_SESION, renovarSesion } from '../../shared/api/http'
+import { guardarAccessToken, haySesion, marcarSesionIniciada, olvidarSesion } from './sesion'
 
-/** POST /api/v1/auth/login. Un 401 trae un mensaje genérico; 423 indica bloqueo temporal. */
-export async function ingresar(correo: string, contrasena: string) {
-  olvidarSesion()
-  await apiFetch<void>('/api/v1/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ correo, contrasena }),
-  })
-  // El token anti-CSRF queda ligado a la identidad: tras ingresar se pide uno nuevo.
-  reiniciarCsrf()
-  marcarSesionIniciada()
-}
-
-/** Cierra la sesión en el servidor (la revoca) o, en modo desarrollo, solo olvida el usuario. */
-export async function cerrarSesion() {
-  if (leerSesionDesarrollo() === null) {
-    try {
-      await apiFetch<void>('/api/v1/auth/logout', { method: 'POST' })
-    } catch {
-      // Aunque falle la red, la sesión local se olvida; la cookie vence sola.
-    }
+export interface RespuestaLogin {
+  accessToken: string
+  expiresAtUtc: string
+  usuario: {
+    idUsuario: number
+    correo: string
+    activo: boolean
   }
-  reiniciarCsrf()
-  olvidarSesion()
 }
+
+/**
+ * `recordarme`: el servidor emite una cookie HttpOnly persistente (sobrevive al cierre del navegador, hasta la vigencia máxima de la sesión);
+ * sin ella, una cookie de sesión del navegador. El token de acceso solo vive en memoria.
+ */
+export async function ingresar(correo: string, password: string, recordarme = false) {
+  olvidarSesion()
+  const respuesta = await apiFetch<RespuestaLogin>('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ correo, password, recordarme }),
+  })
+  guardarAccessToken(respuesta.accessToken)
+  marcarSesionIniciada()
+  return respuesta
+}
+
+/** Al cargar la aplicación: recupera la sesión desde la cookie (recarga o navegador reabierto con «Recordarme»). */
+export async function restaurarSesion() {
+  if (!haySesion()) await renovarSesion()
+}
+
+export async function cerrarSesion() {
+  olvidarSesion()
+  try {
+    await apiFetch<void>('/api/auth/cerrar-sesion', { method: 'POST', headers: { [CABECERA_SESION]: '1' } })
+  } catch {
+    // Sin conexión: el token ya se olvidó; la cookie vence por sí sola en el servidor.
+  }
+}
+
+export const solicitarRecuperacion = (correo: string) =>
+  apiFetch<{ mensaje: string }>('/api/auth/recuperar-contrasena', { method: 'POST', body: JSON.stringify({ correo }) })
+
+export const restablecerContrasena = (token: string, nuevaContrasena: string, confirmacionContrasena: string) =>
+  apiFetch<void>('/api/auth/restablecer-contrasena', {
+    method: 'POST',
+    body: JSON.stringify({ token, nuevaContrasena, confirmacionContrasena }),
+  })

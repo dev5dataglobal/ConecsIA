@@ -1,7 +1,7 @@
 ---
 tipo: indice
 estado: vigente
-actualizado: 2026-10-17
+actualizado: 2026-10-24
 tags: [conecsia]
 ---
 
@@ -22,6 +22,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Movimiento]] — eventos de entrada/salida, idempotencia
 - [[QR]] — identificador sin datos sensibles
 - [[Multi-tenancy y aislamiento]] — reglas de aislamiento
+- [[Zona empresarial]] — organización superior que agrupa empresas; acceso compartido
 
 ## Requisitos
 - [[Reglas de negocio]] — RN-01..RN-11 y su trazabilidad
@@ -29,12 +30,15 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Fases y MVP]] — secuencia propuesta (MVP = fases 0–4)
 
 ## Decisiones
-- [[Decisiones pendientes]] — D-01..D-21
+- [[Decisiones pendientes]] — D-01..D-28
 - [[Registro de ADR]] — ADR-001..ADR-020: 9 aprobados, 11 en Propuesta
 - Aprobados 2026-10-17: ADR-001, 002, 003, 004, 005, 014, 017, 018, 020
 - [[ADR-006 Identidad y sesiones]] — Aprobada 2026-10-19: opción A (ASP.NET Core Identity + cookie); cierra D-03
 - [[ADR-021 DbContext compartido y ensamblado de migraciones]] — Propuesta, implementada de forma provisional en HU-001
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
+- [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
+- [[ADR-024 Acciones por módulo y contexto de organización]] — Implementado 2026-10-24: Consultar/Añadir/Editar por módulo, selector de organización solo para plataforma
+- [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
 - [[PLAN-DE-TRABAJO]] — fases F0–F7, DoR/DoD, ruta crítica, bloqueos y sprints propuestos
@@ -67,6 +71,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 ## Módulos
 - [[Plataforma base]] — fundaciones técnicas F0 (HU-001 a HU-004)
 - [[Sedes]] — primera vertical funcional: HU-013 con aislamiento, contexto por membresía y auditoría
+- [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código

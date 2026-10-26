@@ -14,6 +14,8 @@ public sealed class AutorizacionConfiguration : EntityConfigurationBase<Autoriza
         builder.Property(x => x.FechaInicio).HasColumnType("date");
         builder.Property(x => x.FechaFin).HasColumnType("date");
         builder.Property(x => x.Version).IsConcurrencyToken();
+        builder.ToTable(t => t.HasCheckConstraint("ck_autorizacion_emisor_alcance", "(tipo_emisor = 'Empresa' AND id_zona_empresarial_emisora IS NULL AND alcance = 'Privado') OR (tipo_emisor = 'ZonaEmpresarial' AND id_zona_empresarial_emisora IS NOT NULL AND alcance = 'Comun')"));
+        builder.HasOne<ZonaEmpresarial>().WithMany().HasForeignKey(x => x.IdZonaEmpresarialEmisora).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Persona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdPersona }).HasForeignKey(x => new { x.IdOrganizacion, x.IdPersona }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Sede>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Area>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdArea }).HasForeignKey(x => new { x.IdOrganizacion, x.IdArea }).OnDelete(DeleteBehavior.Restrict);
