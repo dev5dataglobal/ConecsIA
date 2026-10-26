@@ -17,6 +17,8 @@ export function RutaProtegida({ children }: { children: ReactNode }) {
 export const rutas: RouteObject[] = [
   { index: true, element: <Navigate to="/dashboard" replace /> },
   { path: 'ingresar', element: <IngresarPage /> },
+  { path: 'recuperar-contrasena', element: <IngresarPage modo="recuperar" /> },
+  { path: 'restablecer-contrasena', element: <IngresarPage modo="restablecer" /> },
   {
     element: <RutaProtegida><AppShell /></RutaProtegida>,
     children: [

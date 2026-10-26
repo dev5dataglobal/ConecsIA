@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Icono } from '../../shared/ui/Icono'
+import { Selector } from '../../shared/ui/Selector'
 import { useAcciones } from '../modulos/apiModulos'
 import { esAdministradorGeneral, leerOrganizacionActiva } from '../sesion/sesion'
 import {
@@ -197,16 +198,14 @@ export function CamposOrganizacion({ datos, cambiar, errores, plataforma, superi
         <input required value={datos.nombre} maxLength={200} aria-invalid={Boolean(errores.nombre)} onChange={(e) => cambiar({ nombre: e.target.value })} />
       </Campo>
       <Campo etiqueta="Tipo de organización" error={errores.idTipoOrganizacion}>
-        <select required value={datos.idTipoOrganizacion || ''} aria-invalid={Boolean(errores.idTipoOrganizacion)} onChange={(e) => cambiar({ idTipoOrganizacion: Number(e.target.value) })}>
-          <option value="">Selecciona…</option>
-          {catalogos.data?.tipos.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
-        </select>
+        <Selector className="sel-campo" etiqueta="Tipo de organización" valor={String(datos.idTipoOrganizacion || '')} invalido={Boolean(errores.idTipoOrganizacion)}
+          onChange={(v) => cambiar({ idTipoOrganizacion: Number(v) })}
+          opciones={[{ valor: '', texto: 'Selecciona…', deshabilitada: true }, ...(catalogos.data?.tipos ?? []).map((t) => ({ valor: String(t.id), texto: t.nombre }))]} />
       </Campo>
       <Campo etiqueta="Plan" error={errores.idPlan ?? soloPlataforma}>
-        <select required value={datos.idPlan || ''} disabled={!plataforma} aria-invalid={Boolean(errores.idPlan)} onChange={(e) => cambiar({ idPlan: Number(e.target.value) })}>
-          <option value="">Selecciona…</option>
-          {catalogos.data?.planes.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>
+        <Selector className="sel-campo" etiqueta="Plan" valor={String(datos.idPlan || '')} deshabilitado={!plataforma} invalido={Boolean(errores.idPlan)}
+          onChange={(v) => cambiar({ idPlan: Number(v) })}
+          opciones={[{ valor: '', texto: 'Selecciona…', deshabilitada: true }, ...(catalogos.data?.planes ?? []).map((p) => ({ valor: String(p.id), texto: p.nombre }))]} />
       </Campo>
       <Campo etiqueta="Identificación" error={errores.identificacion}>
         <input required value={datos.identificacion} maxLength={50} aria-invalid={Boolean(errores.identificacion)} onChange={(e) => cambiar({ identificacion: e.target.value })} />
@@ -222,10 +221,9 @@ export function CamposOrganizacion({ datos, cambiar, errores, plataforma, superi
       </Campo>
       {superior && (
         <Campo etiqueta="Organización superior (opcional)" ancho="completo" error={soloPlataforma}>
-          <select value={datos.idZonaEmpresarial ?? ''} disabled={!plataforma} onChange={(e) => cambiar({ idZonaEmpresarial: e.target.value ? Number(e.target.value) : null })}>
-            <option value="">Ninguna</option>
-            {catalogos.data?.zonas.map((z) => <option key={z.id} value={z.id}>{z.nombre}</option>)}
-          </select>
+          <Selector className="sel-campo" etiqueta="Organización superior" valor={String(datos.idZonaEmpresarial ?? '')} deshabilitado={!plataforma}
+            onChange={(v) => cambiar({ idZonaEmpresarial: v ? Number(v) : null })}
+            opciones={[{ valor: '', texto: 'Ninguna' }, ...(catalogos.data?.zonas ?? []).map((z) => ({ valor: String(z.id), texto: z.nombre }))]} />
         </Campo>
       )}
     </div>

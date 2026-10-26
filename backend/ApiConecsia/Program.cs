@@ -112,6 +112,8 @@ if (string.IsNullOrWhiteSpace(jwtSettings.Issuer) ||
 }
 
 builder.Services.Configure<JWT>(jwtSection);
+builder.Services.Configure<SesionOptions>(builder.Configuration.GetSection("Sesion"));
+builder.Services.Configure<ConecsIA.Infrastructure.Services.CorreoOptions>(builder.Configuration.GetSection("Correo"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

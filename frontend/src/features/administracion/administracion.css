@@ -354,3 +354,32 @@
 
 .ad-campo-grupo { display: grid; gap: 0.3rem; min-width: 0; }
 .ad-rejilla > .ad-campo-grupo[data-ancho='completo'] { grid-column: 1 / -1; }
+
+/* ===== Ajustes 2026-10-26: tarjetas de perfiles, acciones con color, selector personalizado ===== */
+/* Tarjetas: mínimo cómodo (19rem) sin desbordar en móvil; misma altura por fila con el pie alineado abajo. */
+.ad-perfiles { grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1rem; align-items: stretch; }
+.ad-perfil { grid-template-rows: auto auto 1fr auto; align-content: start; min-width: 0; padding: 1.15rem 1.2rem; }
+.ad-perfil h2 { overflow-wrap: anywhere; }
+.ad-perfil p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ad-perfil footer { flex-wrap: wrap; row-gap: 0.6rem; }
+.ad-perfil-acciones { gap: 0.4rem; margin-left: auto; }
+.ad-perfil-acciones .ad-accion { margin-left: 0; }
+@media (min-width: 1500px) { .ad-perfiles { grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); } }
+
+/* Acciones: fondo tenue por intención (no blanco) con contraste AA en el icono. */
+.ad-accion[data-tono='editar'] { border-color: #d9d3fb; background: var(--ui-violeta-tenue); color: var(--ui-violeta-2); }
+.ad-accion[data-tono='peligro'] { border-color: #f6c6cf; background: var(--ui-rojo-tenue); color: #b3263e; }
+.ad-accion[data-tono='exito'] { border-color: #bfe6d3; background: #e7f6ef; color: #17734d; }
+.ad-enlace { background: #f6f5fb; }
+@media (hover: hover) and (pointer: fine) {
+  .ad-accion[data-tono='editar']:hover { border-color: var(--ui-violeta); background: var(--ui-violeta-2); color: #fff; }
+  .ad-accion[data-tono='peligro']:hover { border-color: var(--ui-rojo); background: var(--ui-rojo); color: #fff; }
+  .ad-accion[data-tono='exito']:hover { border-color: var(--ui-verde); background: #17734d; color: #fff; }
+  .ad-enlace:hover { border-color: #c9c2f5; background: var(--ui-violeta-tenue); }
+}
+.ad-accion:active { transform: scale(0.96); }
+.ad-herramientas .sel { width: auto; min-width: 11rem; }
+@media (max-width: 560px) {
+  .ad-herramientas .sel { width: 100%; }
+  .ad-perfil-acciones { width: 100%; justify-content: flex-end; }
+}

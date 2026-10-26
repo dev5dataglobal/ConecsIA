@@ -7,6 +7,7 @@ import { consultarOrganizaciones } from '../../features/administracion/apiAdmini
 import { esAdministradorGeneral, leerCorreo, leerOrganizacion, leerOrganizacionSeleccionada, seleccionarOrganizacion } from '../../features/sesion/sesion'
 import { PerfilModal } from '../../features/usuario/PerfilModal'
 import { Icono } from '../../shared/ui/Icono'
+import { Selector } from '../../shared/ui/Selector'
 import type { ContextoShell } from './contextoShell'
 import { construirNavegacion } from './navegacion'
 import '../../features/usuario/usuario.css'
@@ -31,6 +32,7 @@ export function AppShell() {
   const [confirmarCierre, setConfirmarCierre] = useState(false)
   const menuUsuarioRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const correo = leerCorreo()
   const modulos = useMisModulos()
   const grupos = construirNavegacion(modulos.data ?? [])
@@ -63,8 +65,11 @@ export function AppShell() {
     })
   }
 
-  function confirmarCerrarSesion() {
-    cerrarSesion()
+  async function confirmarCerrarSesion() {
+    // Se espera la revocación en el servidor antes de salir de la página.
+    await cerrarSesion()
+    // Nada del usuario anterior (módulos, acciones, listados) debe sobrevivir a la siguiente sesión.
+    queryClient.clear()
     setConfirmarCierre(false)
     setMenuUsuarioAbierto(false)
     void navigate('/ingresar', { replace: true })
@@ -213,7 +218,7 @@ export function AppShell() {
               <button type="button" className="logout-cancel" onClick={() => setConfirmarCierre(false)} autoFocus>
                 Cancelar
               </button>
-              <button type="button" className="logout-confirm" onClick={confirmarCerrarSesion}>
+              <button type="button" className="logout-confirm" onClick={() => void confirmarCerrarSesion()}>
                 Cerrar sesión
               </button>
             </div>
@@ -256,12 +261,13 @@ function SelectorOrganizacion() {
 
   if (!organizaciones.data?.length) return null
   return (
-    <label className="sh-organizacion" title="Organización con la que trabajas">
-      <Icono nombre="sede" />
-      <span className="sr-only">Organización activa</span>
-      <select value={seleccion ?? ''} onChange={(event) => cambiar(Number(event.target.value))}>
-        {organizaciones.data.map((o) => <option key={o.idOrganizacion} value={o.idOrganizacion}>{o.nombre}</option>)}
-      </select>
-    </label>
+    <Selector
+      className="sel-shell"
+      etiqueta="Organización activa"
+      icono={<Icono nombre="sede" />}
+      valor={String(seleccion ?? '')}
+      onChange={(v) => cambiar(Number(v))}
+      opciones={organizaciones.data.map((o) => ({ valor: String(o.idOrganizacion), texto: o.nombre }))}
+    />
   )
 }

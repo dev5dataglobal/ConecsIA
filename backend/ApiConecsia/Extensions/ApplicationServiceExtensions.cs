@@ -36,6 +36,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<RecuperacionContrasenaService>();
+        services.AddSingleton<IEnviadorCorreo, SmtpEnviadorCorreo>();
         services.AddHttpContextAccessor();
         services.AddScoped<IOrganizationContext, OrganizationContext>();
 

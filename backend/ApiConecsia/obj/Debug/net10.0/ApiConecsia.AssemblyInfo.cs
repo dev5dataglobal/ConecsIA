@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiConecsia")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8e6687cda15d29d3468018c624e719e738d0a67c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8747a901131ef75de892ef1108dd6bdf1adfc3f2")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiConecsia")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiConecsia")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -38,6 +38,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
 - [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
 - [[ADR-024 Acciones por módulo y contexto de organización]] — Implementado 2026-10-24: Consultar/Añadir/Editar por módulo, selector de organización solo para plataforma
+- [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
 - [[PLAN-DE-TRABAJO]] — fases F0–F7, DoR/DoD, ruta crítica, bloqueos y sprints propuestos

@@ -397,3 +397,20 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Verificado: `migrations list` (5 migraciones, ninguna pendiente), `database update` → "already up to date", `has-pending-model-changes` → sin cambios.
 - Pendiente (seguridad): `appsettings.Development.json` y `appsettings.Local.example.json` están versionados con la contraseña real de PostgreSQL; retirarla y rotarla.
 - Páginas: [[Estado de implementación]], [[Fase 1 backend hexagonal]].
+
+## [2026-10-26] implementacion | Sesión renovable, recuperación de contraseña y ajustes de Perfiles
+- Permisos: el servidor los aplicaba bien; causas reales = usuario 2 creado con el perfil 1 (solo `dashboard`) mientras la matriz se configuró en el perfil 2, y caché `mis-modulos` de la SPA que sobrevivía al cambio de usuario (corregido). Claims `permission` sin perfiles inactivos y recalculados al renovar.
+- Nuevo [[ADR-025 Sesión renovable y recuperación de contraseña]]: cookie HttpOnly de renovación («Recordarme» dentro de las 8 h de D-03c), recuperación por correo de un solo uso; sin correo configurado responde 503. Migración `20261026132034_SesionesRefrescoYRecuperacionContrasena`.
+- Perfiles: rejilla de tarjetas responsiva, botones Editar/Inactivar/Activar con color, selector personalizado accesible en los filtros de Administración.
+- Páginas: [[Estado de implementación]], [[Administración]], [[ADR-006 Identidad y sesiones]], [[Decisiones pendientes]] (D-29, D-30), [[Registro de ADR]], [[index]].
+- Pendientes: migrar la base `conecsia`, configurar SMTP/`Sesion:UrlFrontend` (D-30), inactividad de 30 min (D-29).
+
+## [2026-10-26] implementacion | Migración aplicada en la base de trabajo
+- Aplicada `20261026132034_SesionesRefrescoYRecuperacionContrasena` en `conecsia`.
+- Con `--startup-project Infrastructure` la fábrica de diseño no encuentra `appsettings.Local.json` (EF usa el directorio de Infrastructure): hay que definir `CONECSIA_CONNECTION_STRING`.
+
+## [2026-10-26] implementacion | Desplegables personalizados en toda la plataforma
+- Reemplazados los `<select>` nativos restantes por `Selector` (Organizaciones: tipo, plan, organización superior; Dashboard: sede; barra superior: organización activa).
+- `Selector`: props `invalido` e `icono`; variantes `sel-campo`, `sel-shell`, `sel-oscuro`; abre hacia arriba si no cabe; se corrigió la doble apertura dentro de `<label>`.
+- Verificado: `tsc` y `vitest` 16/16; navegador (5174/5192) con mouse y teclado en modal, barra y dashboard.
+- Página tocada: [[Administración]].

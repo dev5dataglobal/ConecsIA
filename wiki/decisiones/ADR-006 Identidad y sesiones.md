@@ -57,6 +57,9 @@ La autenticación provisional ([[ADR-022 Autenticación de desarrollo provisiona
 > [!warning] Actualización 2026-10-21
 > Para el backend API implementado se usa JWT Bearer en lugar de cookie. La decisión de cookie queda pendiente de revisión formal; no debe interpretarse como comportamiento actual.
 
+> [!note] Actualización 2026-10-26
+> Implementado un esquema mixto ([[ADR-025 Sesión renovable y recuperación de contraseña]]): JWT corto en memoria + cookie `HttpOnly`/`SameSite=Strict` de renovación limitada a `/api/auth`, con vigencia máxima de 8 h (D-03c) y restablecimiento de contraseña por correo. El cierre por 30 min de inactividad de D-03c sigue **sin implementar** (D-29).
+
 ## Pendientes
 - Plazo general de auditoría (D-14), que también rige los eventos de sesión.
 - Proveedor externo para SSO (cuando se necesite).

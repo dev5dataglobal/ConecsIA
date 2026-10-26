@@ -3,6 +3,7 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { useShell } from '../../app/shell/contextoShell'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono'
+import { Selector } from '../../shared/ui/Selector'
 import { useMisModulos } from '../modulos/apiModulos'
 import { consultarDashboard, type PeriodoDashboard } from './apiDashboard'
 import './dashboard.css'
@@ -78,18 +79,14 @@ export function DashboardPage() {
 
         <div className="db-hero-controles">
           <div className="db-filtros">
-            <label className="db-select">
-              <span className="sr-only">Sede</span>
-              <Icono nombre="sede" />
-              <select value={sedeId ?? ''} onChange={(event) => setSedeId(event.target.value ? Number(event.target.value) : undefined)}>
-                <option value="">Todas las sedes</option>
-                {listaSedes.map((sede) => (
-                  <option key={sede.idSede} value={sede.idSede}>
-                    {sede.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Selector
+              className="sel-oscuro"
+              etiqueta="Sede"
+              icono={<Icono nombre="sede" />}
+              valor={String(sedeId ?? '')}
+              onChange={(v) => setSedeId(v ? Number(v) : undefined)}
+              opciones={[{ valor: '', texto: 'Todas las sedes' }, ...listaSedes.map((sede) => ({ valor: String(sede.idSede), texto: sede.nombre }))]}
+            />
             <div className="db-segmento" role="radiogroup" aria-label="Periodo">
               {(['hoy', '7d'] as const).map((valor) => (
                 <button

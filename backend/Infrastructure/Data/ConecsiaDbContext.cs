@@ -69,6 +69,8 @@ public sealed class ConecsiaDbContext(
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
     public DbSet<AppModulo> AppModulos => Set<AppModulo>();
     public DbSet<ModuloPermiso> ModulosPermisos => Set<ModuloPermiso>();
+    public DbSet<SesionRefresco> SesionesRefresco => Set<SesionRefresco>();
+    public DbSet<RecuperacionContrasena> RecuperacionesContrasena => Set<RecuperacionContrasena>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

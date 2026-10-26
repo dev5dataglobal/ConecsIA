@@ -57,7 +57,7 @@ public class UsuarioController : BaseApiController
         var usuario = await UsuarioAutenticado(cancellationToken);
         if (usuario is null) return Unauthorized();
         if (request.NuevaContrasena != request.ConfirmacionContrasena) return BadRequest("La confirmación no coincide con la nueva contraseña.");
-        if (!PoliticaContrasenaValida(request.NuevaContrasena)) return BadRequest("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.");
+        if (!PoliticaContrasena.Cumple(request.NuevaContrasena)) return BadRequest(PoliticaContrasena.Mensaje);
         var resultado = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, request.ContrasenaActual);
         if (resultado == PasswordVerificationResult.Failed) return BadRequest("La contraseña actual no es correcta.");
         usuario.PasswordHash = _passwordHasher.HashPassword(usuario, request.NuevaContrasena);
@@ -73,7 +73,6 @@ public class UsuarioController : BaseApiController
     }
 
     private static UsuarioPerfilDto MapPerfil(Usuario usuario) => new() { IdUsuario = usuario.IdUsuario, Correo = usuario.Correo, Activo = usuario.Activo, UltimoAcceso = usuario.UltimoAcceso, CreadoEn = usuario.CreadoEn };
-    private static bool PoliticaContrasenaValida(string value) => value.Any(char.IsUpper) && value.Any(char.IsLower) && value.Any(char.IsDigit);
 
     [HttpGet]
     [RequiereModulo(CodigosModulo.Usuarios)]

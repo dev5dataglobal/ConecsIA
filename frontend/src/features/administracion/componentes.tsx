@@ -1,6 +1,7 @@
 import { useEffect, useId, type FormEvent, type ReactNode } from 'react'
 import { ApiError } from '../../shared/api/problemDetails'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono'
+import { Selector } from '../../shared/ui/Selector'
 import { mensajeError } from './utilidades'
 
 /** Piezas compartidas por las secciones de administración (mismo lenguaje visual del dashboard). */
@@ -181,19 +182,17 @@ export function Buscador({ valor, onChange, placeholder, etiqueta }: { valor: st
 }
 
 export function Filtro({ etiqueta, valor, onChange, opciones }: { etiqueta: string; valor: string; onChange: (valor: string) => void; opciones: { valor: string; texto: string }[] }) {
-  return (
-    <label className="ad-select ad-select-corto">
-      <span className="sr-only">{etiqueta}</span>
-      <select value={valor} onChange={(event) => onChange(event.target.value)} aria-label={etiqueta}>
-        {opciones.map((o) => <option key={o.valor} value={o.valor}>{o.texto}</option>)}
-      </select>
-    </label>
-  )
+  return <Selector className="ad-select-corto" etiqueta={etiqueta} valor={valor} onChange={onChange} opciones={opciones} />
 }
 
-export function BotonIcono({ etiqueta, icono, onClick, peligro }: { etiqueta: string; icono: NombreIcono; onClick: () => void; peligro?: boolean }) {
+/**
+ * Acción con icono. Tono por intención: editar (violeta), peligro (rojo: inactivar/eliminar), éxito (verde: activar).
+ * Sin `tono` se deduce: `peligro` → peligro; icono «check» → éxito; resto → editar.
+ */
+export function BotonIcono({ etiqueta, icono, onClick, peligro, tono }: { etiqueta: string; icono: NombreIcono; onClick: () => void; peligro?: boolean; tono?: 'editar' | 'peligro' | 'exito' }) {
+  const efectivo = tono ?? (peligro ? 'peligro' : icono === 'check' ? 'exito' : 'editar')
   return (
-    <button type="button" className="ad-accion" data-peligro={peligro || undefined} onClick={onClick} aria-label={etiqueta} title={etiqueta}>
+    <button type="button" className="ad-accion" data-tono={efectivo} data-peligro={efectivo === 'peligro' || undefined} onClick={onClick} aria-label={etiqueta} title={etiqueta}>
       <Icono nombre={icono} />
     </button>
   )

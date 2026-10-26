@@ -1,7 +1,7 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-24
+actualizado: 2026-10-26
 tags: [conecsia]
 ---
 
@@ -13,6 +13,22 @@ tags: [conecsia]
 - El frontend ya no muestra `Unauthorized`, el mensaje genérico de sesión ni referencias `traceId` para errores de credenciales; las referencias quedan reservadas para errores del servidor.
 
 # Estado de implementación
+
+## Sesión renovable, recuperación de contraseña y ajustes de Perfiles — 2026-10-26
+
+- **Implementado (backend):** [[ADR-025 Sesión renovable y recuperación de contraseña]].
+  - `AuthController`: `login` (acepta `recordarme`), `renovar`, `cerrar-sesion`, `recuperar-contrasena`, `restablecer-contrasena`.
+  - `UserService` emite el acceso con un método común (`EmitirAccesoAsync`) para login y renovación; los claims `permission` ya no incluyen perfiles inactivos.
+  - Nuevos: `RecuperacionContrasenaService`, `IEnviadorCorreo` + `SmtpEnviadorCorreo` (`Correo`), `SesionOptions` (`Sesion`), `PoliticaContrasena` (también usada por `PUT /api/usuario/me/contrasena`), `TokensSeguros`, política de límite `recuperacion`.
+  - Entidades `SesionRefresco` y `RecuperacionContrasena`; migración `20261026132034_SesionesRefrescoYRecuperacionContrasena` (solo crea 2 tablas).
+- **Implementado (frontend):** `http.ts` renueva una vez ante `401` y reintenta; `main.tsx` restaura la sesión antes de montar las rutas; login con «Recordarme» activo y rutas `/recuperar-contrasena` y `/restablecer-contrasena` con el mismo diseño del pase; la caché de React Query se vacía al iniciar y cerrar sesión; `Selector` accesible; tarjetas y botones de Perfiles (ver [[Administración]]).
+- **Causa del problema de permisos:** ver [[Administración]] § Diagnóstico 2026-10-26.
+- **Verificado:**
+  - `dotnet test`: 35/35 (11 nuevas en `SesionTests`: cookie de sesión vs persistente, rotación, cierre, cabecera obligatoria, pestañas simultáneas, módulos al iniciar sesión, cambio de perfil aplicado a la sesión activa y al renovar, 503 sin correo, misma respuesta exista o no la cuenta, un solo uso + revocación de sesiones, token desconocido).
+  - `vitest`: 16/16 (nuevas: selector con teclado y mouse, «Recordarme» + renovación tras 401 sin tokens en almacenamiento, enlace de recuperación).
+  - Navegador (API de verificación en 5192 contra `conecsia_verificacion`, migrada; frontend 5174): login con «Recordarme», cookie no visible para JS, recarga restaura la sesión, cerrar sesión revoca (renovar posterior → 401), selector con teclado/mouse, tarjetas en escritorio y 375px, recuperación → 503 con mensaje claro (correo sin configurar), enlace inválido → mensaje de error.
+- **No verificado:** cerrar y reabrir el navegador real (la persistencia se comprobó por el atributo `Expires` de la cookie en pruebas de integración); envío SMTP real (no hay servidor configurado).
+- **Pendiente:** configurar `Correo` y `Sesion:UrlFrontend` ([[Decisiones pendientes|D-30]]); cierre por inactividad ([[Decisiones pendientes|D-29]]).
 
 ## Administración completa, acciones por módulo y zonas empresariales — 2026-10-24
 

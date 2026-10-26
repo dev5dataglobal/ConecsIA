@@ -1817,6 +1817,47 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("plantilla_rol_permiso", "public");
                 });
 
+            modelBuilder.Entity("ConecsIA.Domain.Entities.RecuperacionContrasena", b =>
+                {
+                    b.Property<long>("IdRecuperacionContrasena")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_recuperacion_contrasena");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdRecuperacionContrasena"));
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTime>("ExpiraEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_en");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTime?>("UsadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("usado_en");
+
+                    b.HasKey("IdRecuperacionContrasena");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("recuperacion_contrasena", "public");
+                });
+
             modelBuilder.Entity("ConecsIA.Domain.Entities.RestriccionAcceso", b =>
                 {
                     b.Property<int>("IdRestriccion")
@@ -2010,6 +2051,61 @@ namespace Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("sede", "public");
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.SesionRefresco", b =>
+                {
+                    b.Property<long>("IdSesionRefresco")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_sesion_refresco");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdSesionRefresco"));
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTime>("ExpiraEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_en");
+
+                    b.Property<long?>("IdReemplazo")
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_reemplazo");
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario");
+
+                    b.Property<bool>("Recordar")
+                        .HasColumnType("boolean")
+                        .HasColumnName("recordar");
+
+                    b.Property<DateTime?>("RevocadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revocado_en");
+
+                    b.Property<string>("SelloSeguridad")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("sello_seguridad");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.HasKey("IdSesionRefresco");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("sesion_refresco", "public");
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.SolicitudIdempotente", b =>
@@ -2684,6 +2780,15 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConecsIA.Domain.Entities.RecuperacionContrasena", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConecsIA.Domain.Entities.Sede", b =>
                 {
                     b.HasOne("ConecsIA.Domain.Entities.Ciudad", null)
@@ -2696,6 +2801,15 @@ namespace Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("IdZonaEmpresarial")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.SesionRefresco", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.Visita", b =>
