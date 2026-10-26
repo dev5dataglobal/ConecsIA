@@ -50,6 +50,7 @@ Thumbs.db
 desktop.ini
 
 # Temporales y archivos generados
+backend/ApiConecsia/App_Data/archivos/
 *.tmp
 *.temp
 *.bak
