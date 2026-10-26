@@ -25,15 +25,6 @@ public sealed class ExceptionMiddleware
         {
             await _next(context);
         }
-        catch (UnauthorizedAccessException exception) when (!context.Response.HasStarted)
-        {
-            // Escritura fuera de la organización activa (validación del DbContext) u operación sin organización.
-            _logger.LogWarning("Operación rechazada por alcance de organización: {Mensaje}", exception.Message);
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsJsonAsync(
-                new Microsoft.AspNetCore.Mvc.ProblemDetails { Status = 403, Title = "Acceso denegado", Detail = "La operación no pertenece a la organización activa." },
-                options: null, contentType: "application/problem+json");
-        }
         catch (Exception exception)
         {
             _logger.LogError(exception, "Error no controlado durante la solicitud.");

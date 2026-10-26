@@ -1,5 +1,3 @@
-using ApiConecsia.Helpers;
-using ConecsIA.Application.Seguridad;
 using ConecsIA.Application.Interfaces.Repositories;
 using ConecsIA.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApiConecsia.Controllers;
 
 [Route("api/[controller]")]
-[RequiereModulo(CodigosModulo.Configuracion)]
 public class PlantillaNotificacionController : BaseApiController
 {
     private readonly IUnitOfWork _unitOfWork;
