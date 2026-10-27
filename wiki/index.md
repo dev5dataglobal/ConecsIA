@@ -1,7 +1,7 @@
 ---
 tipo: indice
 estado: vigente
-actualizado: 2026-10-24
+actualizado: 2026-10-26
 tags: [conecsia]
 ---
 
@@ -38,6 +38,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
 - [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
 - [[ADR-024 Acciones por módulo y contexto de organización]] — Implementado 2026-10-24: Consultar/Añadir/Editar por módulo, selector de organización solo para plataforma
+- [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] — Implementado 2026-10-26: ciclo propio Pendiente/Aprobada/Rechazada/Revocada, separado de la autorización de la persona, historial inmutable
 - [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
@@ -72,6 +73,8 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Plataforma base]] — fundaciones técnicas F0 (HU-001 a HU-004)
 - [[Sedes]] — primera vertical funcional: HU-013 con aislamiento, contexto por membresía y auditoría
 - [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
+- [[Personas]] — registro por organización, catálogos, foto privada, teléfonos 1:N, vehículos N:M y dispositivos 1:N
+- [[Autorizaciones de vehículos y dispositivos]] — dispositivos por persona y autorizaciones de ingreso de objetos con historial y auditoría inmutables
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código

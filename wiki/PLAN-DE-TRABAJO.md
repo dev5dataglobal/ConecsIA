@@ -74,7 +74,8 @@ Una historia está **Terminada** solo cuando:
 ### F5
 **Vehículos y equipos** (RF-16, RF-17). Se puede adelantar si el primer cliente los necesita (D-02).
 - Épicas: [[EP-16 Vehículos]], [[EP-17 Equipos externos]]
-- Decisiones: **D-10**.
+- Decisiones: **D-10**, D-17, D-31, D-32, D-33.
+- Adelantado 2026-10-26 a pedido del usuario: dispositivos por persona (HU-049) y autorizaciones de ingreso de vehículos y dispositivos ([[ADR-026 Autorización de ingreso de vehículos y dispositivos]]); movimientos (HU-048/HU-050) siguen en backlog.
 
 ### F6
 **Adaptación por vertical** (RF-26 completo).
@@ -91,6 +92,7 @@ Una historia está **Terminada** solo cuando:
 |---|---|---|---|---|
 | 2026-10-17 | Fundaciones técnicas | HU-001 a HU-004 | En revisión | [[Plataforma base]] |
 | 2026-10-17 | **Primera vertical funcional: sedes** | HU-013 + base de HU-005, HU-007, HU-008 | HU-013 en revisión; HU-005/007/008 en curso | [[Sedes]], [[Estado de implementación]] |
+| 2026-10-26 | Foto de personas, dispositivos y autorizaciones de objetos (adelanto de F5) | HU-020 (foto), HU-047, HU-049 | En revisión; modelo por validar (D-31) | [[Autorizaciones de vehículos y dispositivos]], [[Personas]] |
 
 > [!note] Desviación del plan
 > La primera vertical adelanta HU-013 (S3) antes de cerrar S2. Para no esperar a D-03 se usó autenticación provisional ([[ADR-022 Autenticación de desarrollo provisional]], Propuesta) y semillas en lugar de HU-009/HU-016. La DoR no se cumplía formalmente (D-03 abierta, ADR-008 en Propuesta): la parte bloqueada quedó aislada en el esquema de autenticación y en la regla de cambio de zona horaria (D-06).
@@ -127,5 +129,5 @@ HU-001 → HU-005 → HU-006/HU-007 → HU-008 → HU-009 → HU-013 → HU-016/
 | S2 | Aislamiento, identidad y auditoría | HU-005, HU-006 (si D-03 está cerrada), HU-007, HU-008 |
 | S3 | Organizaciones y estructura | HU-009, HU-010, HU-011, HU-013 |
 | S4 | Estructura, usuarios y roles | HU-012, HU-014, HU-015, HU-016, HU-017 |
-| S5 | Alcance y personas | HU-018, HU-019, HU-020, HU-021, HU-022 |
+| S5 | Alcance y personas | HU-018, HU-019, HU-020, HU-021, HU-022 — *2026-10-26: HU-019..022 en revisión (ver [[Personas]])* |
 | S6+ | F2 en adelante | Se planifica en refinamiento según las D-xx cerradas |

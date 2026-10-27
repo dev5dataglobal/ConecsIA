@@ -31,6 +31,7 @@ Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que c
 - [ ] HU-002 Proyecto frontend base — falta E2E Playwright
 - [ ] HU-003 Entorno local con Docker Compose — semillas con datos dependen de HU-009
 - [ ] HU-004 Observabilidad y formato de errores base
+- [ ] HU-019/020/021/022 Personas (registro, catálogos, foto, inactivación) + teléfonos y vehículos — verificadas localmente 2026-10-26 (21 pruebas de integración, 4 de UI, navegador). Ver [[Personas]]. Falta CI, revisión del PO y decisiones D-09/D-13/D-14/D-17
 - [ ] HU-013 Gestionar sedes con zona horaria — verificada localmente 2026-10-17 (unitarias, integración con PostgreSQL real, Docker y UI). Falta CI, revisión de código, revisión del PO y E2E automatizado; CA-03 parcial
 
 ## Lista
@@ -61,10 +62,10 @@ _(vacío)_
 | HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog; aceptación de invitación depende de D-03 |
 | HU-017 | Roles configurables y catálogo de permisos | [[EP-05 Usuarios, roles y permisos]] | F1 | L | Backlog |
 | HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog |
-| HU-019 | Registrar y buscar persona por documento sin duplicados | [[EP-06 Personas]] | F1 | L | Backlog |
-| HU-020 | Tipos de persona y tipos de documento | [[EP-06 Personas]] | F1 | S | Backlog |
-| HU-021 | Fotografía de persona en almacenamiento privado | [[EP-06 Personas]] | F1 | M | Backlog |
-| HU-022 | Inactivar persona preservando histórico | [[EP-06 Personas]] | F1 | S | Backlog |
+| HU-019 | Registrar y buscar persona por documento sin duplicados | [[EP-06 Personas]] | F1 | L | En revisión (2026-10-26; clave/normalización provisional D-09) |
+| HU-020 | Tipos de persona y tipos de documento | [[EP-06 Personas]] | F1 | S | En revisión (2026-10-26) |
+| HU-021 | Fotografía de persona en almacenamiento privado | [[EP-06 Personas]] | F1 | M | En revisión (2026-10-26; almacenamiento local provisional, D-13/D-14) |
+| HU-022 | Inactivar persona preservando histórico | [[EP-06 Personas]] | F1 | S | En revisión (2026-10-26; sin motivo obligatorio) |
 | HU-023 | Crear autorización directa por usuario facultado | [[EP-07 Autorizaciones]] | F2 | L | Backlog |
 | HU-024 | Modalidades, calendario y cupo de ingresos | [[EP-07 Autorizaciones]] | F2 | L | Backlog |
 | HU-025 | Solicitar y decidir autorizaciones | [[EP-07 Autorizaciones]] | F2 | M | Backlog |
@@ -89,9 +90,9 @@ _(vacío)_
 | HU-044 | Dashboard operativo | [[EP-14 Dashboard y reportes]] | F4 | M | Backlog |
 | HU-045 | Reportes Excel y PDF del núcleo | [[EP-14 Dashboard y reportes]] | F4 | L | Backlog |
 | HU-046 | Consulta de auditoría para auditor | [[EP-15 Auditoría consultable]] | F4 | M | Backlog |
-| HU-047 | Registrar vehículos y asociarlos a personas y autorizaciones | [[EP-16 Vehículos]] | F5 | M | Backlog |
+| HU-047 | Registrar vehículos y asociarlos a personas y autorizaciones | [[EP-16 Vehículos]] | F5 | M | En revisión (2026-10-26: persona–vehículo y autorización de ingreso del vehículo con ciclo propio; modelo por validar, D-31) |
 | HU-048 | Movimientos vehiculares | [[EP-16 Vehículos]] | F5 | M | Backlog; reglas de D-10 y D-17 bloqueadas |
-| HU-049 | Registrar dispositivos externos | [[EP-17 Equipos externos]] | F5 | M | Backlog |
+| HU-049 | Registrar dispositivos externos | [[EP-17 Equipos externos]] | F5 | M | En revisión (2026-10-26: CRUD por persona, tipos, autorización de ingreso; D-17, D-31, D-33) |
 | HU-050 | Movimientos de dispositivos y equipos dentro | [[EP-17 Equipos externos]] | F5 | M | Backlog; custodia bloqueada (D-10) |
 | HU-051 | Plantillas sectoriales completas | [[EP-18 Adaptación sectorial]] | F6 | M | Backlog |
 | HU-052 | Documentación de contratistas y límites de invitados | [[EP-18 Adaptación sectorial]] | F6 | Spike | Bloqueada (D-11) |

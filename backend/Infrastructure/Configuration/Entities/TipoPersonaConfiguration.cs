@@ -11,5 +11,7 @@ public sealed class TipoPersonaConfiguration : EntityConfigurationBase<TipoPerso
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdTipoPersona);
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdTipoPersona }).IsUnique();
+        builder.HasIndex(x => new { x.IdOrganizacion, x.Nombre }).IsUnique();
+        builder.HasOne<Organizacion>().WithMany().HasForeignKey(x => x.IdOrganizacion).OnDelete(DeleteBehavior.Restrict);
     }
 }

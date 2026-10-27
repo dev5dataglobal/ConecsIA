@@ -2,6 +2,8 @@ erDiagram
 
     %% =====================================================
     %% Modelo ER — versión 2 (2026-10-17)
+    %% 2026-10-26: Personas alineado con el esquema real (migración
+    %%   PersonasRelacionesYCatalogos): FKs de persona, teléfonos y vehículos.
     %% Ver wiki/consultas/Revisión del modelo ER db.md
     %% Convenciones:
     %%  - Toda entidad de cliente lleva id_organizacion NOT NULL y FKs
@@ -232,24 +234,25 @@ erDiagram
 
     TIPO_DOCUMENTO {
         int id_tipo_documento PK
-        string codigo
+        string codigo "UK; global: CC, TI, CE, PA, PPT, NIT"
         string nombre
         string pais_emisor "D-09"
+        string patron_validacion "regex sobre el número normalizado (Propuesta, D-09)"
         boolean activo
     }
 
     TIPO_PERSONA {
         int id_tipo_persona PK
-        int id_organizacion FK
-        string nombre
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_tipo_persona)"
+        string nombre "UK(id_organizacion, nombre)"
         string descripcion
         boolean activo
     }
 
     PERSONA {
         int id_persona PK
-        int id_organizacion FK
-        int id_tipo_persona FK
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_persona)"
+        int id_tipo_persona FK "FK compuesta (id_organizacion, id_tipo_persona); índice NO único"
         int id_tipo_documento FK
         string numero_documento
         string numero_documento_normalizado "UK(id_organizacion, id_tipo_documento, numero_documento_normalizado)"
@@ -257,7 +260,7 @@ erDiagram
         string apellidos
         string correo
         string empresa_procedencia
-        uuid id_archivo_foto FK "nullable"
+        uuid id_archivo_foto FK "nullable; FK archivo (almacenamiento privado)"
         string observacion
         boolean activo
         timestamptz creado_en
@@ -267,10 +270,11 @@ erDiagram
     PERSONA_TELEFONO {
         int id_telefono PK
         int id_organizacion FK
-        int id_persona FK
-        string numero
-        string tipo
-        boolean principal
+        int id_persona FK "FK compuesta (id_organizacion, id_persona) → persona"
+        string codigo_pais "default +57"
+        string numero "solo dígitos; UK parcial (org, persona, codigo_pais, numero) WHERE activo"
+        string tipo "Móvil | Fijo | Trabajo | Emergencia | Otro"
+        boolean principal "UK parcial (org, persona) WHERE principal AND activo"
         boolean activo
     }
 
@@ -298,7 +302,7 @@ erDiagram
 
     VEHICULO {
         int id_vehiculo PK
-        int id_organizacion FK
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_vehiculo)"
         string placa
         string placa_normalizada "UK por organización (D-17)"
         string tipo
@@ -309,11 +313,11 @@ erDiagram
     }
 
     PERSONA_VEHICULO {
-        int id_organizacion FK
-        int id_persona FK
-        int id_vehiculo FK
-        string relacion "Propietario | Responsable"
-        boolean activo
+        int id_organizacion FK "PK(id_organizacion, id_persona, id_vehiculo)"
+        int id_persona FK "FK compuesta → persona"
+        int id_vehiculo FK "FK compuesta → vehiculo; N:M, un vehículo puede tener varias personas"
+        string relacion "Propietario | Responsable | Conductor"
+        boolean activo "inactivar el vínculo no inactiva el vehículo"
     }
 
 
@@ -334,15 +338,16 @@ erDiagram
         int id_organizacion FK
         int id_persona_responsable FK
         int id_tipo_dispositivo FK
-        string codigo_identificador
+        string codigo_identificador "normalizado; UK (id_organizacion, codigo_identificador) provisional D-17"
         string serial
-        string serial_normalizado "unicidad por definir (D-17)"
+        string serial_normalizado "sin unicidad (D-17)"
         string marca
         string modelo
         string color
         string descripcion
-        boolean activo
+        boolean activo "inactivar conserva autorizaciones y movimientos"
         timestamptz creado_en
+        int id_usuario_crea FK "usuario autenticado que lo registró"
     }
 
 
@@ -425,6 +430,42 @@ erDiagram
         int id_organizacion FK
         int id_autorizacion FK
         int id_dispositivo FK
+    }
+
+    AUTORIZACION_OBJETO {
+        int id_autorizacion_objeto PK
+        int id_organizacion FK
+        string tipo_objeto "Vehiculo | Dispositivo (CHECK con id_vehiculo/id_dispositivo)"
+        int id_vehiculo FK "nullable"
+        int id_dispositivo FK "nullable"
+        int id_persona FK
+        int id_sede FK
+        int id_area FK "nullable"
+        int id_autorizacion FK "nullable; vínculo trazable a la autorización de la persona (ADR-026)"
+        date fecha_inicio
+        date fecha_fin "obligatoria (D-18)"
+        time hora_inicio "ambas o ninguna"
+        time hora_fin
+        string motivo
+        string estado "Pendiente | Aprobada | Rechazada | Revocada; vigencia calculada"
+        string motivo_decision
+        int id_usuario_solicita FK
+        timestamptz solicitado_en
+        int id_usuario_decide FK "nullable"
+        timestamptz decidido_en
+        xid xmin "token de concurrencia"
+    }
+
+    AUTORIZACION_OBJETO_TRANSICION {
+        bigint id_transicion PK
+        int id_organizacion FK
+        int id_autorizacion_objeto FK
+        int id_sede FK
+        string estado_anterior "null en la creación"
+        string estado_nuevo
+        string motivo
+        int id_usuario_actor FK
+        timestamptz ocurrido_en "solo inserción (trigger)"
     }
 
     TOKEN_QR {
@@ -633,7 +674,7 @@ erDiagram
         string entidad
         string id_registro
         string resultado "Exito | Denegado | Error"
-        text valor_anterior
+        text valor_anterior "tabla solo inserción: trigger rechaza UPDATE/DELETE (2026-10-26)"
         text valor_nuevo
         string direccion_ip
         string id_correlacion
@@ -694,6 +735,7 @@ erDiagram
     TIPO_DOCUMENTO ||--o{ PERSONA : identifica
     ORGANIZACION ||--o{ PERSONA : registra
     ARCHIVO |o--o{ PERSONA : foto
+    USUARIO ||--o{ PERSONA : "registra (id_usuario_crea)"
     PERSONA ||--o{ PERSONA_TELEFONO : posee
     PERSONA ||--o{ RESTRICCION_ACCESO : posee
 
@@ -704,6 +746,7 @@ erDiagram
     ORGANIZACION ||--o{ TIPO_DISPOSITIVO : configura
     TIPO_DISPOSITIVO ||--o{ DISPOSITIVO : clasifica
     PERSONA ||--o{ DISPOSITIVO : responsable
+    USUARIO |o--o{ DISPOSITIVO : registra
 
 
     %% =====================================================
@@ -721,6 +764,16 @@ erDiagram
     VEHICULO ||--o{ AUTORIZACION_VEHICULO : incluido
     AUTORIZACION ||--o{ AUTORIZACION_DISPOSITIVO : incluye
     DISPOSITIVO ||--o{ AUTORIZACION_DISPOSITIVO : incluido
+    PERSONA ||--o{ AUTORIZACION_OBJETO : responsable
+    VEHICULO |o--o{ AUTORIZACION_OBJETO : autorizado
+    DISPOSITIVO |o--o{ AUTORIZACION_OBJETO : autorizado
+    SEDE ||--o{ AUTORIZACION_OBJETO : habilita
+    AREA |o--o{ AUTORIZACION_OBJETO : destino
+    AUTORIZACION |o--o{ AUTORIZACION_OBJETO : "vinculada (opcional)"
+    USUARIO ||--o{ AUTORIZACION_OBJETO : "solicita / decide"
+    AUTORIZACION_OBJETO ||--o{ AUTORIZACION_OBJETO_TRANSICION : historial
+    SEDE ||--o{ AUTORIZACION_OBJETO_TRANSICION : contexto
+    USUARIO ||--o{ AUTORIZACION_OBJETO_TRANSICION : actor
     AUTORIZACION ||--o{ TOKEN_QR : identifica
     AUTORIZACION ||--o{ INVITACION_ENVIO : notifica
     TOKEN_QR ||--o{ INVITACION_ENVIO : contiene

@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { AdministracionInicio, AdministracionPage } from '../features/administracion/AdministracionPage'
 import { SECCIONES } from '../features/administracion/secciones'
+import { PersonasPage } from '../features/personas/PersonasPage'
+import { AutorizacionesPage } from '../features/autorizaciones/AutorizacionesPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
 import { haySesion } from '../features/sesion/sesion'
 import { AppShell } from './shell/AppShell'
@@ -23,6 +25,8 @@ export const rutas: RouteObject[] = [
     element: <RutaProtegida><AppShell /></RutaProtegida>,
     children: [
       { path: 'dashboard', element: <RutaModulo codigo="dashboard"><DashboardPage /></RutaModulo> },
+      { path: 'personas', element: <RutaModulo codigo="personas"><PersonasPage /></RutaModulo> },
+      { path: 'autorizaciones', element: <RutaModulo codigo="autorizaciones"><AutorizacionesPage /></RutaModulo> },
       { path: 'administracion', element: <AdministracionInicio /> },
       ...SECCIONES.map((s) => ({
         path: `administracion/${s.id}`,

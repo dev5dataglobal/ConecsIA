@@ -3,7 +3,7 @@ tipo: modulo
 estado: verificado
 fuentes: [PRD v0.1]
 relacionados: [HU-013, HU-005, HU-007, HU-008, RF-03, RN-01, RN-08, RN-10, CA-01, CA-02, CA-03, ADR-004, ADR-005, ADR-014, ADR-020, ADR-022, D-03, D-06, D-20]
-actualizado: 2026-10-17
+actualizado: 2026-10-26
 tags: [conecsia, modulo, f1, vertical]
 ---
 
@@ -57,8 +57,31 @@ Respuestas de error en Problem Details con `traceId` y `code` ([[ADR-020 Contrat
 - Migración `PrimeraVerticalSedes`: tablas `organizacion`, `usuario`, `membresia`, `sede`, `auditoria_evento`; FKs entre módulos añadidas a mano; `REVOKE` de auditoría.
 - Frontend: `/ingresar` (selector de usuario sintético), `/sedes` (lista, filtro, paginación, formulario en diálogo con selector de zona IANA, edición con versión, inactivación con confirmación), cabecera con organización y usuario, cierre de sesión ante 401. Los botones dependen de los permisos de `/me` solo por usabilidad.
 
+## Extension Sedes y Areas (2026-10-26)
+- Sedes: consulta, alta, edicion e inactivacion; ciudad desde catalogo y zona horaria derivada del catalogo.
+- Areas: pertenencia obligatoria a sede e indicador de area comun condicionado a zona empresarial.
+- Migracion `20261026150556_SedesAreasYCatalogoCiudad` para zona horaria, relaciones de zona empresarial y unicidad por organizacion/sede.
+- Verificado: compilacion backend, build y typecheck frontend.
+
 ## Interfaz
 Estilo según [[Sistema visual]] (2026-10-17): migas, tarjetas de resumen (total, activas, inactivas; respetan el alcance del usuario), tarjeta de filtros y tabla con estados en píldora.
 
 ## Verificación
 Ver [[Estado de implementación#Verificación de la primera vertical (2026-10-17)]].
+
+## UI y API de Sedes y áreas — 2026-10-26
+
+- **Implementado:** la sección «Sedes y áreas» de [[Administración]] (`SedesAreasSeccion.tsx`, `apiSedes.ts`) usa los mismos componentes que Zonas empresariales: `Marco`, tarjetas `ad-zona`, buscador, filtros por estado y sede, `Dialogo`, `Confirmar` y avisos. Tiene un selector de vista Sedes / Áreas con contadores de activas.
+- **Implementado:** `GET /api/sedes/ciudades` devuelve las ciudades activas con el módulo `sedes` (consultar). Antes el formulario llamaba a `/api/Ciudad`, que exige el módulo `configuracion`, y por eso no aparecían ciudades.
+- **Implementado:** `POST /api/sedes|areas/{id}/activar|inactivar` con la acción **Editar**; cada cambio de estado se audita. Las áreas ahora también auditan crear y modificar, y no se reactivan si su sede está inactiva.
+- **Verificado:** `SedesAreasTests` (4 pruebas): catálogo sin `configuracion`, zona horaria tomada de la ciudad, aislamiento entre organizaciones, nombre único, permisos de editar y auditoría. `tsc -b` ok.
+- **Pendiente:** verlo en el navegador con el API reiniciado. Si la tabla `ciudad` está vacía, el formulario lo indica; el catálogo hay que cargarlo aparte (no hay CRUD de ciudades en la UI).
+
+## Catálogo de ciudades DIVIPOLA — 2026-10-26
+
+- **Implementado:** `ciudad.codigo_dane` (char(5), único cuando no es nulo). La migración `20261026215936_CatalogoCiudadesDivipola` carga los 1.122 registros de DIVIPOLA del DANE (1.103 municipios, 18 áreas no municipalizadas y 1 isla), con corte 2026-10-26. Nombres en formato título, país `Colombia`, zona horaria `America/Bogota`.
+- La fuente queda versionada en `backend/Infrastructure/Data/Seeds/divipola-municipios-20261026.csv`. La carga es idempotente (`ON CONFLICT (codigo_dane)`), así que un corte nuevo se aplica con otra migración del mismo tipo.
+- El `Down` solo borra las ciudades del catálogo que ninguna sede usa.
+- **Verificado:** migración aplicada a la base local; prueba `El_catalogo_DIVIPOLA_queda_cargado_sin_codigos_repetidos`; 61/61 pruebas.
+- **Implementado 2026-10-26:** el selector de ciudad tiene búsqueda (`Selector` con `buscable`).
+- **Pendiente:** Las ciudades que se crearon a mano antes (sin `codigo_dane`) no se fusionan con las del catálogo.

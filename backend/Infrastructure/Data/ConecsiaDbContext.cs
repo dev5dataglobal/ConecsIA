@@ -52,6 +52,8 @@ public sealed class ConecsiaDbContext(
     public DbSet<AutorizacionZona> AutorizacionesZonas => Set<AutorizacionZona>();
     public DbSet<AutorizacionVehiculo> AutorizacionesVehiculos => Set<AutorizacionVehiculo>();
     public DbSet<AutorizacionDispositivo> AutorizacionesDispositivos => Set<AutorizacionDispositivo>();
+    public DbSet<AutorizacionObjeto> AutorizacionesObjeto => Set<AutorizacionObjeto>();
+    public DbSet<AutorizacionObjetoTransicion> AutorizacionesObjetoTransiciones => Set<AutorizacionObjetoTransicion>();
     public DbSet<TokenQr> TokensQr => Set<TokenQr>();
     public DbSet<InvitacionEnvio> InvitacionesEnvio => Set<InvitacionEnvio>();
     public DbSet<Visita> Visitas => Set<Visita>();

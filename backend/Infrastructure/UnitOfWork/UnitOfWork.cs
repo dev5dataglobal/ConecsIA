@@ -62,6 +62,7 @@ public class UnitOfWork : IUnitOfWork
     private IVisitaRepository? _visitaRepository;
     private IZonaRepository? _zonaRepository;
     private IZonaEmpresarialRepository? _zonaEmpresarialRepository;
+    private IZonaEmpresarialOrganizacionRepository? _zonaEmpresarialOrganizacionRepository;
 
     private readonly ConecsiaDbContext _context;
 
@@ -783,6 +784,15 @@ public class UnitOfWork : IUnitOfWork
         {
             _zonaEmpresarialRepository ??= new ZonaEmpresarialRepository(_context);
             return _zonaEmpresarialRepository;
+        }
+    }
+
+    public IZonaEmpresarialOrganizacionRepository ZonaEmpresarialOrganizacionRepository
+    {
+        get
+        {
+            _zonaEmpresarialOrganizacionRepository ??= new ZonaEmpresarialOrganizacionRepository(_context);
+            return _zonaEmpresarialOrganizacionRepository;
         }
     }
 

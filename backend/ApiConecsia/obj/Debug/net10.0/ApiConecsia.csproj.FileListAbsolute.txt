@@ -187,3 +187,13 @@ C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\27
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\ApiConecsia.runtimeconfig.json
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\ApiConecsia.dll
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2773d5c2-5e37-43c4-a411-995295c94609\scratchpad\out\ApiConecsia.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\appsettings.Development.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\appsettings.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\appsettings.Local.example.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\appsettings.Local.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.staticwebassets.endpoints.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.exe
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\ApiConecsia.pdb

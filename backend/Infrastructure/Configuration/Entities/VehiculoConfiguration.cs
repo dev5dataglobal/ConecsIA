@@ -11,5 +11,6 @@ public sealed class VehiculoConfiguration : EntityConfigurationBase<Vehiculo>, I
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdVehiculo);
         builder.HasIndex(x => new { x.IdOrganizacion, x.PlacaNormalizada }).IsUnique();
+        builder.HasOne<Organizacion>().WithMany().HasForeignKey(x => x.IdOrganizacion).OnDelete(DeleteBehavior.Restrict);
     }
 }

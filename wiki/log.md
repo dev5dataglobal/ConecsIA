@@ -414,3 +414,64 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - `Selector`: props `invalido` e `icono`; variantes `sel-campo`, `sel-shell`, `sel-oscuro`; abre hacia arriba si no cabe; se corrigió la doble apertura dentro de `<label>`.
 - Verificado: `tsc` y `vitest` 16/16; navegador (5174/5192) con mouse y teclado en modal, barra y dashboard.
 - Página tocada: [[Administración]].
+
+## [2026-10-26] implementacion | Restauración del módulo de autenticación y reconciliación de sedes/áreas
+- Se revirtió `6b3127b` sin commit (vuelve a estar `cf458da`: auth, módulos, administración, dashboard, tests, ADR-023/024/025, [[Administración]], [[Zona empresarial]]).
+- Se reaplicaron los cambios de sedes/áreas del usuario; los controladores quedan protegidos con `RequiereModulo(Sedes)`. Se agregó `IOrganizationContext.UserId`.
+- Se regeneró una sola migración `SedesAreasYCatalogoCiudad` (zona horaria de ciudad, `tiene_sedes`, índices únicos por nombre).
+- Verificado: build, 35 tests backend, 16 tests frontend. Pendiente: `database update` y probar el login en la app. Páginas: [[Estado de implementación]], [[Sedes]].
+
+## [2026-10-26] implementacion | Migración SedesAreasYCatalogoCiudad aplicada
+- `dotnet ef database update` aplicó `20261026171951_SedesAreasYCatalogoCiudad` en la base local sin errores.
+- Pendiente: reiniciar el API y probar el login y las sedes en la app. Página: [[Estado de implementación]].
+
+## [2026-10-26] implementacion | Módulo de Personas con teléfonos y vehículos
+- Backend `PersonasController` + `CatalogosPersonaController` (organización del contexto, unicidad documental con índice, formatos por tipo de documento, auditoría, foto privada, teléfonos 1:N, vehículos N:M con módulo Vehículos); retirados 5 controladores scaffold inseguros.
+- Migración `20261026180826_PersonasRelacionesYCatalogos`: 7 FKs faltantes, índice único erróneo `persona(org, tipo_persona)` corregido, siembra de catálogos; aplicada en `conecsia`. `db.md` actualizado.
+- Pruebas: backend 56/56 (21 nuevas), frontend 20/20 (4 nuevas), flujo verificado en navegador.
+- Páginas: [[Personas]] (nueva), [[Estado de implementación]], [[EP-06 Personas]], [[tablero-scrum]], [[PLAN-DE-TRABAJO]], [[Decisiones pendientes]] (D-09, D-17 provisionales), [[index]].
+- Pendientes: D-09, D-13, D-14, D-17; motivo de inactivación; FK `persona.id_usuario_crea`; registro `DOC-001`; `VehiculoController` scaffold.
+
+## [2026-10-26] consulta | ¿Hay que aplicar la migración de Personas?
+- `PersonasRelacionesYCatalogos` ya está aplicada en `conecsia`; `has-pending-model-changes` sin cambios pendientes.
+- Otras bases deben aplicar `dotnet ef database update`; puede fallar (sin pérdida de datos) ante nombres de tipo de persona duplicados, códigos de documento duplicados o filas huérfanas.
+- Sin cambios en otras páginas de la wiki.
+
+## [2026-10-26] implementacion | Sedes y áreas con la UI de Zonas empresariales y catálogo de ciudades
+- Se reescribió `SedesAreasSeccion` con los componentes de administración, igual que Zonas empresariales. Se eliminó `sedesAreas.css`.
+- Causa de «no salen ciudades»: `/api/Ciudad` exige el módulo `configuracion`. Nuevo endpoint `GET /api/sedes/ciudades` bajo el módulo `sedes`.
+- Activar/inactivar sedes y áreas con permiso Editar y auditoría; las áreas auditan crear y modificar.
+- Verificado: 60/60 pruebas backend (4 nuevas en `SedesAreasTests`) y `tsc` ok. Pendiente: probarlo en la app real. Página: [[Sedes]].
+
+## [2026-10-26] consulta | ¿De dónde se carga el catálogo de ciudades?
+- No hay seed de `ciudad` en migraciones ni scripts. Hoy se puede cargar por `POST /api/Ciudad` (módulo `configuracion`, añadir) o con SQL directo.
+- Pendiente: decidir si se agrega una migración seed (p. ej. capitales de Colombia) o una pantalla de catálogo. Sin cambios en la wiki.
+
+## [2026-10-26] consulta | Catálogo de ciudades desde DIVIPOLA (DANE)
+- Se puede usar DIVIPOLA del DANE (datos abiertos) como fuente de departamentos y municipios.
+- Propuesta: agregar `ciudad.codigo_dane` (único) para cargas idempotentes y actualizaciones; cargar como migración seed o script. Pendiente de decisión del usuario.
+
+## [2026-10-26] implementacion | Catálogo de ciudades DIVIPOLA (DANE)
+- Nueva columna `ciudad.codigo_dane` y migración `CatalogoCiudadesDivipola` con 1.122 municipios desde el CSV del DANE (versionado en `Infrastructure/Data/Seeds`).
+- Aplicada a la base local; 61/61 pruebas. Página: [[Sedes]].
+- Pendiente: buscador en el selector de ciudad; posibles duplicados con ciudades creadas a mano antes.
+
+## [2026-10-26] implementacion | Búsqueda en el selector de ciudad
+- `shared/ui/Selector` acepta `buscable` (campo de búsqueda sin distinguir tildes ni mayúsculas; flechas/Enter/Escape desde el campo; «Sin resultados»). Sin la prop se comporta igual que antes.
+- Se usa en el formulario de sede con «Buscar ciudad o departamento».
+- Verificado: prueba nueva en `Selector.test.tsx`, 21/21 en vitest, `tsc` ok. Pendiente: probarlo en el navegador. Página: [[Sedes]].
+
+## [2026-10-26] implementacion | Foto de personas, dispositivos y autorizaciones de vehículos y dispositivos
+- Causa de la foto invisible: `useUrlObjeto` (useMemo + revocación en efecto) rompía la URL en el doble montaje de `StrictMode`; corregido con prueba que lo reproduce. Además: `apiBlob` con renovación de sesión y «Descartar selección» que conserva la foto guardada.
+- Nuevo: dispositivos por persona (CRUD, tipos, inactivación), «Registrado por» desde el token, autorizaciones de objetos con ciclo Pendiente/Aprobada/Rechazada/Revocada, vigencia calculada, historial y auditoría inmutables (triggers), página `/autorizaciones`. Migración `20261026224617_DispositivosYAutorizacionesObjeto` sin aplicar a `conecsia`.
+- Páginas: [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] (nueva), [[Autorizaciones de vehículos y dispositivos]] (nueva), [[Personas]], [[Decisiones pendientes]] (D-31, D-32, D-33; D-17 ampliada), [[Registro de ADR]], [[Estado de implementación]], [[PLAN-DE-TRABAJO]], [[tablero-scrum]], [[EP-16 Vehículos]], [[EP-17 Equipos externos]], [[index]]; `db.md`.
+- Contradicción registrada en ADR-026: el PRD incluye el objeto en la autorización de la persona; se implementó entidad propia vinculable (D-31).
+- Pendiente: verificación en navegador tras migrar; D-31/D-32/D-33; movimientos HU-048/HU-050.
+
+- 2026-10-26 (cierre): migración regenerada como `20261026224617_DispositivosYAutorizacionesObjeto` al añadir la FK `persona.id_usuario_crea → usuario`; nombre actualizado en las páginas.
+- Verificación final con la migración regenerada: backend 73/73 (`dotnet test -c Release`), frontend 30/30 (`vitest`), `tsc` limpio. Una corrida intermedia se bloqueó 1 h 47 min y dejó 3 fallos; al repetir, 73/73 (se atribuye al entorno, no reproducido).
+
+## [2026-10-26] implementacion | Migración aplicada y verificación en navegador
+- A pedido del usuario se detuvo la API local, se aplicó `20261026224617_DispositivosYAutorizacionesObjeto` a `conecsia` (triggers y ruta `/autorizaciones` confirmados) y la API quedó corriendo en :5191 (configuración `api` agregada a `.claude/launch.json`).
+- Navegador (API :5192 + frontend :5174 sobre base desechable `conecsia_verificacion`, eliminada al terminar; no hay credenciales de prueba para `conecsia`): foto visible en detalle, edición y listado con StrictMode; guardar sin reemplazo la conserva; «Registrado por», dispositivos y vehículo; solicitud desde la UI, aprobación con historial y vigencia; auditoría y `id_usuario_crea` correctos en BD; vista móvil sin desborde de página.
+- Defecto encontrado y corregido: al crear una solicitud el listado no se refrescaba; prueba nueva en `AutorizacionesPage.test.tsx` (frontend 31/31).

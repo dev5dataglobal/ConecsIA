@@ -5,11 +5,14 @@ fase: F1
 requisitos: [RF-07, RF-08, RN-01, RN-08, CA-01, CA-03, CA-04, CA-05, CA-15]
 adr: [ADR-004, ADR-013, ADR-014, ADR-018]
 decisiones: [D-09, D-13, D-14]
-actualizado: 2026-10-17
+actualizado: 2026-10-26
 tags: [conecsia, backlog, epica]
 ---
 
 # EP-06 Personas
+
+> [!note] Implementación 2026-10-26
+> HU-019 a HU-022 **implementadas y verificadas localmente** (En revisión), más teléfonos (1:N) y asociación de vehículos (N:M). Detalle, reglas, relaciones corregidas y pendientes en [[Personas]]. La clave y la normalización documental siguen **provisionales** hasta D-09; la inactivación no pide motivo (no hay columna; pendiente de decidir).
 
 > [!note] Fase: [[PLAN-DE-TRABAJO#F1]] · Requisitos: RF-07, RF-08, RN-08 · ADR: [[ADR-004 Tenancy con base compartida y organization_id]], [[ADR-013 Almacenamiento privado de archivos]] (Propuesta)
 

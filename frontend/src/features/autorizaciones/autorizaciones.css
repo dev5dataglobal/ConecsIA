@@ -1,0 +1,30 @@
+/* Autorizaciones de vehículos y dispositivos: reutiliza ad-* y pe-*; solo añade estados, filtros y el historial. */
+.au-filtros { flex-wrap: wrap; }
+.au-fecha { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--ui-texto-3); font-size: 0.8rem; font-weight: 600; }
+.au-fecha input { min-height: 2.4rem; padding: 0 0.6rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); color: var(--ui-texto); font: inherit; }
+.au-sub { display: block; color: var(--ui-texto-3); font-size: 0.78rem; }
+
+.au-estado-grupo { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+.au-estado[data-estado='Pendiente'] { background: #fff6e0; color: #8a5a00; }
+.au-estado[data-estado='Aprobada'] { background: #f1fbd9; color: var(--ui-lima-tinta); }
+.au-estado[data-estado='Rechazada'] { background: var(--ui-rojo-tenue); color: #b3263e; }
+.au-estado[data-estado='Revocada'] { background: #f1f0f5; color: var(--ui-texto-3); }
+.au-vigencia { color: var(--ui-texto-3); font-size: 0.74rem; font-weight: 600; }
+.au-vigencia[data-vigencia='Vigente'] { color: #17734d; }
+.au-vigencia[data-vigencia='Vencida'] { color: #b3263e; }
+.au-peligro { border-color: #f6c6cf; color: #b3263e; }
+
+.au-historial { display: grid; gap: 0.5rem; margin: 0; padding: 0 0 0 1rem; border-left: 2px solid var(--ui-linea); list-style: none; }
+.au-historial li { display: grid; gap: 0.1rem; }
+.au-historial strong { color: var(--ui-texto); font-size: 0.88rem; }
+.au-historial small { color: var(--ui-texto-3); font-size: 0.78rem; }
+
+.au-buscador-persona { display: grid; gap: 0.4rem; }
+.au-buscador-persona ul { display: grid; gap: 0.25rem; margin: 0; padding: 0; list-style: none; max-height: 14rem; overflow-y: auto; }
+.au-buscador-persona li button { width: 100%; padding: 0.5rem 0.7rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); color: var(--ui-texto); font: inherit; text-align: left; cursor: pointer; }
+.au-buscador-persona li button:hover, .au-buscador-persona li button:focus-visible { border-color: var(--ui-violeta); outline: 0; }
+.au-buscador-persona small { color: var(--ui-texto-3); }
+
+@media (max-width: 40rem) {
+  .au-fecha { width: 100%; justify-content: space-between; }
+}

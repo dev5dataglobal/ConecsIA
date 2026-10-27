@@ -10,5 +10,8 @@ public sealed class TipoDispositivoConfiguration : EntityConfigurationBase<TipoD
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdTipoDispositivo);
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdTipoDispositivo }).IsUnique();
+        builder.HasIndex(x => new { x.IdOrganizacion, x.Nombre }).IsUnique();
+        builder.HasOne<Organizacion>().WithMany().HasForeignKey(x => x.IdOrganizacion).OnDelete(DeleteBehavior.Restrict);
     }
 }

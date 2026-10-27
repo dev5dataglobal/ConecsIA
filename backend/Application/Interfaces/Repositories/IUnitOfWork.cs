@@ -60,5 +60,6 @@ public interface IUnitOfWork : IDisposable
     IVisitaRepository VisitaRepository { get; }
     IZonaRepository ZonaRepository { get; }
     IZonaEmpresarialRepository ZonaEmpresarialRepository { get; }
+    IZonaEmpresarialOrganizacionRepository ZonaEmpresarialOrganizacionRepository { get; }
     Task<int> SaveAsync();
 }

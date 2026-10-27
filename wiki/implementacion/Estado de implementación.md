@@ -14,6 +14,25 @@ tags: [conecsia]
 
 # Estado de implementación
 
+## Foto de personas, dispositivos y autorizaciones de vehículos y dispositivos — 2026-10-26
+
+- **Corregido (frontend):** foto invisible en detalle y edición. Causa: `useUrlObjeto` revocaba en `StrictMode` la URL creada en `useMemo`. Ahora la crea y revoca el mismo efecto; la descarga usa `apiBlob` con renovación de sesión; «Descartar selección» ya no elimina la foto guardada. Detalle en [[Personas#Corrección: foto no visible en detalle y edición (2026-10-26)]].
+- **Implementado (backend):** `DispositivosController` (tipos y dispositivos por persona), `AutorizacionesObjetoController` (`/api/autorizaciones-objeto`: listar/filtrar, detalle con historial, solicitar, aprobar, rechazar, revocar), `Services/ReglasDispositivo.cs`, `DTOs/DispositivosAutorizacionesObjetoDto.cs`; entidades `AutorizacionObjeto`, `AutorizacionObjetoTransicion`; `Dispositivo.IdUsuarioCrea`; `PersonaDetalleDto.RegistradoPor`. Diseño: [[ADR-026 Autorización de ingreso de vehículos y dispositivos]].
+- **Retirado:** scaffolds `DispositivoController`, `TipoDispositivoController`, `AutorizacionDispositivoController`, `AutorizacionVehiculoController` y DTOs `DispositivoDto`/`TipoDispositivoDto` antiguos.
+- **Migración:** `20261026224617_DispositivosYAutorizacionesObjeto` (tablas nuevas, FKs compuestas, CHECKs, triggers append-only en `auditoria` y transiciones, FK `persona.id_usuario_crea`, ruta `/autorizaciones`). Aplicada a `conecsia` el 2026-10-26. Detalle en [[Autorizaciones de vehículos y dispositivos]] y `db.md`.
+- **Implementado (frontend):** sección Dispositivos y «Registrado por» en el detalle de persona; `src/features/autorizaciones/` (ruta `/autorizaciones`).
+- **Verificado:** ver la entrada de [[log]] del 2026-10-26 (pruebas backend y frontend). Verificado en navegador sobre base desechable.
+- **Pendiente:** D-31, D-32, D-33, D-17; movimientos HU-048/HU-050; paginación.
+
+## Módulo de Personas — 2026-10-26
+
+- **Implementado (backend):** `PersonasController` (`/api/personas`: listado con búsqueda/filtros, búsqueda por documento, detalle, alta, edición, estado, foto, teléfonos, vehículos) y `CatalogosPersonaController` (tipos de persona por organización; tipos de documento globales con escritura solo de plataforma), sobre `AdministracionControllerBase`. Reglas en `Services/ReglasPersona.cs`; contratos en `DTOs/PersonasAdministracionDto.cs`. Al crear una organización se siembran sus tipos de persona.
+- **Retirado:** controladores scaffold `PersonaController`, `PersonaTelefonoController`, `PersonaVehiculoController`, `TipoPersonaController` y `TipoDocumentoController` (aceptaban la entidad completa del cliente y permitían `DELETE` físico). Las pruebas que usaban `/api/Persona` como endpoint de muestra ahora usan `/api/personas`.
+- **Migración:** `20261026180826_PersonasRelacionesYCatalogos` — 7 FKs nuevas, índice único erróneo `persona(org, tipo_persona)` corregido, `codigo_pais` y únicos parciales en teléfonos, `patron_validacion` y único `codigo` en tipos de documento, siembra (CC, TI, CE, PA, PPT, NIT; 6 tipos de persona por organización) y ruta `/personas`. Aplicada en `conecsia`. Detalle en [[Personas]] y `db.md`.
+- **Implementado (frontend):** `src/features/personas/` (listado, formulario con foto y «buscar primero», detalle con teléfonos y vehículos, catálogo de tipos), ruta `/personas`; `useUrlObjeto` movido a `administracion/utilidades.tsx`; `Cabecera`/`Marco` aceptan `migas`.
+- **Verificado:** `dotnet test` 56/56 (21 nuevas en `PersonasTests`); `vitest` 20/20 (4 nuevas); `tsc -b` limpio; navegador con API de verificación sobre base desechable (eliminada al terminar).
+- **Pendiente:** ver [[Personas#Pendiente]] (D-09, D-13, D-14, D-17, motivo de inactivación, FK `id_usuario_crea`, `DOC-001`, `VehiculoController` scaffold, paginación).
+
 ## Sesión renovable, recuperación de contraseña y ajustes de Perfiles — 2026-10-26
 
 - **Implementado (backend):** [[ADR-025 Sesión renovable y recuperación de contraseña]].
@@ -252,3 +271,17 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Pendiente:** matriz definitiva de permisos por endpoint (D-04) y refresh token persistente revocable; no se añadió migración.
 - **Configuración:** secretos y conexión fueron retirados de `appsettings.Development.json`; usar variables `JWT__Key`, `JWT__Issuer`, `JWT__Audience`, `JWT__DurationInMinutes` y `CONECSIA_CONNECTION_STRING`.
 
+
+## Restauración tras commit 6b3127b + Sedes y áreas — 2026-10-26
+
+> [!warning] Incidente
+> El commit `6b3127b` (2026-10-26) borró 106 archivos y devolvió ~70 a versiones antiguas: autenticación (`AuthController`, `SesionRefresco`, `RecuperacionContrasena`), módulos/permisos, administración, dashboard, tests y migraciones. El login respondía con error porque `/api/auth/login` no existía.
+
+- **Implementado (sin commit):** `git revert --no-commit 6b3127b` restaura el estado de `cf458da`; encima se reaplicaron los cambios de sedes/áreas con merge de 3 vías.
+- `SedeController` (`api/sedes`) y `AreaController` (`api/areas`): versión nueva del usuario + `[RequiereModulo(CodigosModulo.Sedes)]`.
+- `IOrganizationContext.UserId` (claim `sub`/`NameIdentifier`) para auditar al actor.
+- Migración única `SedesAreasYCatalogoCiudad`: `ciudad.zona_horaria` (default `America/Bogota`), `organizacion.tiene_sedes`, índices únicos `sede(id_organizacion, nombre)` y `area(id_organizacion, id_sede, nombre)`. Reemplaza las dos migraciones locales, que volvían a crear `app_modulos`/`modulos_permisos`.
+- Frontend: sección `SedesAreasSeccion` en [[Administración]] (código de módulo `sedes`), estilos acotados en `sedesAreas.css`.
+- **Verificado:** `dotnet build` ok; `dotnet test` 35/35; `tsc -b` ok; `vitest` 16/16.
+- **Implementado 2026-10-26:** migración `20261026171951_SedesAreasYCatalogoCiudad` aplicada a la base local.
+- **Pendiente:** probar el login y las sedes en la app real. Para que se vea la sección, el rol necesita una fila en `modulos_permisos` para el módulo `sedes`.

@@ -1,0 +1,36 @@
+/* Personas: reutiliza el lenguaje visual de administración (ad-*) y añade el detalle con teléfonos y vehículos. */
+.pe-nombre { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.pe-nombre:hover strong { color: var(--ui-violeta-2); }
+.pe-nombre:focus-visible { outline: 0; border-radius: var(--ui-radio-sm); box-shadow: var(--ui-foco); }
+.pe-foto { object-fit: cover; padding: 0; }
+.pe-existente { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+.pe-resumen { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio); background: #fbfbfd; }
+.pe-resumen dl { display: grid; flex: 1; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.6rem 1rem; margin: 0; min-width: 0; }
+.pe-resumen dl > [data-ancho='completo'] { grid-column: 1 / -1; }
+.pe-resumen dt { color: var(--ui-texto-3); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.pe-resumen dd { margin: 0.15rem 0 0; color: var(--ui-texto); font-size: 0.9rem; overflow-wrap: anywhere; }
+
+.pe-seccion { display: grid; gap: 0.65rem; padding: 1rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio); }
+.pe-seccion > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.pe-seccion h3 { margin: 0; color: var(--ui-texto); font-size: 0.95rem; font-weight: 650; }
+.pe-seccion h3 small { color: var(--ui-texto-3); font-size: 0.8rem; font-weight: 500; }
+.pe-seccion p { margin: 0; font-size: 0.875rem; }
+.pe-lista { display: grid; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+.pe-lista li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; padding: 0.55rem 0.75rem; border: 1px solid #f1f0f5; border-radius: var(--ui-radio-sm); background: var(--ui-superficie); }
+.pe-lista li > span:first-child { flex: 1; min-width: 12rem; }
+.pe-lista li[data-inactivo] { opacity: 0.68; }
+.pe-lista strong, .pe-lista small { display: block; }
+.pe-lista strong { color: var(--ui-texto); font-size: 0.9rem; }
+.pe-lista small { color: var(--ui-texto-3); font-size: 0.78rem; }
+.pe-placa { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; }
+.pe-subformulario { display: grid; gap: 0.8rem; padding: 0.9rem; border: 1px dashed #c9c2f5; border-radius: var(--ui-radio-sm); background: var(--ui-violeta-tenue); }
+.pe-rejilla-telefono { display: grid; grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 12rem); gap: 0.85rem; }
+.pe-subacciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
+.pe-nota { font-size: 0.8rem; }
+
+@media (max-width: 40rem) {
+  .pe-resumen { flex-direction: column; }
+  .pe-rejilla-telefono { grid-template-columns: 6rem minmax(0, 1fr); }
+  .pe-rejilla-telefono > :last-child { grid-column: 1 / -1; }
+}
