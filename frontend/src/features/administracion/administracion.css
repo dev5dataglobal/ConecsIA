@@ -63,7 +63,7 @@
 .ad-select select { cursor: pointer; }
 
 /* ---------- Tabla ---------- */
-.ad-tabla-wrap { overflow-x: auto; margin: 0 calc(-1 * clamp(1rem, 2vw, 1.35rem)); padding: 0 clamp(1rem, 2vw, 1.35rem); }
+.ad-tabla-wrap { position: relative; overflow-x: auto; margin: 0 calc(-1 * clamp(1rem, 2vw, 1.35rem)); padding: 0 clamp(1rem, 2vw, 1.35rem); }
 .ad-tabla { width: 100%; min-width: 40rem; border-collapse: collapse; font-size: 0.875rem; }
 .ad-tabla th { padding: 0 0.75rem 0.65rem; border-bottom: 1px solid var(--ui-linea); color: var(--ui-texto-3); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; }
 .ad-tabla td { padding: 0.8rem 0.75rem; border-bottom: 1px solid #f1f0f5; color: var(--ui-texto-2); vertical-align: middle; }

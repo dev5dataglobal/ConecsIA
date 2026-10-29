@@ -1,0 +1,29 @@
+/* Control de accesos: reutiliza ad-*, pe-* y au-*; solo añade el selector de tipo de autorización, días y zonas. */
+.ca-modalidades, .ca-dias, .ca-zonas { min-width: 0; margin: 0 0 0.9rem; padding: 0; border: 0; }
+.ca-modalidades legend, .ca-dias legend, .ca-zonas legend { margin-bottom: 0.45rem; padding: 0; color: var(--ui-texto-2, var(--ui-texto)); font-size: 0.8rem; font-weight: 600; }
+.ca-dias, .ca-zonas { margin: 0; }
+
+.ca-modalidades-opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 0.5rem; }
+.ca-modalidad { position: relative; display: grid; gap: 0.2rem; padding: 0.65rem 0.75rem 0.65rem 2.1rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); cursor: pointer; }
+.ca-modalidad input { position: absolute; top: 0.8rem; left: 0.7rem; margin: 0; accent-color: var(--ui-violeta); }
+.ca-modalidad strong { color: var(--ui-texto); font-size: 0.88rem; }
+.ca-modalidad small { color: var(--ui-texto-3); font-size: 0.75rem; line-height: 1.35; }
+.ca-modalidad:has(input:checked) { border-color: var(--ui-violeta); background: var(--ui-violeta-tenue); }
+.ca-modalidad:has(input:focus-visible) { box-shadow: var(--ui-foco); }
+.ca-modalidad[data-bloqueada] { cursor: not-allowed; opacity: 0.6; }
+
+.ca-dias-opciones { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.ca-dias-opciones label { position: relative; cursor: pointer; }
+.ca-dias-opciones input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.ca-dias-opciones span { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 1px solid var(--ui-linea); border-radius: 999px; background: var(--ui-superficie); color: var(--ui-texto-3); font-size: 0.85rem; font-weight: 650; }
+.ca-dias-opciones input:checked + span { border-color: var(--ui-violeta); background: var(--ui-violeta); color: #fff; }
+.ca-dias-opciones input:focus-visible + span { box-shadow: var(--ui-foco); }
+
+.ca-zonas-opciones { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+.ca-zonas-opciones label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer; }
+.ca-zonas-opciones input { accent-color: var(--ui-violeta); }
+
+.au-estado[data-estado='Cancelada'], .au-estado[data-estado='Vencida'], .au-estado[data-estado='Agotada'] { background: #f1f0f5; color: var(--ui-texto-3); }
+.au-vigencia[data-vigencia='Consumida'] { color: var(--ui-texto-3); }
+
+@media (max-width: 560px) { .ca-modalidades-opciones { grid-template-columns: minmax(0, 1fr); } }

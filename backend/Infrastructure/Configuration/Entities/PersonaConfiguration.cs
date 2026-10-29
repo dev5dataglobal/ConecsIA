@@ -10,6 +10,7 @@ public sealed class PersonaConfiguration : EntityConfigurationBase<Persona>, IEn
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdPersona);
+        // Tipo de permiso de acceso (D-38, Propuesta). Las personas existentes quedan Extemporáneo.
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdPersona }).IsUnique();
         // Varias personas comparten tipo: índice no único (solo soporta la FK compuesta).
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdTipoPersona });

@@ -14,6 +14,29 @@ tags: [conecsia]
 
 # Estado de implementación
 
+## Control de accesos: solicitudes de autorización y retiro del tipo de acceso — 2026-10-28
+- Rama `feature/organizaciones`, sin commit. Backend: `AutorizacionesAccesoController` (`/api/autorizaciones-acceso`), `Services/ReglasAutorizacion.cs`, `DTOs/AutorizacionesAccesoDto.cs`; alcance por sede movido a `AdministracionControllerBase`; `ReglasVisita.MotivosAutorizacion` valida franjas. Retirados `Persona.TipoAcceso` y la excepción de Visitas.
+- Migración `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso` (columnas de decisión y horas, CHECK de modalidad/estado/fechas/horas, FKs a usuario y de horario/transición, ruta `/control-accesos`, DROP `persona.tipo_acceso`). Aplicada a `conecsia` el 2026-10-28 y API :5191 reiniciada con el binario nuevo.
+- Frontend: `features/control-accesos/` (página, API, CSS), botón «Gestionar acceso» en Personas, Visitas sin excepción; `.ad-tabla-wrap` con `position: relative` (corrige desborde móvil por el `sr-only` de la columna de acciones).
+- **Verificado:** `dotnet test` 94/94; `vitest` 38/38; `tsc -b` limpio; navegador sobre base desechable. Detalle en [[Control de accesos]].
+- `scripts/seed-verificacion-visitas.sql`: autorizaciones Temporal con horas (exigidas por el nuevo CHECK).
+
+## Tipo de permiso de acceso y visitas extemporáneas — 2026-10-27 (retirado el 2026-10-28)
+
+- Rama `feature/organizaciones`, sin commit. Backend: `Persona.TipoAcceso`, `Visita.ExcepcionTipoAcceso/MotivoExcepcion`, `ReglasPersona.TiposAcceso`, `PersonasController` (filtro, validación, auditoría `CambiarTipoAcceso`), `VisitasController.Registrar` (409 recurrente, excepción auditada). Migración `20261027235631_PersonaTipoAccesoYExcepcionVisita` aplicada a `conecsia` el 2026-10-27.
+- Frontend: `PersonasPage.tsx` (selector, columna, filtro, detalle, `PermisoAcceso`), `VisitasPage.tsx` (paso Visitante con bloqueo y excepción), CSS en `personas.css` y `visitas.css`.
+- Pruebas: backend 87/87 (nueva: conservación del tipo al editar, auditoría, 409/400, excepción auditada); frontend 35/35 (nueva: bloqueo y excepción en el paso Visitante); `tsc` limpio.
+- Verificado en navegador el 2026-10-27 (base desechable). Decisiones: [[Decisiones pendientes|D-38, D-39]].
+
+## Módulo de visitas — 2026-10-26
+
+- **Implementado (backend):** `VisitasController` (`/api/visitas`: listado paginado con indicadores, detalle con evaluación de ingreso, opciones, autorizaciones vinculables, registrar, vincular autorización, cancelar, entrada, salida, presencia), reglas puras en `Services/ReglasVisita.cs`, contratos en `DTOs/VisitasDto.cs`; `Auditar` acepta resultado (`Denegado`). Detalle: [[Visitas]].
+- **Retirado:** scaffolds `VisitaController`, `PermanenciaController`, `MovimientoAccesoController`, `SolicitudIdempotenteController`.
+- **Migración:** `20261027015608_VisitasCicloOperativo` (columnas, CHECK, FK compuestas, índices únicos de permanencia, corrección del único `zona(org, sede)`, ruta `/visitas`). Aplicada a `conecsia` el 2026-10-26 (índices únicos, CHECK y ruta `/visitas` confirmados). La API en :5191 sigue con el binario anterior hasta reiniciarla.
+- **Implementado (frontend):** `src/features/visitas/` (listado, nueva visita por pasos, detalle con entrada/salida/cancelar/vincular, personas dentro), ruta `/visitas`; `PersonaFormulario` exportado para reutilizarlo; `ProblemDetails.motivos`.
+- **Verificado:** `dotnet test` 86/86 (13 nuevas en `VisitasTests`: estados, política, vigencia/día/horario/zona, ingreso único, idempotencia, 6 entradas simultáneas ⇒ 1 permanencia, salida sin entrada/duplicada, aislamiento entre organizaciones, alcance por sede, permisos separados, búsqueda/paginación); `vitest` 34/34 (3 nuevas); `tsc -b` y `oxlint` limpios. Navegador (API :5192 + frontend :5174 sobre `conecsia_verificacion`, eliminada al terminar): búsqueda por documento, registro autorizado y pendiente, motivos visibles, entrada, personas dentro, salida con duración, móvil 375 px sin desborde.
+- **Pendiente:** EP-07 (decidir autorizaciones), HU-014/HU-015 (responsables y puntos de acceso sin pantalla), QR, SignalR, D-04..D-08, D-34..D-37.
+
 ## Foto de personas, dispositivos y autorizaciones de vehículos y dispositivos — 2026-10-26
 
 - **Corregido (frontend):** foto invisible en detalle y edición. Causa: `useUrlObjeto` revocaba en `StrictMode` la URL creada en `useMemo`. Ahora la crea y revoca el mismo efecto; la descarga usa `apiBlob` con renovación de sesión; «Descartar selección» ya no elimina la foto guardada. Detalle en [[Personas#Corrección: foto no visible en detalle y edición (2026-10-26)]].

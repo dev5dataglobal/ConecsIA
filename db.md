@@ -261,6 +261,7 @@ erDiagram
         string correo
         string empresa_procedencia
         uuid id_archivo_foto FK "nullable; FK archivo (almacenamiento privado)"
+        string tipo_acceso "Recurrente|Extemporaneo; default Extemporaneo; CHECK (D-38)"
         string observacion
         boolean activo
         timestamptz creado_en
@@ -504,6 +505,8 @@ erDiagram
         int id_area FK
         int id_membresia_responsable FK
         int id_usuario_registra FK
+        boolean excepcion_tipo_acceso "persona Recurrente registrada por excepción (D-39)"
+        string motivo_excepcion "nullable; obligatorio si excepción (CHECK)"
         string politica_aplicada "nullable; ingreso sin autorización (PRD 6.3)"
         string motivo
         string observacion
@@ -829,3 +832,12 @@ erDiagram
 
     ORGANIZACION |o--o{ AUDITORIA : registra
     USUARIO |o--o{ AUDITORIA : ejecuta
+
+## Visitas, permanencias y movimientos (migración 20261027015608_VisitasCicloOperativo, 2026-10-26)
+
+- `visita`: + `fecha_esperada`, `hora_esperada_inicio`, `hora_esperada_fin`, `motivo_cierre`, `id_usuario_actualiza`, `actualizado_en`; CHECK `ck_visita_estado` (Pendiente, Autorizada, Ingreso, Finalizada, Rechazada, Cancelada, Vencida) y `ck_visita_horario_esperado`; FK compuestas a persona, sede, área, autorización y membresía responsable; FK a usuario (registra/actualiza).
+- `permanencia`: + `duracion_segundos`; únicos `ux_permanencia_visita (id_organizacion, id_visita)` y `ux_permanencia_abierta_persona_sede (id_organizacion, id_persona, id_sede) WHERE estado = 'Abierta'`; CHECK de estado y cierre (`cerrada_en >= abierta_en`, duración ≥ 0); FK compuestas a persona, sede, visita y movimientos de entrada/salida.
+- `movimiento_acceso`: CHECK de tipo (Entrada/Salida) y resultado (Confirmado/Denegado); FK compuestas a sede y visita; índices por visita y por sede + instante.
+- `zona`: el índice único `(id_organizacion, id_sede)` pasa a no único (una sede tiene varias zonas y puntos de acceso).
+- `app_modulos`: ruta `/visitas`.
+

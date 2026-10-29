@@ -10,5 +10,7 @@ public sealed class AutorizacionTransicionConfiguration : EntityConfigurationBas
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdTransicion);
+        builder.HasOne<Autorizacion>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).HasForeignKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdAutorizacion });
     }
 }

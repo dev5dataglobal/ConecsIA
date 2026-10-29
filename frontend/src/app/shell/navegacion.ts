@@ -42,6 +42,8 @@ const RUTAS_IMPLEMENTADAS = new Set([
   '/dashboard',
   '/personas',
   '/autorizaciones',
+  '/visitas',
+  '/control-accesos',
   '/administracion',
   '/administracion/usuarios',
   '/administracion/perfiles',

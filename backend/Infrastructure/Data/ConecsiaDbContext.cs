@@ -26,6 +26,7 @@ public sealed class ConecsiaDbContext(
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<AreaResponsable> AreasResponsables => Set<AreaResponsable>();
     public DbSet<Zona> Zonas => Set<Zona>();
+    public DbSet<PuntoAcceso> PuntosAcceso => Set<PuntoAcceso>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<MembresiaOrganizacion> MembresiasOrganizacion => Set<MembresiaOrganizacion>();
     public DbSet<Permiso> Permisos => Set<Permiso>();

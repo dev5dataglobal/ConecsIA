@@ -475,3 +475,46 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - A pedido del usuario se detuvo la API local, se aplicó `20261026224617_DispositivosYAutorizacionesObjeto` a `conecsia` (triggers y ruta `/autorizaciones` confirmados) y la API quedó corriendo en :5191 (configuración `api` agregada a `.claude/launch.json`).
 - Navegador (API :5192 + frontend :5174 sobre base desechable `conecsia_verificacion`, eliminada al terminar; no hay credenciales de prueba para `conecsia`): foto visible en detalle, edición y listado con StrictMode; guardar sin reemplazo la conserva; «Registrado por», dispositivos y vehículo; solicitud desde la UI, aprobación con historial y vigencia; auditoría y `id_usuario_crea` correctos en BD; vista móvil sin desborde de página.
 - Defecto encontrado y corregido: al crear una solicitud el listado no se refrescaba; prueba nueva en `AutorizacionesPage.test.tsx` (frontend 31/31).
+
+## [2026-10-26] implementacion | Módulo de visitas: registro, estados, entrada, salida y presencia
+- Nuevo `/api/visitas` y pantalla `/visitas`: visita ≠ persona ≠ autorización ≠ permanencia; entrada/salida en una transacción con bloqueo de fila, `Idempotency-Key`, índices únicos de permanencia y consumo atómico del cupo; motivos de denegación concretos y auditados.
+- Sin módulo de autorizaciones de personas (EP-07) las visitas solo leen `autorizacion`; no se simula aprobación. Política sin autorización = parámetro `visitas.permite_sin_autorizacion`, ausente por defecto.
+- Hallazgo corregido: índice único `zona(org, sede)` impedía varios puntos de acceso por sede. Retirados 4 controladores scaffold inseguros.
+- Pruebas: backend 86/86, frontend 34/34, navegador sobre base desechable. Migración `20261027015608_VisitasCicloOperativo` sin aplicar a `conecsia`.
+- Páginas: [[Visitas]] (nueva), [[Estado de implementación]], [[Decisiones pendientes]] (D-34..D-37), [[tablero-scrum]], [[Visita]], [[index]]; `db.md`.
+
+
+## [2026-10-26] implementacion | Migración de visitas aplicada a conecsia
+- A pedido del usuario se aplicó `20261027015608_VisitasCicloOperativo` a `conecsia`; confirmados historial de migraciones, `ux_permanencia_visita`, `ux_permanencia_abierta_persona_sede`, CHECK de visita/permanencia/movimiento y ruta `/visitas`.
+- La API en :5191 (otra sesión) no se reinició: sigue con el binario anterior hasta reiniciarla.
+- Páginas: [[Estado de implementación]], [[Visitas]].
+
+## [2026-10-27] implementacion | Rediseño del menú lateral (shell)
+- `frontend/src/app/shell/appShell.css`: el scroll del menú pasa al canal derecho del lateral (fuera del texto), invisible hasta hover y con desvanecido superior/inferior.
+- Nuevo lenguaje visual: iconos en "tiles", activo con tile degradado violeta + punto lima, títulos de grupo con línea, chip "Pronto" discreto, botón colapsar tipo tarjeta.
+- Solo presentación; sin cambios de lógica ni permisos. Build OK; no verificado visualmente con sesión iniciada.
+
+## [2026-10-27] implementacion | Tipo de permiso de acceso en Personas y Visitas solo extemporáneas
+- Nuevo `persona.tipo_acceso` (Recurrente/Extemporáneo) y excepción auditada en `visita`; migración `20261027235631_PersonaTipoAccesoYExcepcionVisita` sin aplicar a `conecsia`. Maqueta presentada en el chat antes de cerrar.
+- Visitas rechaza (409) personas recurrentes salvo excepción explícita con motivo; auditoría `CambiarTipoAcceso` y `ExcepcionTipoAcceso`.
+- Pruebas: backend 87/87, frontend 35/35, `tsc` limpio; sin verificación en navegador.
+- Páginas: [[Personas]], [[Visitas]], [[Decisiones pendientes]] (D-38, D-39 nuevas), [[Estado de implementación]]; `db.md`.
+
+## [2026-10-27] implementacion | Migración de tipo de acceso aplicada y verificación en navegador
+- Aplicada `20261027235631_PersonaTipoAccesoYExcepcionVisita` a `conecsia` (3 columnas confirmadas). La API en :5191 sigue con el binario anterior hasta reiniciarla.
+- Navegador (API :5192 + frontend :5174 sobre `conecsia_verificacion`, eliminada al terminar): columna/filtro «Permiso», edición a Recurrente, bloqueo en Visitas, excepción con motivo, detalle con la excepción; auditoría `CambiarTipoAcceso` y `ExcepcionTipoAcceso` con el usuario en BD; formulario en móvil sin desborde.
+- Páginas: [[Personas]], [[Visitas]], [[Estado de implementación]] (estado: aplicado y verificado).
+
+## [2026-10-28] implementacion | Control de accesos: solicitudes y aprobación; retiro del tipo de acceso en Personas
+- Nuevo módulo [[Control de accesos]] (`/api/autorizaciones-acceso`, `/control-accesos`): 5 modalidades con validación coherente, nace Pendiente, aprobar/rechazar con Autorizaciones·Editar, decisor/instante/motivo, historial y auditoría; incompatibles bajo concurrencia.
+- [[Personas]]: retirado `tipo_acceso` (contradicción con 2026-10-27 registrada); botón «Gestionar acceso». [[Visitas]]: sin excepción; valida franjas de Temporal/Única/Diaria.
+- Migración `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso` sin aplicar a `conecsia`. Pruebas: backend 94/94, frontend 38/38, navegador sobre base desechable.
+- Decisiones: D-38/D-39 obsoletas; nuevas D-40, D-41, D-42. Páginas: [[Control de accesos]], [[Personas]], [[Visitas]], [[Decisiones pendientes]], [[Estado de implementación]], index.
+
+## [2026-10-28] implementacion | Migración de Control de accesos aplicada a conecsia
+- Aplicada `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso`: `persona.tipo_acceso` eliminada, CHECK de autorización creados, ruta `/control-accesos`.
+- API :5191 detenida y reiniciada con el binario nuevo (`/api/autorizaciones-acceso` responde 401 sin sesión).
+- Páginas: [[Control de accesos]], [[Estado de implementación]].
+
+## [2026-10-28] consulta | Por qué «Permanente» aparece deshabilitada
+- Respuesta: falta el parámetro `autorizaciones.permite_permanente = true` de la organización (D-42, Propuesta; ausente = no permitido). Sin cambios en páginas.

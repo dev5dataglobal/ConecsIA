@@ -10,5 +10,8 @@ public sealed class AutorizacionZonaConfiguration : EntityConfigurationBase<Auto
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => new { x.IdOrganizacion, x.IdAutorizacion, x.IdZona });
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdZona });
+        builder.HasOne<Zona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdZona })
+            .HasForeignKey(x => new { x.IdOrganizacion, x.IdZona }).OnDelete(DeleteBehavior.Restrict);
     }
 }

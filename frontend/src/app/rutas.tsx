@@ -5,6 +5,8 @@ import { AdministracionInicio, AdministracionPage } from '../features/administra
 import { SECCIONES } from '../features/administracion/secciones'
 import { PersonasPage } from '../features/personas/PersonasPage'
 import { AutorizacionesPage } from '../features/autorizaciones/AutorizacionesPage'
+import { VisitasPage } from '../features/visitas/VisitasPage'
+import { ControlAccesosPage } from '../features/control-accesos/ControlAccesosPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
 import { haySesion } from '../features/sesion/sesion'
 import { AppShell } from './shell/AppShell'
@@ -27,6 +29,8 @@ export const rutas: RouteObject[] = [
       { path: 'dashboard', element: <RutaModulo codigo="dashboard"><DashboardPage /></RutaModulo> },
       { path: 'personas', element: <RutaModulo codigo="personas"><PersonasPage /></RutaModulo> },
       { path: 'autorizaciones', element: <RutaModulo codigo="autorizaciones"><AutorizacionesPage /></RutaModulo> },
+      { path: 'visitas', element: <RutaModulo codigo="visitas"><VisitasPage /></RutaModulo> },
+      { path: 'control-accesos', element: <RutaModulo codigo="control_accesos"><ControlAccesosPage /></RutaModulo> },
       { path: 'administracion', element: <AdministracionInicio /> },
       ...SECCIONES.map((s) => ({
         path: `administracion/${s.id}`,

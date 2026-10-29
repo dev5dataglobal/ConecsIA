@@ -1,0 +1,61 @@
+/* Visitas y presencia: reutiliza ad-*, pe-* y au-*; añade indicadores, alertas de denegación, pasos y tarjetas de presencia. */
+.vi-estado[data-estado='Pendiente'] { background: #fff6e0; color: #8a5a00; }
+.vi-estado[data-estado='Autorizada'] { background: var(--ui-violeta-tenue); color: #4b3cc4; }
+.vi-estado[data-estado='Ingreso'] { background: #f1fbd9; color: var(--ui-lima-tinta); }
+.vi-estado[data-estado='Finalizada'] { background: #f1f0f5; color: var(--ui-texto-3); }
+.vi-estado[data-estado='Rechazada'],
+.vi-estado[data-estado='Cancelada'],
+.vi-estado[data-estado='Vencida'] { background: var(--ui-rojo-tenue); color: #b3263e; }
+
+.vi-indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.vi-indicador { display: grid; gap: 0.15rem; padding: 0.8rem 1rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio); background: var(--ui-superficie); color: var(--ui-texto); font: inherit; text-align: left; cursor: pointer; transition: border-color 150ms var(--ui-ease-out); }
+.vi-indicador strong { font-size: 1.5rem; line-height: 1.1; }
+.vi-indicador span { color: var(--ui-texto-3); font-size: 0.8rem; font-weight: 600; }
+.vi-indicador:hover, .vi-indicador:focus-visible { border-color: var(--ui-violeta); outline: 0; }
+.vi-indicador[aria-pressed='true'] { border-color: var(--ui-violeta); box-shadow: var(--ui-foco); }
+.vi-indicador[data-estado='Pendiente'] strong { color: #8a5a00; }
+.vi-indicador[data-estado='Ingreso'] strong { color: #17734d; }
+
+.vi-paginacion { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.9rem; color: var(--ui-texto-3); font-size: 0.85rem; }
+.vi-paginacion span { margin-right: auto; }
+
+.vi-alerta { display: grid; gap: 0.35rem; padding: 0.75rem 0.9rem; border: 1px solid #f6c6cf; border-radius: var(--ui-radio-sm); background: var(--ui-rojo-tenue); color: #8f1d31; }
+.vi-alerta[data-tono='info'] { border-color: #c9c2f5; background: var(--ui-violeta-tenue); color: var(--ui-texto); justify-items: start; }
+.vi-alerta ul { margin: 0; padding-left: 1.1rem; }
+.vi-ok { display: flex; align-items: center; gap: 0.4rem; margin: 0; padding: 0.6rem 0.9rem; border-radius: var(--ui-radio-sm); background: #e9f8ef; color: #17734d; font-weight: 600; }
+.vi-linea { margin: 0; color: var(--ui-texto-2, var(--ui-texto)); font-size: 0.9rem; }
+
+.vi-pasos { display: flex; gap: 0.5rem; margin: 0 0 1rem; padding: 0; list-style: none; color: var(--ui-texto-3); font-size: 0.82rem; font-weight: 600; }
+.vi-pasos li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.vi-pasos li span { display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--ui-fondo); }
+.vi-pasos li[aria-current='step'] { color: var(--ui-texto); }
+.vi-pasos li[aria-current='step'] span { background: var(--ui-violeta); color: #fff; }
+
+.vi-persona { display: grid; gap: 0.9rem; }
+.vi-documento { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto; align-items: end; gap: 0.75rem; }
+.vi-autorizacion { display: grid; gap: 0.5rem; }
+.vi-contador { color: var(--ui-texto-3); font-size: 0.85rem; font-weight: 600; }
+
+.vi-presencia { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.vi-presencia button { display: grid; gap: 0.2rem; width: 100%; height: 100%; padding: 0.85rem 1rem; border: 1px solid var(--ui-linea); border-left: 4px solid var(--ui-verde); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); color: var(--ui-texto); font: inherit; text-align: left; cursor: pointer; }
+.vi-presencia button:hover, .vi-presencia button:focus-visible { border-color: var(--ui-violeta); outline: 0; }
+.vi-presencia small, .vi-presencia span { color: var(--ui-texto-3); font-size: 0.82rem; }
+.vi-presencia .vi-tiempo { color: #17734d; font-weight: 600; }
+
+@media (max-width: 56rem) {
+  .vi-indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Teléfono: la tabla pasa a tarjetas apiladas para operar con una mano. */
+@media (max-width: 40rem) {
+  .vi-documento { grid-template-columns: minmax(0, 1fr); }
+  .vi-tabla thead { display: none; }
+  .vi-tabla, .vi-tabla tbody, .vi-tabla tr, .vi-tabla td { display: block; width: 100%; }
+  .vi-tabla tr { padding: 0.7rem 0; border-bottom: 1px solid var(--ui-linea); }
+  .vi-tabla td { padding: 0.15rem 0; border: 0; }
+  .vi-tabla td[data-columna='Responsable']::before { content: 'Recibe: '; color: var(--ui-texto-3); }
+  .vi-tabla .ad-acciones { text-align: right; }
+  .vi-paginacion span { width: 100%; }
+}
+
+.vi-seleccion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }

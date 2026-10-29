@@ -3,7 +3,7 @@ tipo: modulo
 estado: implementado
 fuentes: [PRD v0.1]
 relacionados: [HU-019, HU-020, HU-021, HU-022, HU-047, HU-049, ADR-026, RF-07, RF-08, RN-01, RN-08, CA-01, CA-03, CA-04, CA-15, D-09, D-13, D-14, D-17, ADR-004, ADR-013, ADR-024]
-actualizado: 2026-10-26
+actualizado: 2026-10-28
 tags: [conecsia, modulo, f1, personas]
 ---
 
@@ -78,6 +78,24 @@ Todas las FKs con `ON DELETE RESTRICT`. La migración no altera ni borra datos: 
 - **Causa:** el hook `useUrlObjeto` creaba la URL del blob en un `useMemo` y la revocaba en la limpieza de un `useEffect`. En desarrollo, `StrictMode` monta, desmonta y vuelve a montar los efectos: la limpieza revocaba la URL, el `useMemo` no la recreaba y el `<img>` quedaba apuntando a una URL inválida (detalle, edición y logo de organizaciones). El backend (almacenamiento, `id_archivo_foto`, DTO `tieneFoto`, `GET /foto` con permisos) funcionaba: lo confirmaba la prueba de integración de la foto.
 - **Corrección:** la URL se crea y revoca en el mismo efecto (`administracion/utilidades.tsx`); prueba que reproduce el doble montaje.
 - **Además:** la foto se descarga con `apiBlob` (`shared/api/http.ts`), que renueva la sesión ante un 401 como `apiFetch` (antes un token vencido dejaba la imagen sin cargar); «Descartar selección» ya no marca la foto guardada para eliminarla (antes «Quitar» sobre una foto recién elegida también borraba la actual); «Conservar foto actual» deshace un «Quitar»; el `<img>` tiene texto alternativo; el selector se reinicia para poder elegir el mismo archivo otra vez.
+
+## Retiro del tipo de permiso de acceso (2026-10-28)
+
+> [!warning] Contradicción / cambio de criterio
+> El 2026-10-27 se implementó `persona.tipo_acceso` (D-38). El 2026-10-28, por pedido del usuario, se **retiró** de Personas: el tipo de acceso pasa a ser la modalidad de la [[Autorización]] gestionada en [[Control de accesos]]. La migración `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso` elimina la columna (en `conecsia` había 1 persona Recurrente; el cambio previo queda en auditoría `CambiarTipoAcceso`). Un `tipoAcceso` enviado se ignora.
+
+- Nuevo botón **«Gestionar acceso»** en listado y detalle (con *Control de accesos · Añadir*) que lleva a [[Control de accesos]] con la persona identificada.
+
+## Tipo de permiso de acceso (2026-10-27, obsoleto)
+
+> [!note] Propuesta implementada — [[Decisiones pendientes|D-38]]
+> El PRD no define el catálogo. Se implementó `persona.tipo_acceso` (`varchar(20)`, NOT NULL, default `Extemporaneo`, CHECK `ck_persona_tipo_acceso`): **Recurrente** (ingreso habitual con autorización recurrente o permanente) y **Extemporáneo** (ingreso ocasional que se gestiona como [[Visitas|visita]]).
+
+- Separado de la [[Autorización]]: clasifica cómo accede la persona; no habilita ingresos (Base: aprobada ≠ vigente).
+- Formularios de creación y edición (selector de dos opciones, accesible con teclado), detalle, columna «Permiso» y filtro `GET /api/personas?tipoAcceso=` (Implementado).
+- Si el cliente omite `tipoAcceso` al editar, se conserva el actual; al crear, Extemporáneo. Valor fuera del catálogo ⇒ 400.
+- Auditoría: `Modificar` incluye `TipoAcceso` en anterior/nuevo y, si cambia, acción propia `CambiarTipoAcceso` (Verificado por prueba).
+- Migración `20261027235631_PersonaTipoAccesoYExcepcionVisita` aplicada a `conecsia` el 2026-10-27.
 
 ## Pendiente
 > [!todo] Pendientes

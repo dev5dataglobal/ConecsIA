@@ -6,6 +6,7 @@ import { apiBlob, apiFetch } from '../../shared/api/http'
  */
 
 export interface Opcion { id: number; nombre: string }
+
 export interface OpcionDocumento { id: number; codigo: string; nombre: string; patronValidacion: string | null }
 
 export interface CatalogosPersona {

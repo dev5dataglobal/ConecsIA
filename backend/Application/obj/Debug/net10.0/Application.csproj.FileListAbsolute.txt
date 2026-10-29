@@ -32,3 +32,9 @@ C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\27
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\Application.deps.json
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\Application.dll
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\e4898817-2134-466a-9351-7742c14308f5\scratchpad\build\Application.pdb
+C:\Users\USUARIO\AppData\Local\Temp\conecsia-build\Application.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\conecsia-build\Application.dll
+C:\Users\USUARIO\AppData\Local\Temp\conecsia-build\Application.pdb
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Application.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Application.dll
+C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Application.pdb

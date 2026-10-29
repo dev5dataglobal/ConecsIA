@@ -34,3 +34,6 @@
   .pe-rejilla-telefono { grid-template-columns: 6rem minmax(0, 1fr); }
   .pe-rejilla-telefono > :last-child { grid-column: 1 / -1; }
 }
+
+/* Botón «Gestionar acceso» (lleva a Control de accesos) */
+.pe-gestionar { white-space: nowrap; margin-right: 0.25rem; }

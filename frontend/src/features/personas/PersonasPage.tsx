@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent, type ReactNode } from 'react'
+import { useNavigate } from 'react-router'
 import { ApiError } from '../../shared/api/problemDetails'
 import { Icono } from '../../shared/ui/Icono'
 import { Selector } from '../../shared/ui/Selector'
@@ -70,6 +71,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
       avisar(p.activo ? 'Persona activada.' : 'Persona inactivada. Su historial se conserva.')
     },
   })
+  const gestionarAcceso = useGestionarAcceso()
   const filtrando = Boolean(buscar || estado || tipo)
 
   return (
@@ -124,6 +126,12 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
                   <td>{p.telefonoPrincipal ?? <span className="ad-tenue">—</span>}</td>
                   <td><Estatus activo={p.activo} /></td>
                   <td className="ad-acciones">
+                    {gestionarAcceso.puede && p.activo && (
+                      <button type="button" className="ad-boton-sec pe-gestionar" onClick={() => gestionarAcceso.ir(p.idPersona)}
+                        aria-label={`Gestionar acceso de ${p.nombres} ${p.apellidos}`}>
+                        <Icono nombre="accesos" /> Gestionar acceso
+                      </button>
+                    )}
                     <BotonIcono etiqueta={`Ver detalle de ${p.nombres} ${p.apellidos}`} icono="flecha" onClick={() => setDetalle(p.idPersona)} />
                     {acciones.editar && (
                       <>
@@ -187,7 +195,17 @@ function Foto({ persona, grande }: { persona: { idPersona: number; tieneFoto: bo
 
 const personaVacia = (): PersonaEntrada => ({ idTipoPersona: 0, idTipoDocumento: 0, numeroDocumento: '', nombres: '', apellidos: '', correo: '', empresaProcedencia: null, observacion: null })
 
-function PersonaFormulario({ persona, catalogos, onClose, onGuardado, onVerExistente }: {
+/**
+ * «Gestionar acceso»: lleva a Control de accesos con la persona identificada para solicitar su autorización sin volver
+ * a registrarla. Solo se ofrece si el perfil puede solicitar (Control de accesos · Añadir); el servidor lo vuelve a exigir.
+ */
+export function useGestionarAcceso() {
+  const navigate = useNavigate()
+  const control = useAcciones('control_accesos')
+  return { puede: control.anadir, ir: (idPersona: number) => navigate(`/control-accesos?persona=${idPersona}`) }
+}
+
+export function PersonaFormulario({ persona, catalogos, onClose, onGuardado, onVerExistente }: {
   persona: PersonaLista | null
   catalogos: CatalogosPersona | undefined
   onClose: () => void
@@ -338,6 +356,7 @@ function PersonaDetalleDialogo({ idPersona, catalogos, onClose, onEditar }: {
   onEditar: (persona: PersonaLista) => void
 }) {
   const acciones = useAcciones('personas')
+  const gestionarAcceso = useGestionarAcceso()
   const vehiculos = useAcciones('vehiculos')
   const dispositivos = useAcciones('dispositivos')
   const detalle = useQuery({ queryKey: ['persona', idPersona], queryFn: () => consultarPersona(idPersona) })
@@ -349,6 +368,9 @@ function PersonaDetalleDialogo({ idPersona, catalogos, onClose, onEditar }: {
       pie={(
         <>
           <button type="button" className="ad-boton-sec" onClick={onClose}>Cerrar</button>
+          {p && gestionarAcceso.puede && p.activo && (
+            <button type="button" className="ad-boton-sec" onClick={() => gestionarAcceso.ir(p.idPersona)}><Icono nombre="accesos" /> Gestionar acceso</button>
+          )}
           {p && acciones.editar && <button type="button" className="ad-boton" onClick={() => onEditar({ ...p, telefonoPrincipal: null })}>Editar datos</button>}
         </>
       )}>

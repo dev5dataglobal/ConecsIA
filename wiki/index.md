@@ -75,6 +75,8 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
 - [[Personas]] — registro por organización, catálogos, foto privada, teléfonos 1:N, vehículos N:M y dispositivos 1:N
 - [[Autorizaciones de vehículos y dispositivos]] — dispositivos por persona y autorizaciones de ingreso de objetos con historial y auditoría inmutables
+- [[Visitas]] — registro de visitas, estados, entrada/salida idempotentes, permanencias y personas dentro
+- [[Control de accesos]] — solicitudes de autorización de ingreso de personas, aprobación y rechazo (2026-10-28)
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código

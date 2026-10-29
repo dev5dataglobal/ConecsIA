@@ -3,6 +3,7 @@ import type { AppModulo } from '../features/modulos/apiModulos'
 const CATALOGO: Record<string, Omit<AppModulo, 'idAppModulo' | 'codigo'>> = {
   dashboard: { nombre: 'Dashboard', descripcion: null, ruta: '/dashboard', icono: 'dashboard', orden: 10, activo: true },
   autorizaciones: { nombre: 'Autorizaciones', descripcion: null, ruta: '/autorizaciones', icono: 'autorizaciones', orden: 40, activo: true },
+  control_accesos: { nombre: 'Control de accesos', descripcion: null, ruta: '/control-accesos', icono: 'accesos', orden: 20, activo: true },
   visitas: { nombre: 'Visitas', descripcion: null, ruta: null, icono: 'visitas', orden: 30, activo: true },
   personas: { nombre: 'Personas', descripcion: null, ruta: '/personas', icono: 'personas', orden: 50, activo: true },
   vehiculos: { nombre: 'Vehículos', descripcion: null, ruta: null, icono: 'vehiculos', orden: 60, activo: true },

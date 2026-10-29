@@ -1,7 +1,7 @@
 | En revisión || En revisión || En curso || En curso |---
 tipo: tablero
 estado: vigente
-actualizado: 2026-10-17
+actualizado: 2026-10-26
 tags: [conecsia, backlog, scrum]
 ---
 
@@ -71,16 +71,16 @@ _(vacío)_
 | HU-025 | Solicitar y decidir autorizaciones | [[EP-07 Autorizaciones]] | F2 | M | Backlog |
 | HU-026 | Cancelar, revocar y vencer autorizaciones | [[EP-07 Autorizaciones]] | F2 | M | Backlog |
 | HU-027 | Evaluador de vigencia de autorización | [[EP-07 Autorizaciones]] | F2 | M | Backlog |
-| HU-028 | Visita ocasional desde recepción | [[EP-08 Visitas]] | F2 | M | Backlog |
+| HU-028 | Visita ocasional desde recepción | [[EP-08 Visitas]] | F2 | M | En revisión (2026-10-26, [[Visitas]]; decisión de la autorización depende de EP-07; D-04/D-34..D-37) |
 | HU-029 | Preautorización e invitación | [[EP-08 Visitas]] | F2 | M | Backlog |
 | HU-030 | Emitir, rotar e invalidar token QR | [[EP-09 QR]] | F2 | M | Backlog |
 | HU-031 | Leer QR en recepción y mostrar validación | [[EP-09 QR]] | F2 | M | Backlog |
-| HU-032 | Registrar entrada validada | [[EP-10 Entradas y salidas]] | F3 | L | Backlog |
-| HU-033 | Consumo atómico e idempotencia de la entrada | [[EP-10 Entradas y salidas]] | F3 | L | Backlog |
-| HU-034 | Registrar salida y cerrar permanencia | [[EP-10 Entradas y salidas]] | F3 | M | Backlog |
+| HU-032 | Registrar entrada validada | [[EP-10 Entradas y salidas]] | F3 | L | En revisión (2026-10-26, entrada de visitas; D-05/D-06 provisionales) |
+| HU-033 | Consumo atómico e idempotencia de la entrada | [[EP-10 Entradas y salidas]] | F3 | L | En revisión (2026-10-26, verificado con PostgreSQL) |
+| HU-034 | Registrar salida y cerrar permanencia | [[EP-10 Entradas y salidas]] | F3 | M | En revisión (2026-10-26) |
 | HU-035 | Tratamiento de inconsistencias de entrada/salida | [[EP-10 Entradas y salidas]] | F3 | M | Backlog; regularización bloqueada (D-08) |
-| HU-036 | Pantalla de recepción responsiva | [[EP-10 Entradas y salidas]] | F3 | L | Backlog |
-| HU-037 | Personas dentro en tiempo real | [[EP-11 Presencia e historial]] | F3 | L | Backlog |
+| HU-036 | Pantalla de recepción responsiva | [[EP-10 Entradas y salidas]] | F3 | L | En curso (2026-10-26: `/visitas` responsiva; sin QR) |
+| HU-037 | Personas dentro en tiempo real | [[EP-11 Presencia e historial]] | F3 | L | En curso (2026-10-26: presencia por API con refresco; sin SignalR) |
 | HU-038 | Historial por persona | [[EP-11 Presencia e historial]] | F3 | M | Backlog |
 | HU-039 | Bandeja del autorizador | [[EP-11 Presencia e historial]] | F3 | S | Backlog |
 | HU-040 | Generar alertas operativas | [[EP-12 Alertas]] | F4 | L | Backlog; umbrales bloqueados (D-19) |

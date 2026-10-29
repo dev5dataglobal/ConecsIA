@@ -4,7 +4,13 @@
     {
       "name": "api",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "backend/ApiConecsia", "--launch-profile", "http"],
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "backend/ApiConecsia",
+        "--launch-profile",
+        "http"
+      ],
       "port": 5191
     },
     {
