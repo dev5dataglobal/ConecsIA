@@ -192,19 +192,36 @@ function DetalleAutorizacion({ id, puedeDecidir, onClose, onDecidida }: { id: nu
       <EstadoConsulta loading={detalle.isLoading} error={detalle.error} empty={false} vacio="" />
       {a && (
         <>
-          <div className="pe-resumen">
-            <dl>
-              <div><dt>Estado</dt><dd><EstadoAutorizacionEtiqueta estado={a.estado} vigencia={a.vigencia} /></dd></div>
-              <div><dt>Persona</dt><dd>{a.persona} · {a.documentoPersona}</dd></div>
-              <div><dt>Sede</dt><dd>{a.sede}{a.area ? ` · ${a.area}` : ''}</dd></div>
-              <div><dt>Periodo</dt><dd>{fecha(a.fechaInicio)} – {fecha(a.fechaFin)}</dd></div>
-              <div><dt>Horario</dt><dd>{a.horaInicio ? `${hora(a.horaInicio)} a ${hora(a.horaFin)}` : 'Sin restricción horaria'}</dd></div>
-              <div><dt>Solicitada por</dt><dd>{a.solicitadoPor ?? '—'} · {instante(a.solicitadoEn)}</dd></div>
-              {a.decididoPor && <div><dt>Decidida por</dt><dd>{a.decididoPor} · {a.decididoEn && instante(a.decididoEn)}</dd></div>}
-              {a.motivo && <div data-ancho="completo"><dt>Motivo de la solicitud</dt><dd>{a.motivo}</dd></div>}
-              {a.motivoDecision && <div data-ancho="completo"><dt>Motivo de la decisión</dt><dd>{a.motivoDecision}</dd></div>}
-            </dl>
+          <dl className="dt-franja">
+            <div><dt>Estado</dt><dd><EstadoAutorizacionEtiqueta estado={a.estado} vigencia={a.vigencia} /></dd></div>
+            <div><dt>Persona</dt><dd>{a.persona} <small>· {a.documentoPersona}</small></dd></div>
+          </dl>
+          <div className="dt-bloques">
+            <section className="dt-bloque" aria-label="Condiciones">
+              <h3>Condiciones</h3>
+              <dl>
+                <div><dt>Sede</dt><dd>{a.sede}{a.area && <small>{a.area}</small>}</dd></div>
+                <div><dt>Periodo</dt><dd>{fecha(a.fechaInicio)} – {fecha(a.fechaFin)}</dd></div>
+                <div><dt>Horario</dt><dd>{a.horaInicio ? `${hora(a.horaInicio)} a ${hora(a.horaFin)}` : 'Sin restricción horaria'}</dd></div>
+              </dl>
+            </section>
+            <section className="dt-bloque" aria-label="Trazabilidad">
+              <h3>Trazabilidad</h3>
+              <dl>
+                <div><dt>Solicitada por</dt><dd>{a.solicitadoPor ?? '—'}<small>{instante(a.solicitadoEn)}</small></dd></div>
+                {a.decididoPor && <div><dt>Decidida por</dt><dd>{a.decididoPor}<small>{a.decididoEn && instante(a.decididoEn)}</small></dd></div>}
+              </dl>
+            </section>
           </div>
+          {(a.motivo || a.motivoDecision) && (
+            <section className="dt-bloque" aria-label="Motivos">
+              <h3>Motivos</h3>
+              <dl>
+                {a.motivo && <div><dt>Motivo de la solicitud</dt><dd><p className="dt-nota">{a.motivo}</p></dd></div>}
+                {a.motivoDecision && <div><dt>Motivo de la decisión</dt><dd><p className="dt-nota" data-tono={a.estado === 'Rechazada' ? 'rechazo' : undefined}>{a.motivoDecision}</p></dd></div>}
+              </dl>
+            </section>
+          )}
           {!a.objetoActivo && <p className="ad-mensaje" role="status">El {a.tipoObjeto === 'Vehiculo' ? 'vehículo' : 'dispositivo'} está inactivo: la autorización se conserva como historial.</p>}
           <p className="ad-tenue pe-nota">Esta autorización no habilita por sí sola el ingreso de la persona; su ingreso requiere su propia autorización.</p>
           {accion && (
@@ -220,14 +237,14 @@ function DetalleAutorizacion({ id, puedeDecidir, onClose, onDecidida }: { id: nu
               </div>
             </div>
           )}
-          <section className="pe-seccion" aria-label="Historial de la autorización">
-            <header><h3>Historial</h3></header>
-            <ol className="au-historial">
+          <section className="dt-bloque" aria-label="Historial de la autorización">
+            <h3>Historial</h3>
+            <ol className="dt-linea">
               {a.historial.map((t) => (
                 <li key={t.idTransicion}>
                   <strong>{t.estadoAnterior ? `${t.estadoAnterior} → ${t.estadoNuevo}` : `Solicitud creada (${t.estadoNuevo})`}</strong>
                   <small>{t.actor ?? 'Usuario desconocido'} · {instante(t.ocurridoEn)}</small>
-                  {t.motivo && <small>Motivo: {t.motivo}</small>}
+                  {t.motivo && <p className="dt-nota">{t.motivo}</p>}
                 </li>
               ))}
             </ol>

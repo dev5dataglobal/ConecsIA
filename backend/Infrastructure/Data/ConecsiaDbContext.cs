@@ -74,6 +74,7 @@ public sealed class ConecsiaDbContext(
     public DbSet<ModuloPermiso> ModulosPermisos => Set<ModuloPermiso>();
     public DbSet<SesionRefresco> SesionesRefresco => Set<SesionRefresco>();
     public DbSet<RecuperacionContrasena> RecuperacionesContrasena => Set<RecuperacionContrasena>();
+    public DbSet<SolicitudContacto> SolicitudesContacto => Set<SolicitudContacto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

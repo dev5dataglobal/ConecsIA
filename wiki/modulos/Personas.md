@@ -3,7 +3,7 @@ tipo: modulo
 estado: implementado
 fuentes: [PRD v0.1]
 relacionados: [HU-019, HU-020, HU-021, HU-022, HU-047, HU-049, ADR-026, RF-07, RF-08, RN-01, RN-08, CA-01, CA-03, CA-04, CA-15, D-09, D-13, D-14, D-17, ADR-004, ADR-013, ADR-024]
-actualizado: 2026-10-28
+actualizado: 2026-10-29
 tags: [conecsia, modulo, f1, personas]
 ---
 
@@ -106,3 +106,9 @@ Todas las FKs con `ON DELETE RESTRICT`. La migración no altera ni borra datos: 
 > - Registro `tipo_documento` preexistente `DOC-001 · Cédula` en la base de trabajo: no se modificó; conviene inactivarlo si duplica a `CC`.
 > - El `VehiculoController` scaffold (`/api/Vehiculo`) sigue con `DELETE` físico y sin reglas; corresponde a [[EP-16 Vehículos]].
 > - Paginación del listado (hoy máximo 500 filas).
+
+## Tipo de permiso de acceso derivado (2026-10-29, Implementado — Propuesta D-46)
+- No es un campo de la persona: el servidor lo calcula en cada consulta (`ReglasPermisoAcceso`). **Recurrente** si tiene una autorización Recurrente o Permanente aprobada y vigente hoy (fecha local de la sede) en alguna sede del alcance del usuario; si no, **Extemporáneo**. Clasifica, no autoriza.
+- API: `PersonaListaDto`/`PersonaDetalleDto` agregan `tipoPermiso` y `accesosRecurrentes` (autorización, modalidad, sede, fechas); `GET /api/personas?tipoPermiso=Recurrente|Extemporaneo`.
+- UI: columna y filtro «Permiso», detalle con las autorizaciones que lo sustentan, nota de solo lectura en crear/editar (editar los datos no lo cambia; se gestiona con «Gestionar acceso» en [[Control de accesos]]).
+- Sin migración ni auditoría propia: el cambio de tipo es consecuencia de aprobar, revocar o vencer una autorización, que ya se auditan.

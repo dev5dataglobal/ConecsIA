@@ -3,7 +3,7 @@ tipo: modulo
 estado: implementado
 fuentes: [PRD v0.1]
 relacionados: [HU-028, HU-029, HU-032, HU-033, HU-034, HU-035, HU-036, HU-037, RF-11, RF-12, RN-03, CA-01, CA-07, CA-09, CA-11, ADR-009, D-04, D-05, D-06, D-07, D-08, D-34, D-35, D-36, D-37]
-actualizado: 2026-10-26
+actualizado: 2026-10-29
 tags: [conecsia, modulo, visitas, accesos]
 ---
 
@@ -115,3 +115,8 @@ Scaffolds `VisitaController`, `PermanenciaController`, `MovimientoAccesoControll
 ## Retiro de la excepción por tipo de acceso (2026-10-28)
 - Visitas ya no rechaza personas «Recurrentes» ni pide excepción (D-39 obsoleta). `visita.excepcion_tipo_acceso` y `motivo_excepcion` se conservan como histórico.
 - La entrada valida además la franja propia de Temporal, Única y Diaria (`ReglasAutorizacion.MotivosFranja`). Ver [[Control de accesos]].
+
+## Persona recurrente en Visitas (2026-10-29, Implementado — Propuesta D-46)
+- El diálogo «Nueva visita» se titula **Ingreso extemporáneo**; la búsqueda y la persona elegida muestran su tipo de permiso derivado.
+- Si la persona tiene acceso recurrente vigente en la sede elegida, solo puede registrarse vinculando esa autorización (episodio, CA-11); se preselecciona si hay una sola y «Registrar visita» queda bloqueado con un mensaje si no.
+- Servidor: `POST /api/visitas` responde 409 con la autorización a vincular y audita `RechazarVisitaRecurrente` (persona, sede, autorizaciones; resultado Rechazado). Las validaciones del vínculo (400) tienen prioridad. Sin excepción hasta resolver D-46.

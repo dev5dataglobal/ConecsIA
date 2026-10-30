@@ -15,7 +15,7 @@ const OPCIONES = {
   sedes: [{ id: 1, nombre: 'Sede Norte' }],
   areas: [{ id: 3, idSede: 1, nombre: 'Gerencia' }],
   responsables: [{ idMembresia: 5, nombre: 'gerente@ejemplo.test', areas: [3] }],
-  puntosAcceso: [{ id: 8, idSede: 1, nombre: 'Portería principal', modoAcceso: 'Ambos' }],
+  puntosAcceso: [{ id: 8, idSede: 1, idZona: 3, zona: 'Recepción', nombre: 'Portería principal', modoAcceso: 'Ambos' }],
   permiteSinAutorizacion: false,
 }
 const VISITA = {
@@ -27,7 +27,7 @@ const PAGINA = { registros: [VISITA], total: 1, pagina: 1, tamano: 20, indicador
 const DETALLE = {
   visita: VISITA, registradaPor: 'recepcion@ejemplo.test', observacion: null, motivoCierre: null, actualizadaPor: null, actualizadaEn: null,
   autorizacion: { idAutorizacion: 4, estado: 'Aprobada', modalidad: 'Unica', fechaInicio: '2026-10-26', fechaFin: '2026-10-26', cupoIngresos: null, ingresosConsumidos: 0, horarios: [], zonas: [] },
-  permanencia: null, movimientos: [], evaluacion: { puedeIngresar: true, puedeSalir: false, motivos: [] },
+  permanencia: null, movimientos: [], historial: [], evaluacion: { puedeIngresar: true, puedeSalir: false, motivos: [] },
 }
 
 describe('Visitas', () => {
@@ -108,4 +108,31 @@ describe('Visitas', () => {
     expect(screen.queryByRole('tab', { name: /Personas dentro/ })).not.toBeInTheDocument()
   })
 
+  it('nueva visita se presenta como ingreso extemporáneo y muestra el tipo de permiso de la persona', async () => {
+    const user = userEvent.setup()
+    const recurrente = {
+      idPersona: 12, idOrganizacion: 1, idTipoPersona: 3, tipoPersona: 'Contratista', idTipoDocumento: 1, tipoDocumento: 'CC', numeroDocumento: '555666',
+      nombres: 'Luis', apellidos: 'Pardo', correo: null, empresaProcedencia: null, observacion: null, telefonoPrincipal: null, tieneFoto: false, activo: true,
+      creadoEn: '2026-10-26T12:00:00Z', tipoPermiso: 'Recurrente',
+      accesosRecurrentes: [{ idAutorizacion: 40, modalidad: 'Recurrente', idSede: 1, sede: 'Sede Norte', fechaInicio: '2026-10-01', fechaFin: null }],
+    }
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (entrada) => {
+      const url = String(entrada)
+      if (url.includes(MIS_MODULOS)) return respuestaJson(modulosPermitidos('visitas', 'personas'))
+      if (url.includes('/api/visitas/opciones')) return respuestaJson(OPCIONES)
+      if (url.includes('/api/personas/catalogos')) return respuestaJson({ tiposPersona: [], tiposDocumento: [{ id: 1, codigo: 'CC', nombre: 'Cédula', patronValidacion: null }], tiposTelefono: [], tiposVehiculo: [], relacionesVehiculo: [] })
+      if (url.includes('/api/personas?')) return respuestaJson([recurrente])
+      return respuestaJson(PAGINA)
+    })
+    renderApp('/visitas')
+
+    await user.click(await screen.findByRole('button', { name: /Nueva visita/ }))
+    expect(await screen.findByText('Ingreso extemporáneo')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('O busca por nombre'), 'Luis')
+    const opcion = await screen.findByRole('option', { name: /Luis Pardo/ })
+    expect(opcion).toHaveTextContent('Recurrente')
+    await user.click(opcion)
+    expect(screen.getByText(/Tipo de permiso:/).parentElement).toHaveTextContent('Recurrente')
+    expect(screen.getByText(/solo podrá registrarse vinculando su autorización recurrente/)).toBeInTheDocument()
+  })
 })

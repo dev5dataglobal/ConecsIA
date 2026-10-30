@@ -59,3 +59,4 @@
 }
 
 .vi-seleccion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.vi-permiso { display: inline-flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }

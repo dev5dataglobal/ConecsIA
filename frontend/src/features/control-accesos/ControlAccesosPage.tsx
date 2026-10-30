@@ -3,7 +3,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { Selector } from '../../shared/ui/Selector'
 import { useAcciones } from '../modulos/apiModulos'
-import { consultarPersona, consultarPersonas } from '../personas/apiPersonas'
+import { consultarDispositivos, consultarPersona, consultarPersonas } from '../personas/apiPersonas'
+import { consultarAutorizacionesObjeto, decidirAutorizacionObjeto, solicitarAutorizacionObjeto, type AutorizacionObjeto, type TipoObjeto } from '../autorizaciones/apiAutorizacionesObjeto'
 import { leerOrganizacionActiva } from '../sesion/sesion'
 import { BotonIcono, BotonNuevo, BotonesFormulario, Buscador, Campo, Dialogo, Estado, EstadoConsulta, Filtro, Marco } from '../administracion/componentes'
 import { mensajeError, useAviso, useDiferido } from '../administracion/utilidades'
@@ -13,7 +14,7 @@ import '../autorizaciones/autorizaciones.css'
 import './controlAccesos.css'
 import {
   DIAS, MODALIDADES, consultarAutorizacionAcceso, consultarAutorizacionesAcceso, consultarOpcionesAcceso, decidirAutorizacionAcceso,
-  solicitarAutorizacionAcceso, textoModalidad,
+  editarZonasAutorizacionAcceso, solicitarAutorizacionAcceso, textoModalidad,
   type AutorizacionAcceso, type AutorizacionAccesoEntrada, type EstadoAutorizacionAcceso, type Modalidad, type OpcionesAutorizacionAcceso, type VigenciaAcceso,
 } from './apiControlAccesos'
 
@@ -153,7 +154,8 @@ export function ControlAccesosPage() {
           onClose={cerrarSolicitud}
           onCreada={(a) => { cerrarSolicitud(); avisar('Solicitud registrada. Queda pendiente de aprobación.'); setDetalle(a.idAutorizacion) }} />
       )}
-      {detalle !== null && <DetalleSolicitud id={detalle} puedeDecidir={decisiones.editar} onClose={() => setDetalle(null)} onDecidida={avisar} />}
+      {detalle !== null && <DetalleSolicitud id={detalle} puedeDecidir={decisiones.editar} puedeEditarZonas={acciones.editar}
+        opciones={opciones.data} onClose={() => setDetalle(null)} onDecidida={avisar} />}
       {aviso}
     </Marco>
   )
@@ -167,8 +169,27 @@ const ACCIONES: Record<Accion, { titulo: string; boton: string; exitoso: string;
   rechazar: { titulo: 'Rechazar solicitud', boton: 'Rechazar', exitoso: 'Solicitud rechazada. Se conserva en el historial.', requiereMotivo: true },
 }
 
-function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: { id: number; puedeDecidir: boolean; onClose: () => void; onDecidida: (mensaje: string) => void }) {
+function DetalleSolicitud({ id, puedeDecidir, puedeEditarZonas, opciones, onClose, onDecidida }: {
+  id: number
+  puedeDecidir: boolean
+  puedeEditarZonas: boolean
+  opciones: OpcionesAutorizacionAcceso | undefined
+  onClose: () => void
+  onDecidida: (mensaje: string) => void
+}) {
   const queryClient = useQueryClient()
+  const [zonasEdicion, setZonasEdicion] = useState<number[] | null>(null)
+  const [errorZonas, setErrorZonas] = useState<string | null>(null)
+  const guardarZonas = useMutation({
+    mutationFn: (zonas: number[]) => editarZonasAutorizacionAcceso(id, zonas),
+    onSuccess: (resultado) => {
+      queryClient.setQueryData([CLAVE, 'detalle', id], resultado)
+      void queryClient.invalidateQueries({ queryKey: [CLAVE], predicate: (q) => q.queryKey[1] !== 'detalle' })
+      setZonasEdicion(null)
+      onDecidida('Zonas permitidas actualizadas.')
+    },
+    onError: () => void queryClient.invalidateQueries({ queryKey: [CLAVE, 'detalle', id] }),
+  })
   const detalle = useQuery({ queryKey: [CLAVE, 'detalle', id], queryFn: () => consultarAutorizacionAcceso(id) })
   const [accion, setAccion] = useState<Accion | null>(null)
   const [motivo, setMotivo] = useState('')
@@ -210,26 +231,67 @@ function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: { id: numbe
       <EstadoConsulta loading={detalle.isLoading} error={detalle.error} empty={false} vacio="" />
       {a && (
         <>
-          <div className="pe-resumen">
-            <dl>
-              <div><dt>Estado</dt><dd><EstadoAccesoEtiqueta estado={a.estado} vigencia={a.vigencia} /></dd></div>
-              <div><dt>Persona</dt><dd>{a.persona} · {a.documentoPersona}</dd></div>
-              <div><dt>Tipo de autorización</dt><dd>{textoModalidad(a.modalidad)}{a.cupoIngresos ? ` · ${a.ingresosConsumidos}/${a.cupoIngresos} ingreso${a.cupoIngresos === 1 ? '' : 's'}` : ''}</dd></div>
-              <div><dt>Condiciones</dt><dd>{condiciones(a)}</dd></div>
-              <div><dt>Sede y destino</dt><dd>{a.sede} · {a.area}</dd></div>
-              <div><dt>Responsable</dt><dd>{a.responsable ?? '—'}</dd></div>
-              <div><dt>Zonas</dt><dd>{a.zonas.length ? a.zonas.map((z) => z.nombre).join(', ') : 'Sin restricción por zona'}</dd></div>
-              <div><dt>Solicitada por</dt><dd>{a.solicitadoPor ?? '—'} · {instante(a.solicitadoEn)}</dd></div>
-              {a.decididoPor && <div><dt>{a.estado === 'Rechazada' ? 'Rechazada por' : 'Decidida por'}</dt><dd>{a.decididoPor} · {a.decididoEn && instante(a.decididoEn)}</dd></div>}
-              {a.motivo && <div data-ancho="completo"><dt>Motivo de la solicitud</dt><dd>{a.motivo}</dd></div>}
-              {a.observacion && <div data-ancho="completo"><dt>Observación</dt><dd>{a.observacion}</dd></div>}
-              {a.motivoDecision && <div data-ancho="completo"><dt>{a.estado === 'Rechazada' ? 'Motivo del rechazo' : 'Observación de la decisión'}</dt><dd>{a.motivoDecision}</dd></div>}
-            </dl>
+          <dl className="dt-franja">
+            <div><dt>Estado</dt><dd><EstadoAccesoEtiqueta estado={a.estado} vigencia={a.vigencia} /></dd></div>
+            <div><dt>Persona</dt><dd>{a.persona} <small>· {a.documentoPersona}</small></dd></div>
+            <div><dt>Tipo</dt><dd>{textoModalidad(a.modalidad)}{a.cupoIngresos ? <small> · {a.ingresosConsumidos}/{a.cupoIngresos} ingreso{a.cupoIngresos === 1 ? '' : 's'}</small> : null}</dd></div>
+          </dl>
+          <div className="dt-bloques">
+            <section className="dt-bloque" aria-label="Acceso autorizado">
+              <h3>Acceso autorizado</h3>
+              <dl>
+                <div><dt>Sede y destino</dt><dd>{a.sede}<small>{a.area}</small></dd></div>
+                <div><dt>Condiciones</dt><dd>{condiciones(a)}</dd></div>
+                <div>
+                  <dt>Zonas</dt>
+                  <dd>
+                    {a.zonas.length ? a.zonas.map((z) => z.nombre).join(', ') : 'Sin restricción por zona'}
+                    {a.estado === 'Pendiente' && puedeEditarZonas && opciones && zonasEdicion === null && accion === null && (
+                      <> · <button type="button" className="ad-enlace" onClick={() => { guardarZonas.reset(); setErrorZonas(null); setZonasEdicion(a.zonas.map((z) => z.id)) }}>Editar zonas</button></>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+            <section className="dt-bloque" aria-label="Trazabilidad">
+              <h3>Trazabilidad</h3>
+              <dl>
+                <div><dt>Responsable</dt><dd>{a.responsable ?? '—'}</dd></div>
+                <div><dt>Solicitada por</dt><dd>{a.solicitadoPor ?? '—'}<small>{instante(a.solicitadoEn)}</small></dd></div>
+                {a.decididoPor && <div><dt>{a.estado === 'Rechazada' ? 'Rechazada por' : 'Decidida por'}</dt><dd>{a.decididoPor}<small>{a.decididoEn && instante(a.decididoEn)}</small></dd></div>}
+              </dl>
+            </section>
           </div>
+          {(a.motivo || a.observacion || a.motivoDecision) && (
+            <section className="dt-bloque" aria-label="Motivos y observaciones">
+              <h3>Motivos y observaciones</h3>
+              <dl>
+                {a.motivo && <div><dt>Motivo de la solicitud</dt><dd><p className="dt-nota">{a.motivo}</p></dd></div>}
+                {a.observacion && <div><dt>Observación</dt><dd><p className="dt-nota">{a.observacion}</p></dd></div>}
+                {a.motivoDecision && <div><dt>{a.estado === 'Rechazada' ? 'Motivo del rechazo' : 'Observación de la decisión'}</dt><dd><p className="dt-nota" data-tono={a.estado === 'Rechazada' ? 'rechazo' : undefined}>{a.motivoDecision}</p></dd></div>}
+              </dl>
+            </section>
+          )}
           {a.estado === 'Pendiente' && (
             <p className="ad-tenue pe-nota">
               Pendiente de aprobación: no habilita el ingreso.{!puedeDecidir && ' La decide un administrador de la organización.'}
             </p>
+          )}
+          {zonasEdicion !== null && opciones && (
+            <div className="pe-subformulario" role="group" aria-label="Editar zonas permitidas">
+              <strong>Zonas permitidas</strong>
+              <SelectorZonas zonas={opciones.zonas.filter((z) => z.idSede === a.idSede)} seleccion={zonasEdicion} exigeZonas={opciones.exigeZonas}
+                error={errorZonas ?? undefined} onChange={setZonasEdicion} />
+              {guardarZonas.error && <p className="ad-mensaje" role="alert">{mensajeError(guardarZonas.error)}</p>}
+              <div className="pe-subacciones">
+                <button type="button" className="ad-boton-sec" onClick={() => setZonasEdicion(null)}>Cancelar</button>
+                <button type="button" className="ad-boton" disabled={guardarZonas.isPending} onClick={() => {
+                  if (opciones.exigeZonas && zonasEdicion.length === 0) { setErrorZonas('La política de la organización exige al menos una zona.'); return }
+                  setErrorZonas(null)
+                  guardarZonas.mutate(zonasEdicion)
+                }}>{guardarZonas.isPending ? 'Guardando…' : 'Guardar zonas'}</button>
+              </div>
+            </div>
           )}
           {accion && (
             <div className="pe-subformulario" role="group" aria-label={ACCIONES[accion].titulo}>
@@ -244,14 +306,15 @@ function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: { id: numbe
               </div>
             </div>
           )}
-          <section className="pe-seccion" aria-label="Historial de la solicitud">
-            <header><h3>Historial</h3></header>
-            <ol className="au-historial">
+          <ObjetosAcceso acceso={a} puedeDecidir={puedeDecidir} onAviso={onDecidida} />
+          <section className="dt-bloque" aria-label="Historial de la solicitud">
+            <h3>Historial</h3>
+            <ol className="dt-linea">
               {a.historial.map((t) => (
                 <li key={t.idTransicion}>
                   <strong>{t.estadoAnterior ? `${TEXTO_ESTADO[t.estadoAnterior as EstadoAutorizacionAcceso] ?? t.estadoAnterior} → ${TEXTO_ESTADO[t.estadoNuevo as EstadoAutorizacionAcceso] ?? t.estadoNuevo}` : 'Solicitud creada (pendiente de aprobación)'}</strong>
                   <small>{t.actor ?? 'Usuario desconocido'} · {instante(t.ocurridoEn)}</small>
-                  {t.motivo && <small>{t.estadoAnterior ? 'Motivo' : 'Motivo de la solicitud'}: {t.motivo}</small>}
+                  {t.motivo && <p className="dt-nota">{t.motivo}</p>}
                 </li>
               ))}
             </ol>
@@ -262,10 +325,140 @@ function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: { id: numbe
   )
 }
 
+// ---------- Vehículos y dispositivos de la persona ----------
+
+const TEXTO_DECISION: Record<string, string> = { Pendiente: 'Pendiente', Aprobada: 'Aprobado', Rechazada: 'Rechazado', Revocada: 'Revocado' }
+
+/**
+ * Cada vehículo o dispositivo se decide por separado sobre su propia autorización de objeto (con transiciones y
+ * auditoría en el servidor). Aprobar el acceso de la persona no aprueba sus objetos.
+ */
+function ObjetosAcceso({ acceso, puedeDecidir, onAviso }: { acceso: AutorizacionAcceso; puedeDecidir: boolean; onAviso: (m: string) => void }) {
+  const queryClient = useQueryClient()
+  const vehiculosMod = useAcciones('vehiculos')
+  const dispositivosMod = useAcciones('dispositivos')
+  const autorizacionesMod = useAcciones('autorizaciones')
+  const idPersona = acceso.idPersona
+  const persona = useQuery({ queryKey: ['persona', idPersona], queryFn: () => consultarPersona(idPersona), enabled: vehiculosMod.consultar })
+  const dispositivos = useQuery({ queryKey: ['dispositivos', idPersona], queryFn: () => consultarDispositivos(idPersona), enabled: dispositivosMod.consultar })
+  const autorizaciones = useQuery({
+    queryKey: ['autorizaciones-objeto', 'persona', idPersona],
+    queryFn: () => consultarAutorizacionesObjeto({ idPersona }),
+    enabled: autorizacionesMod.consultar,
+  })
+  const [abierto, setAbierto] = useState<string | null>(null)
+  const [decision, setDecision] = useState<{ id: number; accion: 'aprobar' | 'rechazar' } | null>(null)
+  const [motivo, setMotivo] = useState('')
+  const [errorMotivo, setErrorMotivo] = useState<string | null>(null)
+  const refrescar = () => void queryClient.invalidateQueries({ queryKey: ['autorizaciones-objeto'] })
+  const decidir = useMutation({
+    mutationFn: (d: { id: number; accion: 'aprobar' | 'rechazar' }) => decidirAutorizacionObjeto(d.id, d.accion, motivo.trim() || null),
+    onSuccess: (_, d) => { refrescar(); setDecision(null); setMotivo(''); onAviso(d.accion === 'aprobar' ? 'Elemento aprobado.' : 'Elemento rechazado.') },
+    onError: refrescar,
+  })
+  const solicitar = useMutation({
+    mutationFn: (o: { tipo: TipoObjeto; id: number }) => solicitarAutorizacionObjeto({
+      idPersona, tipoObjeto: o.tipo, idVehiculo: o.tipo === 'Vehiculo' ? o.id : null, idDispositivo: o.tipo === 'Dispositivo' ? o.id : null,
+      idSede: acceso.idSede, idArea: acceso.idArea, fechaInicio: acceso.fechaInicio, fechaFin: acceso.fechaFin ?? acceso.fechaInicio,
+      horaInicio: acceso.horaInicio, horaFin: acceso.horaFin, motivo: `Asociado a la autorización de ingreso #${acceso.idAutorizacion}`,
+      idAutorizacion: acceso.idAutorizacion,
+    }),
+    onSuccess: () => { refrescar(); onAviso('Solicitud del elemento registrada como pendiente.') },
+  })
+
+  if (!vehiculosMod.consultar && !dispositivosMod.consultar) return null
+  const objetos = [
+    ...(vehiculosMod.consultar ? (persona.data?.vehiculos ?? []).filter((x) => x.activo).map((x) => ({
+      tipo: 'Vehiculo' as TipoObjeto, id: x.idVehiculo, nombre: x.placa, detalle: ['Vehículo', x.tipo, x.marca, x.color].filter(Boolean).join(' · '),
+    })) : []),
+    ...(dispositivosMod.consultar ? (dispositivos.data ?? []).filter((x) => x.activo).map((x) => ({
+      tipo: 'Dispositivo' as TipoObjeto, id: x.idDispositivo, nombre: x.codigoIdentificador, detalle: ['Dispositivo', x.tipoDispositivo, x.marca, x.serial].filter(Boolean).join(' · '),
+    })) : []),
+  ]
+  // La autorización relevante: la asociada a este ingreso; si no hay, la más reciente del objeto en esta sede.
+  const autorizacionDe = (tipo: TipoObjeto, id: number): AutorizacionObjeto | undefined => {
+    const propias = (autorizaciones.data ?? []).filter((x) => x.tipoObjeto === tipo && (tipo === 'Vehiculo' ? x.idVehiculo : x.idDispositivo) === id && x.idSede === acceso.idSede)
+    return propias.find((x) => x.idAutorizacion === acceso.idAutorizacion) ?? propias[0]
+  }
+  // Sin fecha de fin (permanente) no se inventa un periodo: el elemento se solicita en Autorizaciones.
+  const puedeSolicitar = (tipo: TipoObjeto) => (tipo === 'Vehiculo' ? vehiculosMod.anadir : dispositivosMod.anadir) && autorizacionesMod.anadir
+    && acceso.fechaFin !== null && (acceso.estado === 'Pendiente' || acceso.estado === 'Aprobada')
+  const cargando = persona.isLoading || dispositivos.isLoading || autorizaciones.isLoading
+
+  return (
+    <section className="dt-bloque" aria-label="Vehículos y dispositivos">
+      <h3>Vehículos y dispositivos</h3>
+      <p className="ad-tenue pe-nota">Cada elemento se aprueba o rechaza por separado: aprobar el ingreso de la persona no los aprueba.</p>
+      {cargando ? <p className="ad-tenue">Cargando…</p> : objetos.length === 0 ? <p className="ad-tenue">La persona no tiene vehículos ni dispositivos activos.</p> : (
+        <ul className="dt-objetos">
+          {objetos.map((o) => {
+            const clave = `${o.tipo}-${o.id}`
+            const aut = autorizacionDe(o.tipo, o.id)
+            const decidiendo = aut && decision?.id === aut.idAutorizacionObjeto ? decision : null
+            return (
+              <li key={clave} className="dt-objeto">
+                <header>
+                  <div><strong>{o.nombre}</strong><small>{o.detalle}</small></div>
+                  <div className="dt-objeto-acciones">
+                    {aut ? <span className="dt-decision" data-estado={aut.estado}>{TEXTO_DECISION[aut.estado]}</span>
+                      : <span className="dt-decision">Sin solicitud</span>}
+                    {aut?.estado === 'Pendiente' && puedeDecidir && !decidiendo && (
+                      <>
+                        <button type="button" className="ad-boton-sec dt-boton-verde" onClick={() => { decidir.reset(); setErrorMotivo(null); setDecision({ id: aut.idAutorizacionObjeto, accion: 'aprobar' }) }}>Aprobar</button>
+                        <button type="button" className="ad-boton-sec au-peligro" onClick={() => { decidir.reset(); setErrorMotivo(null); setDecision({ id: aut.idAutorizacionObjeto, accion: 'rechazar' }) }}>Rechazar</button>
+                      </>
+                    )}
+                    {!aut && puedeSolicitar(o.tipo) && (
+                      <button type="button" className="ad-boton-sec" disabled={solicitar.isPending} onClick={() => solicitar.mutate({ tipo: o.tipo, id: o.id })}>Solicitar</button>
+                    )}
+                    {aut && aut.historial.length > 0 && (
+                      <button type="button" className="ad-enlace" aria-expanded={abierto === clave} onClick={() => setAbierto(abierto === clave ? null : clave)}>
+                        {abierto === clave ? 'Ocultar decisiones' : 'Ver decisiones'}
+                      </button>
+                    )}
+                  </div>
+                </header>
+                {decidiendo && aut && (
+                  <div className="pe-subformulario" role="group" aria-label={`${decidiendo.accion === 'aprobar' ? 'Aprobar' : 'Rechazar'} ${o.nombre}`}>
+                    <Campo etiqueta={decidiendo.accion === 'rechazar' ? 'Motivo del rechazo' : 'Observación (opcional)'} error={errorMotivo ?? undefined}>
+                      <textarea value={motivo} maxLength={500} autoFocus aria-invalid={Boolean(errorMotivo)} onChange={(e) => setMotivo(e.target.value)} />
+                    </Campo>
+                    {decidir.error && <p className="ad-mensaje" role="alert">{mensajeError(decidir.error)}</p>}
+                    <div className="pe-subacciones">
+                      <button type="button" className="ad-boton-sec" onClick={() => { setDecision(null); setMotivo(''); setErrorMotivo(null) }}>Cancelar</button>
+                      <button type="button" className="ad-boton" disabled={decidir.isPending} onClick={() => {
+                        if (decidiendo.accion === 'rechazar' && !motivo.trim()) { setErrorMotivo('Indica el motivo del rechazo.'); return }
+                        if (!decidir.isPending) decidir.mutate(decidiendo)
+                      }}>{decidir.isPending ? 'Guardando…' : decidiendo.accion === 'aprobar' ? 'Confirmar: aprobar' : 'Confirmar: rechazar'}</button>
+                    </div>
+                  </div>
+                )}
+                {abierto === clave && aut && (
+                  <ol className="dt-linea" aria-label={`Decisiones de ${o.nombre}`}>
+                    {aut.historial.map((t) => (
+                      <li key={t.idTransicion} data-tono={t.estadoNuevo === 'Rechazada' || t.estadoNuevo === 'Revocada' ? 'rechazo' : t.estadoNuevo === 'Pendiente' ? 'violeta' : undefined}>
+                        <strong>{t.estadoAnterior ? `${TEXTO_DECISION[t.estadoAnterior]} → ${TEXTO_DECISION[t.estadoNuevo]}` : 'Solicitud creada (pendiente)'}</strong>
+                        <small>{t.actor ?? 'Usuario desconocido'} · {instante(t.ocurridoEn)}</small>
+                        {t.motivo && <p className="dt-nota" data-tono={t.estadoNuevo === 'Rechazada' ? 'rechazo' : undefined}>{t.motivo}</p>}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {solicitar.error && <p className="ad-mensaje" role="alert">{mensajeError(solicitar.error)}</p>}
+      {acceso.fechaFin === null && <p className="ad-tenue pe-nota">La autorización de ingreso no tiene fecha de fin: solicita los elementos desde Autorizaciones indicando su periodo.</p>}
+    </section>
+  )
+}
+
 // ---------- Nueva solicitud ----------
 
 type Datos = Omit<AutorizacionAccesoEntrada, 'idPersona'>
-type ErroresAcceso = Partial<Record<'persona' | 'sede' | 'area' | 'responsable' | 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horas' | 'dias' | 'motivo', string>>
+type ErroresAcceso = Partial<Record<'persona' | 'sede' | 'area' | 'responsable' | 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horas' | 'dias' | 'zonas' | 'motivo', string>>
 
 /** Validación de cortesía por modalidad (el servidor vuelve a validar todo). Devuelve solo los campos que aplican. */
 export function validarSolicitudAcceso(idPersona: number, d: Datos, permitePermanente: boolean, hoy = hoyIso()): ErroresAcceso {
@@ -361,6 +554,7 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
   function enviar(event: FormEvent) {
     event.preventDefault()
     const nuevos = validarSolicitudAcceso(idPersona, datos, opciones.permitePermanente)
+    if (opciones.exigeZonas && datos.idSede && datos.zonas.length === 0) nuevos.zonas = 'La política de la organización exige restringir el acceso a una o más zonas.'
     setErrores(nuevos)
     if (Object.keys(nuevos).length === 0 && !crear.isPending) crear.mutate()
   }
@@ -499,19 +693,9 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
           </Campo>
         )}
 
-        {zonas.length > 0 && (
-          <fieldset className="ca-zonas" data-ancho="completo">
-            <legend>Zonas permitidas (opcional; sin selección, cualquier zona de la sede)</legend>
-            <div className="ca-zonas-opciones">
-              {zonas.map((z) => (
-                <label key={z.id}>
-                  <input type="checkbox" checked={datos.zonas.includes(z.id)}
-                    onChange={(e) => cambiar({ zonas: e.target.checked ? [...datos.zonas, z.id] : datos.zonas.filter((x) => x !== z.id) })} />
-                  {z.nombre}
-                </label>
-              ))}
-            </div>
-          </fieldset>
+        {datos.idSede > 0 && (zonas.length > 0 || opciones.exigeZonas) && (
+          <SelectorZonas zonas={zonas} seleccion={datos.zonas} exigeZonas={opciones.exigeZonas} error={errores.zonas}
+            onChange={(z) => cambiar({ zonas: z })} />
         )}
         <Campo etiqueta="Motivo" error={errores.motivo} ancho="completo">
           <textarea value={datos.motivo} maxLength={500} aria-invalid={Boolean(errores.motivo)} onChange={(e) => cambiar({ motivo: e.target.value })} />
@@ -523,5 +707,34 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
       <p className="ad-tenue pe-nota">La solicitud queda <strong>pendiente de aprobación</strong> y no habilita el ingreso hasta que un administrador de la organización la apruebe.</p>
       {crear.error && <p className="ad-mensaje" role="alert">{mensajeError(crear.error, 'No se pudo registrar la solicitud.')}</p>}
     </Dialogo>
+  )
+}
+
+/** Zonas activas de la sede (las entrega el servidor). Sin selección no hay restricción, salvo que la política la exija. */
+function SelectorZonas({ zonas, seleccion, exigeZonas, error, onChange }: {
+  zonas: { id: number; nombre: string }[]
+  seleccion: number[]
+  exigeZonas: boolean
+  error?: string
+  onChange: (zonas: number[]) => void
+}) {
+  return (
+    <fieldset className="ca-zonas" data-ancho="completo" aria-invalid={Boolean(error)}>
+      <legend>{exigeZonas ? 'Zonas permitidas (obligatorio por política de la organización)' : 'Zonas permitidas (opcional; sin selección, cualquier zona de la sede)'}</legend>
+      {zonas.length === 0 ? (
+        <p className="ad-tenue">La sede no tiene zonas activas. Regístralas en Administración › Zonas y puntos de acceso.</p>
+      ) : (
+        <div className="ca-zonas-opciones">
+          {zonas.map((z) => (
+            <label key={z.id}>
+              <input type="checkbox" checked={seleccion.includes(z.id)}
+                onChange={(e) => onChange(e.target.checked ? [...seleccion, z.id] : seleccion.filter((x) => x !== z.id))} />
+              {z.nombre}
+            </label>
+          ))}
+        </div>
+      )}
+      {error && <p className="ad-mensaje" role="alert">{error}</p>}
+    </fieldset>
   )
 }

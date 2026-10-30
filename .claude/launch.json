@@ -40,6 +40,24 @@
         "--strictPort"
       ],
       "port": 5174
+    },
+    {
+      "name": "api-verificacion",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "backend/ApiConecsia",
+        "-c",
+        "Release",
+        "--launch-profile",
+        "http",
+        "--",
+        "--urls",
+        "http://localhost:5192",
+        "--ConnectionStrings:Conecsia=Host=localhost;Port=5432;Database=conecsia_verificacion;Username=postgres;Password=Lau05032015"
+      ],
+      "port": 5192
     }
   ]
 }

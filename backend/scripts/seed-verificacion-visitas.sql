@@ -1,4 +1,4 @@
--- Datos de PRUEBA para verificar a mano el módulo de visitas. Ejecútese DESPUÉS de seed-verificacion-administracion.sql
+﻿-- Datos de PRUEBA para verificar a mano el módulo de visitas. Ejecútese DESPUÉS de seed-verificacion-administracion.sql
 -- y solo en una base desechable (p. ej. conecsia_verificacion), nunca en la base de trabajo.
 -- Cuentas (contraseña de seed-verificacion-administracion.sql):
 --   admin.alfa@verificacion.test    → personas, visitas y control de accesos completos en «Empresa Alfa»
@@ -26,9 +26,15 @@ INSERT INTO area (id_organizacion, id_sede, nombre, es_comun_zona_empresarial, a
 SELECT s.id_organizacion, s.id_sede, n.nombre, false, true FROM sede s CROSS JOIN (VALUES ('Gerencia'), ('Compras')) AS n(nombre)
 WHERE s.nombre = 'Sede Principal' AND NOT EXISTS (SELECT 1 FROM area a WHERE a.id_sede = s.id_sede AND a.nombre = n.nombre);
 
-INSERT INTO zona (id_organizacion, id_sede, nombre, es_punto_acceso, modo_acceso, activo)
-SELECT s.id_organizacion, s.id_sede, n.nombre, true, n.modo, true FROM sede s CROSS JOIN (VALUES ('Portería principal', 'Ambos'), ('Salida norte', 'Salida')) AS n(nombre, modo)
+INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en)
+SELECT s.id_organizacion, s.id_sede, n.nombre, true, now() FROM sede s CROSS JOIN (VALUES ('Recepción'), ('Parqueadero'), ('Planta')) AS n(nombre)
 WHERE s.nombre = 'Sede Principal' AND NOT EXISTS (SELECT 1 FROM zona z WHERE z.id_sede = s.id_sede AND z.nombre = n.nombre);
+
+INSERT INTO punto_acceso (id_organizacion, id_sede, id_zona, nombre, modo_acceso, activo, creado_en)
+SELECT z.id_organizacion, z.id_sede, z.id_zona, n.nombre, n.modo, true, now()
+FROM zona z JOIN sede s ON s.id_sede = z.id_sede AND s.nombre = 'Sede Principal'
+JOIN (VALUES ('Recepción', 'Portería principal', 'Ambos'), ('Parqueadero', 'Salida norte', 'Salida'), ('Planta', 'Acceso a planta', 'Ambos')) AS n(zona, nombre, modo) ON n.zona = z.nombre
+WHERE NOT EXISTS (SELECT 1 FROM punto_acceso p WHERE p.id_sede = z.id_sede AND p.nombre = n.nombre);
 
 INSERT INTO persona (id_organizacion, id_tipo_persona, id_tipo_documento, numero_documento, numero_documento_normalizado, nombres, apellidos, correo, empresa_procedencia, activo, creado_en, id_usuario_crea)
 SELECT o.id_organizacion, t.id_tipo_persona, d.id_tipo_documento, p.doc, p.doc, p.nombres, p.apellidos, p.correo, 'Proveedores S.A.S.', true, now(), u.id_usuario

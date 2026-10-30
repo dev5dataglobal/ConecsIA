@@ -518,3 +518,89 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 
 ## [2026-10-28] consulta | Por qué «Permanente» aparece deshabilitada
 - Respuesta: falta el parámetro `autorizaciones.permite_permanente = true` de la organización (D-42, Propuesta; ausente = no permitido). Sin cambios en páginas.
+
+## [2026-10-28] implementacion | Zonas y puntos de acceso (RF-05)
+- Punto de acceso pasa a entidad propia dentro de la zona (Sede → Zona → Punto): [[ADR-027 Punto de acceso como entidad dentro de la zona]]; [[ADR-019 Zona única con atributo de punto de acceso]] queda obsoleta (contradicción registrada en [[Zona y punto de acceso]]).
+- Administración de zonas y puntos (crear, editar, activar/inactivar, eliminar sin historial, filtros, trazabilidad), restricción de autorizaciones por zona (opcional u obligatoria por política) y validación del punto en cada movimiento.
+- Migración `ZonasYPuntosAcceso` creada, no aplicada a `conecsia`. Pruebas: backend 100/100, frontend 41/41. Sin verificación en navegador.
+- Páginas: [[Zonas y puntos de acceso]] (nueva), ADR-027 (nueva), [[Zona y punto de acceso]], [[Decisiones pendientes]] (D-43..D-45), [[Registro de ADR]], [[Estado de implementación]], [[tablero-scrum]], EP-04, index.
+
+## [2026-10-29] consulta | Solicitud de reintroducir el tipo de permiso de acceso en Personas
+- La solicitud repite la implementada el 2026-10-27 (`persona.tipo_acceso`, excepción en Visitas) y retirada el 2026-10-28 al crear [[Control de accesos]] (D-38/D-39 obsoletas; el tipo de acceso es la modalidad de la [[Autorización]]).
+- No se modificó código: se pidió al usuario elegir entre reactivar el campo manual (revierte D-38/D-39), derivarlo de las autorizaciones aprobadas vigentes, o mantener el estado actual.
+- Sin cambios en otras páginas.
+
+## [2026-10-29] implementacion | Migración de zonas y puntos aplicada y verificación en navegador
+- Migración `ZonasYPuntosAcceso` aplicada a `conecsia`; base desechable `conecsia_verificacion` creada, migrada y sembrada.
+- Verificado en navegador: listado, duplicado rechazado, creación con trazabilidad, eliminar solo sin historial.
+- Nueva configuración `api-verificacion` (Release, :5192) porque otra API de desarrollo bloquea los binarios Debug en :5191.
+- Páginas: [[Zonas y puntos de acceso]], [[Estado de implementación]].
+
+## [2026-10-29] implementacion | Tipo de permiso de acceso derivado en Personas y Visitas
+- Opción elegida por el usuario: derivar el tipo (Recurrente/Extemporáneo) de las autorizaciones Recurrente/Permanente aprobadas y vigentes; sin columna ni migración (nueva D-46, reemplaza D-38/D-39).
+- Personas: columna, filtro, detalle y nota de solo lectura en el formulario. Visitas: «Ingreso extemporáneo», muestra el tipo y bloquea (409 auditado `RechazarVisitaRecurrente`) registrar a una persona recurrente en su sede salvo vinculando su autorización (CA-11).
+- Pruebas: backend Visitas+Personas 37/37 (antes, suite completa 99/101 con las 2 fallas ya corregidas); frontend 41/41 + `tsc` limpio. Sin verificación en navegador. Maqueta presentada en el chat.
+- Páginas: [[Personas]], [[Visitas]], [[Decisiones pendientes]], [[Estado de implementación]].
+
+## [2026-10-29] implementacion | Rediseño de modales de detalle
+- Modales de detalle de Control de accesos, Autorizaciones (vehículos/dispositivos) y Visitas reorganizados en bloques: franja de estado, «Acceso autorizado/Condiciones/Destino», «Trazabilidad», «Motivos» y «Historial/Movimientos».
+- Nuevas clases `dt-*` en `frontend/src/features/personas/personas.css` con el verde lima de la paleta (#D5F379): marcador de bloque, notas y línea de tiempo; motivos de rechazo en rojo.
+- Solo presentación: sin cambios de lógica ni backend. `tsc` y 42 pruebas de Vitest en verde; no verificado visualmente en navegador.
+
+## [2026-10-29] implementacion | Detalles: visitas, persona, cancelación y decisión por objeto
+- Visitas: franja gris, historial de ciclo de vida desde `auditoria` (cancelación con usuario, fecha y motivo; sin duplicados). Prueba ampliada en `VisitasTests`.
+- Persona: modal por secciones + botón «Dispositivos» con `--color-acento`.
+- Control de accesos: aprobación/rechazo individual de vehículos y dispositivos reutilizando `autorizacion_objeto` y sus transiciones; aprobar el ingreso no los aprueba.
+- Páginas: [[Estado de implementación]]. Pendiente: verificación visual y reinicio de la API.
+
+## [2026-10-30] implementacion | Página pública de presentación
+- Nueva ruta pública `/presentacion` (`frontend/src/features/presentacion/`): hero, retos, cómo funciona, servicios, sectores, beneficios, vista demo, FAQ, contacto y pie; menú móvil, `prefers-reduced-motion`, foco visible.
+- Formulario con validación accesible; **sin endpoint de contacto**: no simula envío (`VITE_CONTACTO_URL`). Nueva pendiente D-47 (endpoint, aviso de privacidad, datos institucionales, landing en `/`).
+- Verificado: `tsc`, oxlint, 4 pruebas Vitest, navegador en escritorio y 375 px sin scroll horizontal.
+- Páginas: [[Página pública de presentación]], [[Decisiones pendientes]], `index.md`.
+
+## [2026-10-30] implementacion | Endpoint público de contactos
+- `POST /api/publico/contactos` anónimo: validación DataAnnotations + catálogo de tipos, límite 5/h por IP, campo trampa, tabla `solicitud_contacto` sin organización (migración `SolicitudesContacto`, aplicada en la base local).
+- Frontend conectado; 400/429/red nunca se muestran como enviados.
+- Verificado: `ContactoTests` (PostgreSQL real), 4 pruebas Vitest, envío real desde el navegador (202 + INSERT; log solo con id).
+- Páginas: [[Página pública de presentación]], [[Decisiones pendientes]] (D-47 acotada a atención/retención/privacidad), `index.md`.
+
+## [2026-10-30] implementacion | Landing en la raíz
+- El usuario no veía la landing al abrir `/` (redirigía a `/dashboard` → `/ingresar`). Ahora `/` muestra la presentación sin sesión y el panel con sesión; `/ingresar` sin cambios.
+- Verificado en navegador y Vitest. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Rediseño visual de la página pública
+- Fondo ambiental en capas, bandas por sección, escena del hero con parallax y flujo de autorización animado, filas reto→respuesta, línea de tiempo, bento, mensaje destacado, carrusel accesible de sectores, ventana de producto.
+- Nuevos `Carrusel.tsx` y `FormularioContacto.tsx` (extraído); `contenido.ts` con retos/sectores ampliados (sin capacidades nuevas).
+- Corregido en verificación: el carrusel no retrocedía desde el final. Verificado en 800/768/375 px; tsc, oxlint, prettier, 5 pruebas Vitest.
+- No hay skill de UI en el proyecto. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Carrusel «Para quién» con tarjeta central
+- Nuevo `CarruselSectores.tsx` (coverflow circular, teclado, gesto, `aria-live`) + `IlustracionSector.tsx` (7 SVG propios); se elimina `Carrusel.tsx` y su CSS.
+- `SECTORES` gana `escena` y `acento`; título con «cada organización» en lima; fondo con halos y arcos.
+- Verificado: navegación y ciclo en navegador, gesto táctil simulado, móvil 375 px sin desbordamiento, 7 pruebas Vitest. Movimiento reducido no emulado.
+- Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Sección «El reto» rediseñada
+- Nuevo `ComparativaRetos.tsx` (reemplaza el bloque inline); iconos `documento` y `mensaje` en `Icono.tsx`; primer reto usa `documento`.
+- Corregido en verificación: estilos de la ilustración afectaban a los SVG de los iconos.
+- Verificado: escritorio y 375 px, 8 pruebas Vitest, tsc, oxlint. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | «Cómo funciona» rediseñada
+- Nuevo `RecorridoPasos.tsx` (trayectoria SVG, nodos, tarjetas con iconos) + prueba; icono `reloj`; se eliminan estilos `lp-linea`/`lp-hito`.
+- Verificado: geometría a 1280 px y 375 px por JS, 9 pruebas Vitest, tsc, oxlint. Sin captura (panel sin dibujar): revisión visual pendiente.
+- Página: [[Página pública de presentación]].
+
+## [2026-10-30] revision | «Cómo funciona» aprobada visualmente
+- El usuario confirmó que la sección se ve bien; se retira el pendiente de revisión visual en [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | «Servicios» rediseñada
+- Nuevo `ServiciosBento.tsx` (+ prueba); se elimina el bento anterior (`DetalleServicio`, `lp-bento`, `lp-bloque`, `lp-mini-*`).
+- Corregido en verificación: choque de clase `lp-sv-accesos` entre tarjeta y contenido; icono que se partía del título en tarjetas estrechas.
+- Verificado: capturas 1280/800 px, medición 768/375 px, 11 pruebas Vitest, tsc, oxlint. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Contacto y pie rediseñados
+- Contacto con pasos conectados e ilustración; formulario blanco con halo violeta, placeholders neutros y selector propio; lógica de envío intacta.
+- Pie con «Elaborado por DataGlobal» junto al copyright; `Marca` reutilizada con «IA» resaltada.
+- Ajuste: prueba de Servicios alineada con la retirada (por el usuario) de la nota ilustrativa; se elimina `.lp-sv-nota`.
+- Verificado: capturas 1280/375 px, 11 pruebas, tsc, oxlint, prettier. Página: [[Página pública de presentación]].

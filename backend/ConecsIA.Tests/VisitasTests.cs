@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ApiConecsia.Services;
@@ -54,7 +54,7 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         _puntoA = await Punto(_orgA, _sedeA, "Portería principal", "Ambos");
         _puntoA2 = await Punto(_orgA, _sedeA2, "Portería A2", "Ambos");
         _puntoSoloSalida = await Punto(_orgA, _sedeA, "Salida norte", "Salida");
-        _zonaOtra = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, es_punto_acceso, activo) VALUES (@p0, @p1, 'Laboratorio', false, true) RETURNING id_zona", _orgA, _sedeA);
+        _zonaOtra = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Laboratorio', true, now()) RETURNING id_zona", _orgA, _sedeA);
         _puntoB = await Punto(_orgB, _sedeB, "Portería B", "Ambos");
 
         _membresiaAdmin = await Membresia(Correo("admin"));
@@ -79,8 +79,12 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         api.ScalarAsync<int>("INSERT INTO sede (id_organizacion, id_ciudad, nombre, zona_horaria, activo) VALUES (@p0, @p1, @p2, 'UTC', true) RETURNING id_sede", org, ciudad, nombre);
     private Task<int> Area(int org, int sede, string nombre) =>
         api.ScalarAsync<int>("INSERT INTO area (id_organizacion, id_sede, nombre, es_comun_zona_empresarial, activo) VALUES (@p0, @p1, @p2, false, true) RETURNING id_area", org, sede, nombre);
-    private Task<int> Punto(int org, int sede, string nombre, string modo) =>
-        api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, es_punto_acceso, modo_acceso, activo) VALUES (@p0, @p1, @p2, true, @p3, true) RETURNING id_zona", org, sede, nombre, modo);
+    /// <summary>Punto de acceso dentro de una zona propia (zona «Acceso &lt;nombre&gt;» de la sede).</summary>
+    private async Task<int> Punto(int org, int sede, string nombre, string modo)
+    {
+        var zona = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, @p2, true, now()) RETURNING id_zona", org, sede, $"Acceso {nombre}");
+        return await api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, id_zona, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, @p2, @p3, @p4, true, now()) RETURNING id_punto_acceso", org, sede, zona, nombre, modo);
+    }
     private Task<int> Membresia(string correo) =>
         api.ScalarAsync<int>("SELECT m.id_membresia FROM membresia_organizacion m JOIN usuario u ON u.id_usuario = m.id_usuario WHERE u.correo = @p0", correo);
 
@@ -301,6 +305,14 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         await Leer(await admin.PostAsJsonAsync($"/api/visitas/{pendiente}/cancelar", new { motivo = "" }), HttpStatusCode.BadRequest);
         var cancelada = await Leer(await admin.PostAsJsonAsync($"/api/visitas/{pendiente}/cancelar", new { motivo = "El visitante no llegó" }), HttpStatusCode.OK);
         Assert.Equal("Cancelada", cancelada.GetProperty("visita").GetProperty("estado").GetString());
+        var evento = cancelada.GetProperty("historial").EnumerateArray().Single(e => e.GetProperty("accion").GetString() == "Cancelar");
+        Assert.Equal("El visitante no llegó", evento.GetProperty("motivo").GetString());
+        Assert.False(string.IsNullOrEmpty(evento.GetProperty("actor").GetString()));
+        // Un reintento de la cancelación no duplica el evento.
+        await Leer(await admin.PostAsJsonAsync($"/api/visitas/{pendiente}/cancelar", new { motivo = "El visitante no llegó" }), HttpStatusCode.Conflict);
+        var detalle = await Leer(await admin.GetAsync($"/api/visitas/{pendiente}"), HttpStatusCode.OK);
+        Assert.Single(detalle.GetProperty("historial").EnumerateArray(), e => e.GetProperty("accion").GetString() == "Cancelar");
+        Assert.Contains(detalle.GetProperty("historial").EnumerateArray(), e => e.GetProperty("accion").GetString() == "Registrar");
         await Leer(await Movimiento(admin, pendiente, "entrada", _puntoA), HttpStatusCode.Conflict);
 
         var autorizacion = await AutorizacionAsync(persona, fin: EnDias(2));
@@ -354,7 +366,8 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         var admin = await Cliente("admin");
         var otro = await Cliente("soloentrada");
         var (persona, _) = await PersonaAsync(admin);
-        var id = (await RegistrarAsync(admin, Visita(persona, await AutorizacionAsync(persona, fin: EnDias(2), cupo: 5)))).GetProperty("idVisita").GetInt32();
+        var autorizacion = await AutorizacionAsync(persona, fin: EnDias(2), cupo: 5);
+        var id = (await RegistrarAsync(admin, Visita(persona, autorizacion))).GetProperty("idVisita").GetInt32();
 
         var respuestas = await Task.WhenAll(Enumerable.Range(0, 6).Select(i => Movimiento(i % 2 == 0 ? admin : otro, id, "entrada", _puntoA)));
         Assert.Equal(1, respuestas.Count(x => x.StatusCode == HttpStatusCode.OK));
@@ -367,7 +380,8 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         await HabilitarSinAutorizacion();
         try
         {
-            var segunda = (await RegistrarAsync(admin, Visita(persona))).GetProperty("idVisita").GetInt32();
+            // La persona es recurrente en la sede (D-46): la segunda visita debe ser otro episodio de su autorización.
+            var segunda = (await RegistrarAsync(admin, Visita(persona, autorizacion))).GetProperty("idVisita").GetInt32();
             var r = await Leer(await Movimiento(admin, segunda, "entrada", _puntoA), HttpStatusCode.Conflict);
             Assert.Contains("ya está dentro de esta sede", r.GetProperty("detail").GetString());
         }
@@ -395,6 +409,40 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         var visita = await RegistrarAsync(admin, new { idPersona = persona, idSede = _sedeA, idArea = _areaA, idMembresiaResponsable = _membresiaAdmin, motivo = "Reunión", excepcionTipoAcceso = true, motivoExcepcion = "No aplica" });
         Assert.False(visita.GetProperty("excepcionTipoAcceso").GetBoolean());
         Assert.False(visita.TryGetProperty("tipoAccesoPersona", out _));
+    }
+
+    // ---------- Tipo de permiso derivado (D-46, 2026-10-29) ----------
+
+    [Fact]
+    public async Task Persona_con_acceso_recurrente_no_se_registra_como_visita_extemporanea()
+    {
+        var admin = await Cliente("admin");
+        var (persona, _) = await PersonaAsync(admin);
+        var detalle = await Leer(await admin.GetAsync($"/api/personas/{persona}"), HttpStatusCode.OK);
+        Assert.Equal("Extemporaneo", detalle.GetProperty("tipoPermiso").GetString());
+
+        // Una autorización Recurrente pendiente o de otra modalidad no la vuelve recurrente.
+        await AutorizacionAsync(persona, estado: "Pendiente");
+        var unica = await AutorizacionAsync(persona, modalidad: "Unica", fin: Hoy);
+        Assert.Equal("Extemporaneo", (await Leer(await admin.GetAsync($"/api/personas/{persona}"), HttpStatusCode.OK)).GetProperty("tipoPermiso").GetString());
+
+        var recurrente = await AutorizacionAsync(persona);
+        detalle = await Leer(await admin.GetAsync($"/api/personas/{persona}"), HttpStatusCode.OK);
+        Assert.Equal("Recurrente", detalle.GetProperty("tipoPermiso").GetString());
+        Assert.Equal(recurrente, detalle.GetProperty("accesosRecurrentes")[0].GetProperty("idAutorizacion").GetInt32());
+        var filtradas = await Leer(await admin.GetAsync($"/api/personas?tipoPermiso=Recurrente&buscar={_sufijo}"), HttpStatusCode.OK);
+        Assert.Contains(filtradas.EnumerateArray(), x => x.GetProperty("idPersona").GetInt32() == persona);
+
+        // Sin autorización o con otra puntual: 409 auditado y sin visita.
+        var antes = await api.ScalarAsync<long>("SELECT count(*) FROM visita WHERE id_persona = @p0", persona);
+        await Leer(await admin.PostAsJsonAsync("/api/visitas", Visita(persona)), HttpStatusCode.Conflict);
+        await Leer(await admin.PostAsJsonAsync("/api/visitas", Visita(persona, unica)), HttpStatusCode.Conflict);
+        Assert.Equal(antes, await api.ScalarAsync<long>("SELECT count(*) FROM visita WHERE id_persona = @p0", persona));
+        Assert.Equal(2, await api.ScalarAsync<long>("SELECT count(*) FROM auditoria WHERE accion = 'RechazarVisitaRecurrente' AND id_registro = @p0", $"persona:{persona}"));
+
+        // Como episodio de su autorización recurrente sí (CA-11). En otra sede sigue siendo extemporánea.
+        await RegistrarAsync(admin, Visita(persona, recurrente));
+        await RegistrarAsync(admin, Visita(persona, sede: _sedeA2, area: _areaA2));
     }
 
     // ---------- Aislamiento, alcance y permisos ----------

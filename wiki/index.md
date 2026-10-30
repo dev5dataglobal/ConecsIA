@@ -13,7 +13,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Organización]] — cliente SaaS y frontera de aislamiento
 - [[Sede]] — instalación física
 - [[Área o destino]] — unidad receptora de la visita
-- [[Zona y punto de acceso]] — sector físico; propuesta `esPuntoAcceso`
+- [[Zona y punto de acceso]] — sector físico restringible; el punto de acceso es registro propio dentro de la zona (ADR-027)
 - [[Persona]] — individuo por organización, ≠ usuario
 - [[Usuarios, roles y permisos]] — perfiles y acceso efectivo
 - [[Autorización]] — modalidades, vigencia, consumo
@@ -38,6 +38,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
 - [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
 - [[ADR-024 Acciones por módulo y contexto de organización]] — Implementado 2026-10-24: Consultar/Añadir/Editar por módulo, selector de organización solo para plataforma
+- [[ADR-027 Punto de acceso como entidad dentro de la zona]] — Implementado 2026-10-28: Sede → Zona → Punto de acceso con FK compuestas; reemplaza ADR-019
 - [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] — Implementado 2026-10-26: ciclo propio Pendiente/Aprobada/Rechazada/Revocada, separado de la autorización de la persona, historial inmutable
 - [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
@@ -75,8 +76,10 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
 - [[Personas]] — registro por organización, catálogos, foto privada, teléfonos 1:N, vehículos N:M y dispositivos 1:N
 - [[Autorizaciones de vehículos y dispositivos]] — dispositivos por persona y autorizaciones de ingreso de objetos con historial y auditoría inmutables
+- [[Zonas y puntos de acceso]] — administración de zonas y puntos (RF-05), restricción de autorizaciones por zona y punto en cada movimiento
 - [[Visitas]] — registro de visitas, estados, entrada/salida idempotentes, permanencias y personas dentro
 - [[Control de accesos]] — solicitudes de autorización de ingreso de personas, aprobación y rechazo (2026-10-28)
+- [[Página pública de presentación]] — landing pública `/presentacion` con formulario de contacto conectado a `POST /api/publico/contactos`
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código

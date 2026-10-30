@@ -50,3 +50,11 @@ C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Infrastructure.runtimeconfig.json
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Infrastructure.dll
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Infrastructure.pdb
+C:\Users\USUARIO\AppData\Local\Temp\cb\Infrastructure.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\cb\Infrastructure.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\cb\Infrastructure.dll
+C:\Users\USUARIO\AppData\Local\Temp\cb\Infrastructure.pdb
+C:\Users\USUARIO\AppData\Local\Temp\ct\Infrastructure.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\ct\Infrastructure.runtimeconfig.json
+C:\Users\USUARIO\AppData\Local\Temp\ct\Infrastructure.dll
+C:\Users\USUARIO\AppData\Local\Temp\ct\Infrastructure.pdb

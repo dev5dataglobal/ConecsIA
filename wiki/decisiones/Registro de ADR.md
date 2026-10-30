@@ -30,7 +30,7 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-016 Reportes y exportaciones Excel y PDF]] | backend | Propuesta | D-15 |
 | [[ADR-017 Entorno local y despliegue]] | despliegue | **Aprobado 2026-10-17** | D-13, D-14, D-15 |
 | [[ADR-018 Observabilidad sin datos sensibles]] | despliegue | **Aprobado 2026-10-17** | D-13 |
-| [[ADR-019 Zona única con atributo de punto de acceso]] | persistencia | Propuesta | Confirmación de producto |
+| [[ADR-019 Zona única con atributo de punto de acceso]] | persistencia | **Obsoleta 2026-10-28** (reemplazada por ADR-027) | — |
 | [[ADR-020 Contratos API y formato de errores]] | backend | **Aprobado 2026-10-17** | — |
 | [[ADR-021 DbContext compartido y ensamblado de migraciones]] | persistencia | **Aprobado 2026-10-19** (con 3 condiciones) | — |
 | [[ADR-022 Autenticación de desarrollo provisional]] | seguridad | **Aprobado 2026-10-19** (solo Development/pruebas) | — |
@@ -38,6 +38,7 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-024 Acciones por módulo y contexto de organización]] | seguridad | **Implementado 2026-10-24** (solicitud del usuario; detalles de diseño del agente por revisar) | D-24..D-28 |
 | [[ADR-025 Sesión renovable y recuperación de contraseña]] | seguridad | **Implementado 2026-10-26** (solicitud del usuario; detalles de diseño del agente por revisar) | D-29, D-30 |
 | [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] | dominio | **Implementado 2026-10-26** (solicitud del usuario; modelo separado del PRD por validar) | D-31, D-32, D-33 |
+| [[ADR-027 Punto de acceso como entidad dentro de la zona]] | persistencia | **Implementado 2026-10-28** (solicitud del usuario; detalles de diseño del agente por revisar) | D-43, D-44, D-45 |
 
 ## Origen de cada propuesta
 - **Propuesta explícita del PRD:** ADR-001, 002, 003, 004, 007, 008, 009, 010, 011, 012, 013, 014, 019 (el PRD ya las enuncia; aquí se concretan).

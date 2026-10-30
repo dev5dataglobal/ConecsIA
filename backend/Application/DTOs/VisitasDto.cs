@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ConecsIA.Application.DTOs;
 
@@ -98,6 +98,8 @@ public sealed class VisitaDetalleDto
     public AutorizacionVisitaDto? Autorizacion { get; set; }
     public PermanenciaVisitaDto? Permanencia { get; set; }
     public List<MovimientoVisitaDto> Movimientos { get; set; } = [];
+    /// <summary>Eventos de ciclo de vida (registro, vínculo, cancelación…) leídos de la auditoría; nunca se editan.</summary>
+    public List<EventoVisitaDto> Historial { get; set; } = [];
     /// <summary>Evaluación del servidor en este instante (no registra nada).</summary>
     public EvaluacionIngresoDto Evaluacion { get; set; } = null!;
 }
@@ -144,6 +146,15 @@ public sealed class MovimientoVisitaDto
     public string? Operador { get; set; }
     public DateTime OcurridoEn { get; set; }
     public string? Observacion { get; set; }
+}
+
+public sealed class EventoVisitaDto
+{
+    public long IdEvento { get; set; }
+    public string Accion { get; set; } = "";
+    public string? Actor { get; set; }
+    public DateTime OcurridoEn { get; set; }
+    public string? Motivo { get; set; }
 }
 
 public sealed class EvaluacionIngresoDto

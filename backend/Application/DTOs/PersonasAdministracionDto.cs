@@ -54,6 +54,13 @@ public sealed class PersonaListaDto
     public bool TieneFoto { get; set; }
     public bool Activo { get; set; }
     public DateTime CreadoEn { get; set; }
+    /// <summary>
+    /// Tipo de permiso de acceso <b>derivado</b> (no se almacena): «Recurrente» si la persona tiene una autorización
+    /// Recurrente o Permanente aprobada y vigente hoy en alguna sede de tu alcance; si no, «Extemporaneo».
+    /// </summary>
+    public string TipoPermiso { get; set; } = "Extemporaneo";
+    /// <summary>Autorizaciones que la hacen recurrente (vacío si es extemporánea).</summary>
+    public List<AccesoRecurrenteDto> AccesosRecurrentes { get; set; } = [];
 }
 
 public sealed class PersonaDetalleDto
@@ -73,10 +80,28 @@ public sealed class PersonaDetalleDto
     public bool TieneFoto { get; set; }
     public bool Activo { get; set; }
     public DateTime CreadoEn { get; set; }
+    /// <summary>
+    /// Tipo de permiso de acceso <b>derivado</b> (no se almacena): «Recurrente» si la persona tiene una autorización
+    /// Recurrente o Permanente aprobada y vigente hoy en alguna sede de tu alcance; si no, «Extemporaneo».
+    /// </summary>
+    public string TipoPermiso { get; set; } = "Extemporaneo";
+    /// <summary>Autorizaciones que la hacen recurrente (vacío si es extemporánea).</summary>
+    public List<AccesoRecurrenteDto> AccesosRecurrentes { get; set; } = [];
     /// <summary>Correo del usuario que registró a la persona (tomado de la identidad autenticada al crearla; no editable).</summary>
     public string? RegistradoPor { get; set; }
     public List<TelefonoPersonaDto> Telefonos { get; set; } = [];
     public List<VehiculoPersonaDto> Vehiculos { get; set; } = [];
+}
+
+/// <summary>Autorización recurrente o permanente vigente que clasifica a la persona como Recurrente en una sede.</summary>
+public sealed class AccesoRecurrenteDto
+{
+    public int IdAutorizacion { get; set; }
+    public string Modalidad { get; set; } = string.Empty;
+    public int IdSede { get; set; }
+    public string? Sede { get; set; }
+    public DateOnly FechaInicio { get; set; }
+    public DateOnly? FechaFin { get; set; }
 }
 
 // ---------- Teléfonos ----------

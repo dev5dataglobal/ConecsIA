@@ -58,7 +58,7 @@ _(vacío)_
 | HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Backlog |
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | En revisión |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | Backlog |
-| HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | Backlog |
+| HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | En revisión |
 | HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog; aceptación de invitación depende de D-03 |
 | HU-017 | Roles configurables y catálogo de permisos | [[EP-05 Usuarios, roles y permisos]] | F1 | L | Backlog |
 | HU-018 | Alcance por sede, destino y punto de acceso | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog |

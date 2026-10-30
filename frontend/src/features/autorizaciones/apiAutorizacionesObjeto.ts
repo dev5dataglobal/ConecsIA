@@ -60,6 +60,8 @@ export interface AutorizacionObjetoEntrada {
   horaInicio: string | null
   horaFin: string | null
   motivo: string | null
+  /** Autorización de ingreso de la persona a la que se asocia (opcional; no la aprueba por sí sola). */
+  idAutorizacion?: number | null
 }
 
 export interface OpcionesAutorizacion {
@@ -68,6 +70,7 @@ export interface OpcionesAutorizacion {
 }
 
 export interface FiltrosAutorizacion {
+  idPersona?: number
   buscar?: string
   estado?: string
   tipoObjeto?: string

@@ -5,7 +5,7 @@ import { Icono } from '../../shared/ui/Icono'
 import { Selector } from '../../shared/ui/Selector'
 import { useAcciones } from '../modulos/apiModulos'
 import { buscarPorDocumento, consultarCatalogosPersona, consultarPersonas, type PersonaLista } from '../personas/apiPersonas'
-import { PersonaFormulario } from '../personas/PersonasPage'
+import { PermisoAcceso, PersonaFormulario } from '../personas/PersonasPage'
 import { leerOrganizacionActiva } from '../sesion/sesion'
 import { BotonIcono, BotonNuevo, Buscador, Campo, Dialogo, Estado, EstadoConsulta, Filtro, Marco } from '../administracion/componentes'
 import { mensajeError, useAviso, useDiferido } from '../administracion/utilidades'
@@ -83,6 +83,13 @@ export function VisitasPage() {
 
 function useOpciones(habilitado: boolean) {
   return useQuery({ queryKey: [CLAVE, 'opciones', leerOrganizacionActiva()], queryFn: consultarOpcionesVisita, enabled: habilitado, staleTime: 60_000 })
+}
+
+const TEXTO_EVENTO: Record<string, string> = {
+  Registrar: 'Visita registrada',
+  VincularAutorizacion: 'Autorización vinculada',
+  Cancelar: 'Visita cancelada',
+  ActualizarEstado: 'Estado actualizado',
 }
 
 // ---------- Listado ----------
@@ -261,22 +268,39 @@ function DetalleVisita({ id, opciones, onClose, onAviso }: { id: number; opcione
             </div>
           )}
           {d.evaluacion.puedeIngresar && <p className="vi-ok" role="status"><Icono nombre="check" /> La autorización está vigente: puede registrarse la entrada.</p>}
-          <div className="pe-resumen">
-            <dl>
-              <div><dt>Estado</dt><dd><EstadoVisitaEtiqueta estado={v.estado} /></dd></div>
-              <div><dt>Documento</dt><dd>{v.documentoPersona}{v.personaActiva ? '' : ' · persona inactiva'}</dd></div>
-              <div><dt>Sede / destino</dt><dd>{v.sede} · {v.area}</dd></div>
-              <div><dt>Responsable</dt><dd>{v.responsable ?? '—'}</dd></div>
-              {v.fechaEsperada && <div><dt>Esperada</dt><dd>{fecha(v.fechaEsperada)}{v.horaEsperadaInicio ? ` · ${hora(v.horaEsperadaInicio)} a ${hora(v.horaEsperadaFin)}` : ''}</dd></div>}
-              <div><dt>Registrada por</dt><dd>{d.registradaPor ?? '—'} · {enSede(v.creadoEn, v.zonaHoraria)}</dd></div>
-              {v.motivo && <div data-ancho="completo"><dt>Motivo</dt><dd>{v.motivo}</dd></div>}
-              {v.excepcionTipoAcceso && <div data-ancho="completo"><dt>Excepción al tipo de permiso</dt><dd>Registrada como visita aunque la persona tenía permiso recurrente (clasificación retirada el 2026-10-28). Motivo: {v.motivoExcepcion}</dd></div>}
-              {d.motivoCierre && <div data-ancho="completo"><dt>Motivo de cierre</dt><dd>{d.motivoCierre}</dd></div>}
-            </dl>
+          <dl className="dt-franja">
+            <div><dt>Estado</dt><dd><EstadoVisitaEtiqueta estado={v.estado} /></dd></div>
+            <div><dt>Documento</dt><dd>{v.documentoPersona}{v.personaActiva ? '' : <small> · persona inactiva</small>}</dd></div>
+          </dl>
+          <div className="dt-bloques">
+            <section className="dt-bloque" aria-label="Destino">
+              <h3>Destino</h3>
+              <dl>
+                <div><dt>Sede / destino</dt><dd>{v.sede}<small>{v.area}</small></dd></div>
+                {v.fechaEsperada && <div><dt>Esperada</dt><dd>{fecha(v.fechaEsperada)}{v.horaEsperadaInicio ? ` · ${hora(v.horaEsperadaInicio)} a ${hora(v.horaEsperadaFin)}` : ''}</dd></div>}
+              </dl>
+            </section>
+            <section className="dt-bloque" aria-label="Trazabilidad">
+              <h3>Trazabilidad</h3>
+              <dl>
+                <div><dt>Responsable</dt><dd>{v.responsable ?? '—'}</dd></div>
+                <div><dt>Registrada por</dt><dd>{d.registradaPor ?? '—'}<small>{enSede(v.creadoEn, v.zonaHoraria)}</small></dd></div>
+              </dl>
+            </section>
           </div>
+          {(v.motivo || v.excepcionTipoAcceso || d.motivoCierre) && (
+            <section className="dt-bloque" aria-label="Motivos">
+              <h3>Motivos</h3>
+              <dl>
+                {v.motivo && <div><dt>Motivo</dt><dd><p className="dt-nota">{v.motivo}</p></dd></div>}
+                {v.excepcionTipoAcceso && <div><dt>Excepción al tipo de permiso</dt><dd><p className="dt-nota">Registrada como visita aunque la persona tenía permiso recurrente (clasificación retirada el 2026-10-28). Motivo: {v.motivoExcepcion}</p></dd></div>}
+                {d.motivoCierre && <div><dt>Motivo de cierre</dt><dd><p className="dt-nota">{d.motivoCierre}</p></dd></div>}
+              </dl>
+            </section>
+          )}
 
-          <section className="pe-seccion" aria-label="Autorización">
-            <header><h3>Autorización</h3></header>
+          <section className="dt-bloque" aria-label="Autorización">
+            <h3>Autorización</h3>
             {d.autorizacion ? (
               <p className="vi-linea">
                 #{d.autorizacion.idAutorizacion} · {d.autorizacion.modalidad} · <strong>{d.autorizacion.estado}</strong> · {fecha(d.autorizacion.fechaInicio)}
@@ -303,30 +327,41 @@ function DetalleVisita({ id, opciones, onClose, onAviso }: { id: number; opcione
           ) : null}
 
           {d.permanencia && (
-            <section className="pe-seccion" aria-label="Permanencia">
-              <header><h3>Permanencia</h3></header>
+            <section className="dt-bloque" aria-label="Permanencia">
+              <h3>Permanencia</h3>
               <p className="vi-linea">
                 Entró {enSede(d.permanencia.abiertaEn, v.zonaHoraria)}
                 {d.permanencia.cerradaEn ? ` · salió ${enSede(d.permanencia.cerradaEn, v.zonaHoraria)} · duración ${duracion(d.permanencia.duracionSegundos ?? 0)}` : ' · sigue dentro'}
               </p>
             </section>
           )}
-          {control.consultar && (
-            <section className="pe-seccion" aria-label="Movimientos">
-              <header><h3>Movimientos</h3></header>
-              {d.movimientos.length === 0 ? <p className="ad-tenue vi-linea">Sin movimientos registrados.</p> : (
-                <ol className="au-historial">
-                  {d.movimientos.map((m) => (
-                    <li key={m.idMovimiento}>
-                      <strong>{m.tipoMovimiento} · {m.puntoAcceso}</strong>
-                      <small>{m.operador ?? 'Usuario desconocido'} · {enSede(m.ocurridoEn, v.zonaHoraria)}</small>
-                      {m.observacion && <small>{m.observacion}</small>}
+          <section className="dt-bloque" aria-label="Movimientos e historial">
+            <h3>Movimientos e historial</h3>
+            {(() => {
+              // Eventos de la visita (auditoría) + movimientos físicos (solo con ControlAccesos.Consultar), en orden cronológico.
+              const filas = [
+                ...d.historial.map((e) => ({
+                  clave: `e${e.idEvento}`, en: e.ocurridoEn, titulo: TEXTO_EVENTO[e.accion] ?? e.accion, actor: e.actor, nota: e.motivo,
+                  tono: e.accion === 'Cancelar' ? 'rechazo' : 'violeta',
+                })),
+                ...(control.consultar ? d.movimientos : []).map((m) => ({
+                  clave: `m${m.idMovimiento}`, en: m.ocurridoEn, titulo: `${m.tipoMovimiento} · ${m.puntoAcceso}${m.zona ? ` (${m.zona})` : ''}`,
+                  actor: m.operador, nota: m.observacion, tono: undefined,
+                })),
+              ].sort((x, y) => x.en.localeCompare(y.en))
+              return filas.length === 0 ? <p className="ad-tenue vi-linea">Sin movimientos registrados.</p> : (
+                <ol className="dt-linea">
+                  {filas.map((f) => (
+                    <li key={f.clave} data-tono={f.tono}>
+                      <strong>{f.titulo}</strong>
+                      <small>{f.actor ?? 'Usuario desconocido'} · {enSede(f.en, v.zonaHoraria)}</small>
+                      {f.nota && <p className="dt-nota" data-tono={f.tono === 'rechazo' ? 'rechazo' : undefined}>{f.nota}</p>}
                     </li>
                   ))}
                 </ol>
-              )}
-            </section>
-          )}
+              )
+            })()}
+          </section>
         </>
       )}
     </Dialogo>
@@ -364,7 +399,7 @@ function RegistrarMovimiento({ visita, tipo, puntos, onCancelar, onHecho, onDesa
       <strong>{tipo === 'entrada' ? 'Registrar entrada' : 'Registrar salida'}</strong>
       <Campo etiqueta="Punto de acceso" error={errorPunto ?? undefined}>
         <Selector className="sel-campo" etiqueta="Punto de acceso" valor={idPunto} invalido={Boolean(errorPunto)} onChange={(v) => { setIdPunto(v); clave.current = nuevaClave() }}
-          opciones={[{ valor: '', texto: disponibles.length ? 'Selecciona…' : 'La sede no tiene puntos de acceso disponibles para ti', deshabilitada: true }, ...disponibles.map((p) => ({ valor: String(p.id), texto: p.nombre }))]} />
+          opciones={[{ valor: '', texto: disponibles.length ? 'Selecciona…' : 'La sede no tiene puntos de acceso disponibles para ti', deshabilitada: true }, ...disponibles.map((p) => ({ valor: String(p.id), texto: `${p.nombre} · ${p.zona}` }))]} />
       </Campo>
       <Campo etiqueta="Observación (opcional)">
         <textarea value={observacion} maxLength={500} onChange={(e) => { setObservacion(e.target.value); clave.current = nuevaClave() }} />
@@ -470,6 +505,10 @@ function NuevaVisita({ opciones, onClose, onCreada }: { opciones: OpcionesVisita
   // Si el destino tiene responsables designados, solo ellos; si no, cualquier usuario activo (D-04 pendiente).
   const designados = opciones.responsables.filter((r) => r.areas.includes(datos.idArea))
   const responsables = designados.length ? designados : opciones.responsables
+  // Accesos recurrentes vigentes de la persona en la sede elegida (D-46). Con ellos la visita no es extemporánea:
+  // solo puede registrarse como episodio de esa autorización (CA-11). El servidor lo vuelve a validar (409).
+  const recurrentesSede = (persona?.accesosRecurrentes ?? []).filter((a) => a.idSede === datos.idSede) ?? []
+  const bloqueoRecurrente = recurrentesSede.length > 0 && !recurrentesSede.some((a) => a.idAutorizacion === datos.idAutorizacion)
 
   function siguiente(event: FormEvent) {
     event.preventDefault()
@@ -480,22 +519,25 @@ function NuevaVisita({ opciones, onClose, onCreada }: { opciones: OpcionesVisita
     if (paso === 'destino') {
       const nuevos = validarVisita(datos)
       setErrores(nuevos)
-      if (Object.keys(nuevos).length === 0) setPaso('autorizacion')
+      if (Object.keys(nuevos).length === 0) {
+        if (recurrentesSede.length === 1 && !datos.idAutorizacion) cambiar({ idAutorizacion: recurrentesSede[0]!.idAutorizacion })
+        setPaso('autorizacion')
+      }
       return
     }
-    if (!crear.isPending) crear.mutate()
+    if (!crear.isPending && !bloqueoRecurrente) crear.mutate()
   }
 
   const pasos: { id: Paso; texto: string }[] = [{ id: 'persona', texto: 'Visitante' }, { id: 'destino', texto: 'Destino' }, { id: 'autorizacion', texto: 'Autorización' }]
 
   return (
-    <Dialogo titulo="Nueva visita" eyebrow="Registro de visita" icono="visitas" ancho="amplio" onClose={onClose} onSubmit={siguiente}
+    <Dialogo titulo="Nueva visita" eyebrow="Ingreso extemporáneo" icono="visitas" ancho="amplio" onClose={onClose} onSubmit={siguiente}
       pie={(
         <>
           <button type="button" className="ad-boton-sec" onClick={paso === 'persona' ? onClose : () => setPaso(paso === 'autorizacion' ? 'destino' : 'persona')}>
             {paso === 'persona' ? 'Cancelar' : 'Atrás'}
           </button>
-          <button type="submit" className="ad-boton" disabled={(paso === 'persona' && !persona) || crear.isPending}>
+          <button type="submit" className="ad-boton" disabled={(paso === 'persona' && !persona) || (paso === 'autorizacion' && bloqueoRecurrente) || crear.isPending}>
             {paso === 'autorizacion' ? (crear.isPending ? 'Registrando…' : 'Registrar visita') : 'Continuar'}
           </button>
         </>
@@ -505,6 +547,10 @@ function NuevaVisita({ opciones, onClose, onCreada }: { opciones: OpcionesVisita
       </ol>
       {paso === 'persona' && (
         <>
+          <p className="vi-alerta" data-tono="info">
+            <strong>Ingreso extemporáneo.</strong> Las visitas son para personas que ingresan de forma ocasional. Quien tiene acceso recurrente
+            vigente en la sede ingresa con su autorización.
+          </p>
           <PasoPersona persona={persona} puedeRegistrar={personasAcciones.anadir} onPersona={setPersona} />
         </>
       )}
@@ -539,6 +585,16 @@ function NuevaVisita({ opciones, onClose, onCreada }: { opciones: OpcionesVisita
           </Campo>
         </div>
       )}
+      {paso !== 'persona' && recurrentesSede.length > 0 && (
+        <div className="vi-alerta" data-tono={bloqueoRecurrente ? 'error' : 'info'} role={bloqueoRecurrente ? 'alert' : 'status'}>
+          <strong>{persona!.nombres} tiene acceso recurrente vigente en esta sede.</strong>
+          <span>
+            {bloqueoRecurrente
+              ? `No puede registrarse como visita extemporánea. Vincula su autorización ${recurrentesSede.map((a) => `#${a.idAutorizacion}`).join(' o ')} para registrar este ingreso como un episodio de su acceso recurrente.`
+              : `La visita se registrará como episodio de su autorización #${datos.idAutorizacion}.`}
+          </span>
+        </div>
+      )}
       {paso === 'autorizacion' && persona && (
         <PasoAutorizacion idPersona={persona.idPersona} idSede={datos.idSede} idArea={datos.idArea} valor={datos.idAutorizacion}
           permiteSinAutorizacion={opciones.permiteSinAutorizacion} onChange={(idAutorizacion) => cambiar({ idAutorizacion })} />
@@ -571,6 +627,10 @@ function PasoPersona({ persona, onPersona, puedeRegistrar }: { persona: PersonaL
       <div className="pe-existente">
         <span className="vi-seleccion"><strong>{persona.nombres} {persona.apellidos}</strong></span>
         <span className="ad-tenue">{persona.tipoDocumento} {persona.numeroDocumento}{persona.empresaProcedencia ? ` · ${persona.empresaProcedencia}` : ''}</span>
+        <span className="vi-permiso"><span className="ad-tenue">Tipo de permiso:</span> <PermisoAcceso persona={persona} /></span>
+        {persona.tipoPermiso === 'Recurrente' && (
+          <span className="ad-tenue">En las sedes indicadas solo podrá registrarse vinculando su autorización recurrente; en las demás, como visita extemporánea.</span>
+        )}
         {!persona.activo && <span className="ad-mensaje">Persona inactiva: el servidor no permitirá registrar la visita.</span>}
         <button type="button" className="ad-enlace" onClick={() => { onPersona(null); porDocumento.reset() }}>Cambiar</button>
       </div>
@@ -610,7 +670,7 @@ function PasoPersona({ persona, onPersona, puedeRegistrar }: { persona: PersonaL
             {porNombre.data.slice(0, 8).map((p) => (
               <li key={p.idPersona}>
                 <button type="button" role="option" aria-selected={false} onClick={() => onPersona(p)}>
-                  {p.nombres} {p.apellidos} <small>{p.tipoDocumento} {p.numeroDocumento}</small>
+                  {p.nombres} {p.apellidos} <small>{p.tipoDocumento} {p.numeroDocumento} · {p.tipoPermiso === 'Recurrente' ? 'Recurrente' : 'Extemporáneo'}</small>
                 </button>
               </li>
             ))}

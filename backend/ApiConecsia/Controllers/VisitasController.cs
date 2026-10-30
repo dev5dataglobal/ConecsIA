@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using ApiConecsia.Helpers;
@@ -33,6 +33,7 @@ public sealed class VisitasController(
     IModuloAccesoService accesos) : AdministracionControllerBase(db, organizationContext, accesos)
 {
     private const string Entidad = "Visita";
+    private static readonly string[] AccionesHistorial = ["Registrar", "VincularAutorizacion", "Cancelar", "ActualizarEstado"];
     private const string CabeceraIdempotencia = "Idempotency-Key";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -219,6 +220,20 @@ public sealed class VisitasController(
         {
             estado = Autorizada;
             politica = ParametroSinAutorizacion;
+        }
+
+        // Ingreso extemporáneo vs. recurrente (D-46): quien tiene acceso recurrente vigente en la sede solo puede registrar
+        // la visita como episodio de esa autorización (CA-11), nunca como visita extemporánea (sin autorización u otra
+        // autorización puntual). Sin excepción mientras D-46 no la defina; el intento se audita.
+        var recurrente = (await ReglasPermisoAcceso.AccesosAsync(Db, [persona.IdPersona], null, sede.IdSede, DateTime.UtcNow, ct)).GetValueOrDefault(persona.IdPersona);
+        if (recurrente is { Count: > 0 } && !recurrente.Any(x => x.IdAutorizacion == request.IdAutorizacion))
+        {
+            Auditar(OrganizacionActiva, "RechazarVisitaRecurrente", Entidad, $"persona:{persona.IdPersona}", null,
+                new { persona.IdPersona, sede.IdSede, Autorizaciones = recurrente.Select(x => x.IdAutorizacion) }, "Rechazado");
+            await Db.SaveChangesAsync(ct);
+            var a = recurrente[0];
+            return Conflicto($"{persona.Nombres} {persona.Apellidos} tiene acceso {ReglasAutorizacion.TextoModalidad(a.Modalidad)} vigente en {sede.Nombre} " +
+                $"(autorización #{a.IdAutorizacion}). No se registra como visita extemporánea: vincula esa autorización.");
         }
 
         var ahora = DateTime.UtcNow;
@@ -636,6 +651,18 @@ public sealed class VisitasController(
                     OcurridoEn = m.OcurridoEn, Observacion = m.Observacion,
                 }).ToListAsync(ct);
         }
+        var idRegistro = id.ToString();
+        detalle.Historial = await Db.Auditorias.AsNoTracking()
+            .Where(x => x.IdOrganizacion == OrganizacionActiva && x.Entidad == Entidad && x.IdRegistro == idRegistro && x.Resultado == "Exitoso"
+                && AccionesHistorial.Contains(x.Accion))
+            .OrderBy(x => x.OcurridoEn).ThenBy(x => x.IdAuditoria)
+            .Select(x => new EventoVisitaDto
+            {
+                IdEvento = x.IdAuditoria, Accion = x.Accion, OcurridoEn = x.OcurridoEn,
+                Actor = Db.Usuarios.Where(u => u.IdUsuario == x.IdUsuario).Select(u => u.Correo).FirstOrDefault(),
+            }).ToListAsync(ct);
+        // La cancelación ocurre una sola vez (bloqueo + estado), así que su motivo es el motivo de cierre vigente.
+        foreach (var e in detalle.Historial.Where(e => e.Accion == "Cancelar")) e.Motivo = visita.MotivoCierre;
         var evaluacion = await EvaluarIngresoAsync(visita, sede, null, DateTime.UtcNow, ct);
         detalle.Evaluacion = new EvaluacionIngresoDto
         {

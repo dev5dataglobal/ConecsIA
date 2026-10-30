@@ -25,7 +25,11 @@ const TRAZOS = {
   check: 'M5 12.5l4.5 4.5L19 7.5',
   imagen: 'M4 5h16v14H4zM4 16l5-5 4 4 2-2 5 5M15 9.5h.01',
   flecha: 'M5 12h14M13 6l6 6-6 6',
+  eliminar: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
   vacio: 'M4 13h4l2 3h4l2-3h4M5.5 6.5 4 13v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5l-1.5-6.5A1 1 0 0 0 17.5 6h-11a1 1 0 0 0-1 .5Z',
+  documento: 'M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1ZM14 3v5h5M9 13h6M9 17h6M9 9h2',
+  mensaje: 'M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01',
+  reloj: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l3 2',
 } as const
 
 export type NombreIcono = keyof typeof TRAZOS

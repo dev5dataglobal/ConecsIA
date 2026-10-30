@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ApiConecsia.Controllers;
 
 /// <summary>
-/// Administración de zonas y puntos de acceso (RF-05, ADR-031): Organización → Sede (ubicación) → Zona → Punto de acceso.
+/// Administración de zonas y puntos de acceso (RF-05, ADR-027): Organización → Sede (ubicación) → Zona → Punto de acceso.
 /// Organización: siempre la activa validada en servidor (filtro global); alcance por sede de la membresía (D-34).
 /// Permisos: módulo «sedes» (estructura física) — consultar, añadir, editar; eliminar exige editar.
 /// Unicidad: nombre por sede sin distinguir mayúsculas (zona y punto), garantizada por índices únicos.

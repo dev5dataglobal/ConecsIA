@@ -34,3 +34,9 @@ C:\Users\USUARIO\AppData\Local\Temp\conecsia-build\Domain.pdb
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Domain.deps.json
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Domain.dll
 C:\Users\USUARIO\AppData\Local\Temp\claude\D--Documentos-Data-Global-ConecsIA\2d6d68de-5073-447f-8ac7-c41df4daeeea\scratchpad\build\Domain.pdb
+C:\Users\USUARIO\AppData\Local\Temp\cb\Domain.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\cb\Domain.dll
+C:\Users\USUARIO\AppData\Local\Temp\cb\Domain.pdb
+C:\Users\USUARIO\AppData\Local\Temp\ct\Domain.deps.json
+C:\Users\USUARIO\AppData\Local\Temp\ct\Domain.dll
+C:\Users\USUARIO\AppData\Local\Temp\ct\Domain.pdb

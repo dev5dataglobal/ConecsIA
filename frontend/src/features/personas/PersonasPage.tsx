@@ -49,6 +49,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
   const [buscar, setBuscar] = useState('')
   const [estado, setEstado] = useState('')
   const [tipo, setTipo] = useState('')
+  const [permiso, setPermiso] = useState('')
   const [formulario, setFormulario] = useState<PersonaLista | 'nueva' | null>(null)
   const [detalle, setDetalle] = useState<number | null>(null)
   const [confirmar, setConfirmar] = useState<PersonaLista | null>(null)
@@ -57,8 +58,8 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
   const texto = useDiferido(buscar)
   const catalogos = useCatalogos()
   const personas = useQuery({
-    queryKey: [CLAVE, leerOrganizacionActiva(), texto, estado, tipo],
-    queryFn: () => consultarPersonas({ buscar: texto, estado, idTipoPersona: tipo }),
+    queryKey: [CLAVE, leerOrganizacionActiva(), texto, estado, tipo, permiso],
+    queryFn: () => consultarPersonas({ buscar: texto, estado, idTipoPersona: tipo, tipoPermiso: permiso }),
     enabled: acciones.consultar,
     placeholderData: keepPreviousData,
   })
@@ -72,7 +73,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
     },
   })
   const gestionarAcceso = useGestionarAcceso()
-  const filtrando = Boolean(buscar || estado || tipo)
+  const filtrando = Boolean(buscar || estado || tipo || permiso)
 
   return (
     <Marco
@@ -86,6 +87,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
         <Buscador valor={buscar} onChange={setBuscar} etiqueta="Buscar personas" placeholder="Buscar por nombre, documento o correo" />
         <Filtro etiqueta="Filtrar por tipo de persona" valor={tipo} onChange={setTipo}
           opciones={[{ valor: '', texto: 'Todos los tipos' }, ...(catalogos.data?.tiposPersona ?? []).map((t) => ({ valor: String(t.id), texto: t.nombre }))]} />
+        <Filtro etiqueta="Filtrar por tipo de permiso" valor={permiso} onChange={setPermiso} opciones={PERMISOS} />
         <Filtro etiqueta="Filtrar por estado" valor={estado} onChange={setEstado} opciones={ESTADOS} />
       </div>
       {!acciones.consultar ? (
@@ -102,6 +104,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
                 <th scope="col">Persona</th>
                 <th scope="col">Documento</th>
                 <th scope="col">Tipo</th>
+                <th scope="col">Permiso</th>
                 <th scope="col">Teléfono</th>
                 <th scope="col">Estado</th>
                 <th scope="col"><span className="sr-only">Acciones</span></th>
@@ -123,6 +126,7 @@ function ListaPersonas({ pestanas }: { pestanas: ReactNode }) {
                   </td>
                   <td><span className="ad-etiqueta">{p.tipoDocumento}</span> {p.numeroDocumento}</td>
                   <td>{p.tipoPersona ?? '—'}</td>
+                  <td><PermisoAcceso persona={p} /></td>
                   <td>{p.telefonoPrincipal ?? <span className="ad-tenue">—</span>}</td>
                   <td><Estatus activo={p.activo} /></td>
                   <td className="ad-acciones">
@@ -192,6 +196,40 @@ function Foto({ persona, grande }: { persona: { idPersona: number; tieneFoto: bo
 }
 
 // ---------- Formulario de persona ----------
+
+const PERMISOS = [
+  { valor: '', texto: 'Todos los permisos' },
+  { valor: 'Recurrente', texto: 'Recurrente' },
+  { valor: 'Extemporaneo', texto: 'Extemporáneo' },
+]
+
+const fecha = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('es-CO', { dateStyle: 'medium' })
+
+/**
+ * Tipo de permiso de acceso derivado por el servidor (D-46). Recurrente lista las sedes y autorizaciones que lo
+ * sustentan; la pastilla siempre lleva texto (no depende solo del color).
+ */
+export function PermisoAcceso({ persona, detalle = false }: { persona: Pick<PersonaLista, 'tipoPermiso' | 'accesosRecurrentes'>; detalle?: boolean }) {
+  const accesos = persona.accesosRecurrentes ?? []
+  const recurrente = persona.tipoPermiso === 'Recurrente' && accesos.length > 0
+  const sedes = [...new Set(accesos.map((a) => a.sede ?? `Sede ${a.idSede}`))]
+  return (
+    <span className="pe-permiso-bloque">
+      <span className="pe-permiso" data-tipo={recurrente ? 'Recurrente' : 'Extemporaneo'}>{recurrente ? 'Recurrente' : 'Extemporáneo'}</span>
+      {recurrente && !detalle && <small className="ad-tenue">{sedes.join(', ')}</small>}
+      {recurrente && detalle && (
+        <ul className="pe-permiso-lista">
+          {accesos.map((a) => (
+            <li key={a.idAutorizacion}>
+              {a.sede ?? `Sede ${a.idSede}`} · autorización #{a.idAutorizacion} ({a.modalidad.toLowerCase()}) · desde {fecha(a.fechaInicio)}{a.fechaFin ? ` hasta ${fecha(a.fechaFin)}` : ', sin fecha final'}
+            </li>
+          ))}
+        </ul>
+      )}
+      {!recurrente && detalle && <small className="ad-tenue">Sin autorización recurrente o permanente vigente: sus ingresos se gestionan como visitas.</small>}
+    </span>
+  )
+}
 
 const personaVacia = (): PersonaEntrada => ({ idTipoPersona: 0, idTipoDocumento: 0, numeroDocumento: '', nombres: '', apellidos: '', correo: '', empresaProcedencia: null, observacion: null })
 
@@ -341,6 +379,11 @@ export function PersonaFormulario({ persona, catalogos, onClose, onGuardado, onV
         <Campo etiqueta="Observación (opcional)" ancho="completo">
           <textarea value={datos.observacion ?? ''} maxLength={1000} onChange={(e) => cambiar({ observacion: e.target.value })} />
         </Campo>
+        <div className="pe-permiso-nota" data-ancho="completo" role="note">
+          <strong>Tipo de permiso de acceso</strong>
+          {persona ? <PermisoAcceso persona={persona} /> : <span className="pe-permiso" data-tipo="Extemporaneo">Extemporáneo</span>}
+          <small>No se edita aquí: es Recurrente cuando la persona tiene una autorización recurrente o permanente aprobada y vigente (Control de accesos); si no, Extemporáneo. Editar estos datos no lo cambia.</small>
+        </div>
       </div>
       {guardar.error && <p className="ad-mensaje" role="alert">{mensajeError(guardar.error, 'No se pudo guardar la persona.')}</p>}
     </Dialogo>
@@ -368,27 +411,53 @@ function PersonaDetalleDialogo({ idPersona, catalogos, onClose, onEditar }: {
       pie={(
         <>
           <button type="button" className="ad-boton-sec" onClick={onClose}>Cerrar</button>
-          {p && gestionarAcceso.puede && p.activo && (
-            <button type="button" className="ad-boton-sec" onClick={() => gestionarAcceso.ir(p.idPersona)}><Icono nombre="accesos" /> Gestionar acceso</button>
+          {p && dispositivos.consultar && (
+            <button type="button" className="ad-boton-sec dt-boton-verde"
+              onClick={() => document.getElementById(`dispositivos-persona-${idPersona}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              <Icono nombre="dispositivos" /> Dispositivos
+            </button>
           )}
-          {p && acciones.editar && <button type="button" className="ad-boton" onClick={() => onEditar({ ...p, telefonoPrincipal: null })}>Editar datos</button>}
+          {p && gestionarAcceso.puede && p.activo && (
+            <button type="button" className="ad-boton-sec pe-boton-gestionar" onClick={() => gestionarAcceso.ir(p.idPersona)}><Icono nombre="accesos" /> Gestionar acceso</button>
+          )}
+          {p && acciones.editar && <button type="button" className="ad-boton pe-boton-editar" onClick={() => onEditar({ ...p, telefonoPrincipal: null })}>Editar datos</button>}
         </>
       )}>
       <EstadoConsulta loading={detalle.isLoading} error={detalle.error} empty={false} vacio="" />
       {p && (
         <>
-          <div className="pe-resumen">
-            <Foto persona={p} grande />
-            <dl>
-              <div><dt>Documento</dt><dd>{p.tipoDocumento} {p.numeroDocumento}</dd></div>
-              <div><dt>Tipo</dt><dd>{p.tipoPersona ?? '—'}</dd></div>
-              <div><dt>Correo</dt><dd>{p.correo ?? '—'}</dd></div>
-              <div><dt>Empresa</dt><dd>{p.empresaProcedencia ?? '—'}</dd></div>
-              <div><dt>Estado</dt><dd><Estatus activo={p.activo} /></dd></div>
-              <div><dt>Registrado por</dt><dd>{p.registradoPor ?? '—'} · {new Date(p.creadoEn).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>
-              {p.observacion && <div data-ancho="completo"><dt>Observación</dt><dd>{p.observacion}</dd></div>}
-            </dl>
+          <dl className="dt-franja">
+            <div className="dt-titulo">
+              <Foto persona={p} grande />
+              <div><strong>{nombre}</strong><small>{p.tipoDocumento} {p.numeroDocumento}</small></div>
+            </div>
+            <div><dt>Estado</dt><dd><Estatus activo={p.activo} /></dd></div>
+            <div><dt>Permiso de acceso</dt><dd><PermisoAcceso persona={p} /></dd></div>
+          </dl>
+          <div className="dt-bloques">
+            <section className="dt-bloque" aria-label="Datos personales">
+              <h3>Datos personales</h3>
+              <dl>
+                <div><dt>Tipo de persona</dt><dd>{p.tipoPersona ?? '—'}</dd></div>
+                <div><dt>Correo</dt><dd>{p.correo ?? '—'}</dd></div>
+                <div><dt>Empresa</dt><dd>{p.empresaProcedencia ?? '—'}</dd></div>
+              </dl>
+            </section>
+            <section className="dt-bloque" aria-label="Acceso y registro">
+              <h3>Acceso y registro</h3>
+              <dl>
+                <div><dt>Tipo de permiso de acceso</dt><dd><PermisoAcceso persona={p} detalle /></dd></div>
+                <div><dt>Registrado por</dt><dd>{p.registradoPor ?? '—'}<small>{new Date(p.creadoEn).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</small></dd></div>
+              </dl>
+            </section>
           </div>
+          {p.observacion && (
+            <section className="dt-bloque" aria-label="Observación">
+              <h3>Observación</h3>
+              <p className="dt-nota">{p.observacion}</p>
+            </section>
+          )}
+          <h3 className="dt-grupo">Información asociada</h3>
           <TelefonosPersona idPersona={idPersona} nombre={nombre} telefonos={p.telefonos} tipos={catalogos?.tiposTelefono ?? []} editable={acciones.editar} />
           {vehiculos.consultar || vehiculos.anadir || vehiculos.editar ? (
             <VehiculosPersona idPersona={idPersona} nombre={nombre} vehiculos={p.vehiculos} catalogos={catalogos}
@@ -397,8 +466,8 @@ function PersonaDetalleDialogo({ idPersona, catalogos, onClose, onEditar }: {
             <section className="pe-seccion"><h3>Vehículos</h3><p className="ad-tenue">El módulo de vehículos no está habilitado para tu perfil.</p></section>
           )}
           {dispositivos.consultar ? (
-            <DispositivosPersona idPersona={idPersona} nombre={nombre}
-              puedeAnadir={acciones.editar && dispositivos.anadir} puedeEditar={acciones.editar && dispositivos.editar} />
+            <div id={`dispositivos-persona-${idPersona}`}><DispositivosPersona idPersona={idPersona} nombre={nombre}
+              puedeAnadir={acciones.editar && dispositivos.anadir} puedeEditar={acciones.editar && dispositivos.editar} /></div>
           ) : (
             <section className="pe-seccion"><h3>Dispositivos</h3><p className="ad-tenue">El módulo de dispositivos no está habilitado para tu perfil.</p></section>
           )}
@@ -443,7 +512,7 @@ function TelefonosPersona({ idPersona, nombre, telefonos, tipos, editable }: { i
     <section className="pe-seccion" aria-label={`Teléfonos de ${nombre}`}>
       <header>
         <h3>Teléfonos <small>de {nombre}</small></h3>
-        {editable && edicion === null && <button type="button" className="ad-enlace" onClick={() => abrir('nuevo')}>+ Agregar teléfono</button>}
+        {editable && edicion === null && <button type="button" className="ad-enlace pe-boton-asociar" onClick={() => abrir('nuevo')}>+ Agregar teléfono</button>}
       </header>
       {telefonos.length === 0 && edicion === null && <p className="ad-tenue">Sin teléfonos registrados.</p>}
       {telefonos.length > 0 && (
@@ -537,7 +606,7 @@ function VehiculosPersona({ idPersona, nombre, vehiculos, catalogos, puedeAnadir
     <section className="pe-seccion" aria-label={`Vehículos de ${nombre}`}>
       <header>
         <h3>Vehículos <small>de {nombre}</small></h3>
-        {puedeAnadir && edicion === null && <button type="button" className="ad-enlace" onClick={() => abrir('nuevo')}>+ Asociar vehículo</button>}
+        {puedeAnadir && edicion === null && <button type="button" className="ad-enlace pe-boton-asociar" onClick={() => abrir('nuevo')}>+ Asociar vehículo</button>}
       </header>
       {vehiculos.length === 0 && edicion === null && <p className="ad-tenue">Sin vehículos asociados.</p>}
       {vehiculos.length > 0 && (

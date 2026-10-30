@@ -25,7 +25,7 @@ Modelar la jerarquía física Organización → [[Sede]] → [[Área o destino]]
 |---|---|---|---|---|
 | HU-013 | Gestionar sedes con zona horaria | M | **En revisión** (verificada localmente 2026-10-17) | Autenticación provisional (D-03); ADR-008 por aprobar |
 | HU-014 | Gestionar áreas/destinos y responsables/autorizadores | M | Lista para refinar | Alcance de autorizadores: D-04 |
-| HU-015 | Gestionar zonas y puntos de acceso | M | Lista para refinar | ADR-019 por aprobar |
+| HU-015 | Gestionar zonas y puntos de acceso | M | En revisión (implementada 2026-10-28, ver [[Zonas y puntos de acceso]]) | ADR-027; D-43..D-45 |
 
 ---
 

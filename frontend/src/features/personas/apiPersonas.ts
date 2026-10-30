@@ -34,6 +34,20 @@ export interface PersonaLista {
   tieneFoto: boolean
   activo: boolean
   creadoEn: string
+  /** Derivado en el servidor de las autorizaciones aprobadas vigentes (D-46); no se edita. */
+  tipoPermiso: TipoPermiso
+  accesosRecurrentes: AccesoRecurrente[]
+}
+
+export type TipoPermiso = 'Recurrente' | 'Extemporaneo'
+
+export interface AccesoRecurrente {
+  idAutorizacion: number
+  modalidad: string
+  idSede: number
+  sede: string | null
+  fechaInicio: string
+  fechaFin: string | null
 }
 
 export interface Telefono {
@@ -86,7 +100,7 @@ const consulta = (params: Record<string, string | number | undefined>) =>
   new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v)])).toString()
 
 export const consultarCatalogosPersona = () => apiFetch<CatalogosPersona>('/api/personas/catalogos')
-export const consultarPersonas = (params: { buscar?: string; estado?: string; idTipoPersona?: string } = {}) =>
+export const consultarPersonas = (params: { buscar?: string; estado?: string; idTipoPersona?: string; tipoPermiso?: string } = {}) =>
   apiFetch<PersonaLista[]>(`/api/personas?${consulta(params)}`)
 export const buscarPorDocumento = (idTipoDocumento: number, numero: string) =>
   apiFetch<PersonaLista>(`/api/personas/buscar-documento?${consulta({ idTipoDocumento, numero })}`)

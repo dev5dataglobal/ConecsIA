@@ -42,9 +42,19 @@ export interface MovimientoVisita {
   tipoMovimiento: 'Entrada' | 'Salida'
   resultado: string
   puntoAcceso: string
+  /** Zona del punto al momento del movimiento. */
+  zona: string
   operador: string | null
   ocurridoEn: string
   observacion: string | null
+}
+
+export interface EventoVisita {
+  idEvento: number
+  accion: 'Registrar' | 'VincularAutorizacion' | 'Cancelar' | 'ActualizarEstado'
+  actor: string | null
+  ocurridoEn: string
+  motivo: string | null
 }
 
 export interface VisitaDetalle {
@@ -67,6 +77,8 @@ export interface VisitaDetalle {
   } | null
   permanencia: { idPermanencia: number; estado: 'Abierta' | 'Cerrada'; abiertaEn: string; cerradaEn: string | null; duracionSegundos: number | null } | null
   movimientos: MovimientoVisita[]
+  /** Eventos de ciclo de vida leídos de la auditoría (registro, vínculo, cancelación…). */
+  historial: EventoVisita[]
   evaluacion: { puedeIngresar: boolean; puedeSalir: boolean; motivos: string[] }
 }
 
@@ -82,7 +94,7 @@ export interface OpcionesVisita {
   sedes: { id: number; nombre: string }[]
   areas: { id: number; idSede: number; nombre: string }[]
   responsables: { idMembresia: number; nombre: string; areas: number[] }[]
-  puntosAcceso: { id: number; idSede: number; nombre: string; modoAcceso: 'Entrada' | 'Salida' | 'Ambos' }[]
+  puntosAcceso: { id: number; idSede: number; idZona: number; zona: string; nombre: string; modoAcceso: 'Entrada' | 'Salida' | 'Ambos' }[]
   permiteSinAutorizacion: boolean
 }
 

@@ -8,6 +8,7 @@ import { AutorizacionesPage } from '../features/autorizaciones/AutorizacionesPag
 import { VisitasPage } from '../features/visitas/VisitasPage'
 import { ControlAccesosPage } from '../features/control-accesos/ControlAccesosPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
+import { PresentacionPage } from '../features/presentacion/PresentacionPage'
 import { haySesion } from '../features/sesion/sesion'
 import { AppShell } from './shell/AppShell'
 import { RutaModulo } from './shell/RutaModulo'
@@ -18,8 +19,15 @@ export function RutaProtegida({ children }: { children: ReactNode }) {
   return children
 }
 
+function Inicio() {
+  return haySesion() ? <Navigate to="/dashboard" replace /> : <PresentacionPage />
+}
+
 export const rutas: RouteObject[] = [
-  { index: true, element: <Navigate to="/dashboard" replace /> },
+  // Raíz: visitantes sin sesión ven la presentación pública; con sesión se abre el panel.
+  { index: true, element: <Inicio /> },
+  // Página pública: no pasa por RutaProtegida.
+  { path: 'presentacion', element: <PresentacionPage /> },
   { path: 'ingresar', element: <IngresarPage /> },
   { path: 'recuperar-contrasena', element: <IngresarPage modo="recuperar" /> },
   { path: 'restablecer-contrasena', element: <IngresarPage modo="restablecer" /> },

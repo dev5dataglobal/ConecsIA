@@ -12,7 +12,10 @@
 .au-vigencia { color: var(--ui-texto-3); font-size: 0.74rem; font-weight: 600; }
 .au-vigencia[data-vigencia='Vigente'] { color: #17734d; }
 .au-vigencia[data-vigencia='Vencida'] { color: #b3263e; }
-.au-peligro { border-color: #f6c6cf; color: #b3263e; }
+.au-peligro { border-color: #f6c6cf; background: var(--ui-rojo-tenue); color: #b3263e; box-shadow: 0 4px 12px -10px rgb(209 67 91 / 0.8); }
+@media (hover: hover) and (pointer: fine) {
+  .au-peligro:hover { border-color: #e98b9b; background: #fbdde3; color: #972239; }
+}
 
 .au-historial { display: grid; gap: 0.5rem; margin: 0; padding: 0 0 0 1rem; border-left: 2px solid var(--ui-linea); list-style: none; }
 .au-historial li { display: grid; gap: 0.1rem; }

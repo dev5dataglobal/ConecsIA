@@ -1,9 +1,25 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-26
+actualizado: 2026-10-29
 tags: [conecsia]
 ---
+
+## Tipo de permiso de acceso derivado y visitas extemporáneas — 2026-10-29
+- Rama `feature/organizaciones`, sin commit. Backend: `Services/ReglasPermisoAcceso.cs` (nuevo), `PersonasController` (filtro `tipoPermiso`, `CompletarPermisoAsync`), `VisitasController.Registrar` (409 + auditoría), DTO `AccesoRecurrenteDto`. Sin migración.
+- Frontend: `PermisoAcceso` en `PersonasPage.tsx` (tabla, filtro, detalle, nota en formulario); `VisitasPage.tsx` (Ingreso extemporáneo, bloqueo por sede).
+- Pruebas: backend `Persona_con_acceso_recurrente_no_se_registra_como_visita_extemporanea` (nueva) y 2 pruebas de Visitas ajustadas para vincular la autorización recurrente; frontend 1 prueba nueva en Visitas y aserción en Personas. Sin verificación en navegador (la API en ejecución bloquea el binario).
+- Pendiente: D-46 (excepción, sede vs. destino).
+
+## Zonas y puntos de acceso (RF-05, HU-015) — 2026-10-28
+
+- **Implementado** en la rama `feature/organizaciones` (sin commit): [[Zonas y puntos de acceso]], [[ADR-027 Punto de acceso como entidad dentro de la zona]].
+- Backend: `PuntoAcceso` (entidad, configuración, FK compuestas), `Zona` con trazabilidad y nombre normalizado único por sede, `ZonasPuntosAccesoController` (`/api/zonas`, `/api/puntos-acceso`), `PUT /api/autorizaciones-acceso/{id}/zonas`, parámetro `autorizaciones.exige_zonas`, movimientos de visitas con `id_punto_acceso` + `id_zona`. Se retiró `ZonaController` genérico.
+- Migración `20261029001444_ZonasYPuntosAcceso` (con migración de datos). **Aplicada 2026-10-29** a `conecsia` y `conecsia_verificacion`.
+- Frontend: pestaña Administración › Zonas y puntos de acceso; selector de zonas (obligatorio según política) y «Editar zonas» en solicitudes pendientes de Control de accesos; punto con su zona en Visitas.
+- Pruebas: backend 100/100 (incluye `ZonasPuntosAccesoTests`, 6); frontend 41/41. Hubo fallos de limpieza de clase (`Test Class Cleanup Failure`, NpgsqlException al borrar la base de pruebas) en SedesAreasTests y SesionTests, sin pruebas fallidas.
+- CA verificados por integración: zonas en sede y puntos en zona; punto a zona de otra sede/organización rechazado (API y FK); autorización limitada a zonas; movimiento registra punto y zona; punto fuera de zona permitida ⇒ 409; inactivar impide nuevas configuraciones y conserva historial.
+- **Verificado en navegador 2026-10-29** (administración de zonas y puntos; ver [[Zonas y puntos de acceso]]). Configuración `api-verificacion` añadida a `.claude/launch.json` (Release, :5192, base `conecsia_verificacion`).
 
 ## Mensajes controlados de autenticación — 2026-10-21
 
@@ -308,3 +324,9 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Verificado:** `dotnet build` ok; `dotnet test` 35/35; `tsc -b` ok; `vitest` 16/16.
 - **Implementado 2026-10-26:** migración `20261026171951_SedesAreasYCatalogoCiudad` aplicada a la base local.
 - **Pendiente:** probar el login y las sedes en la app real. Para que se vea la sección, el rol necesita una fila en `modulos_permisos` para el módulo `sedes`.
+
+### 2026-10-29 — Modales de detalle, historial de cancelación y decisión por objeto
+- **Implementado:** `GET /api/visitas/{id}` devuelve `historial` (eventos `Registrar`, `VincularAutorizacion`, `Cancelar`, `ActualizarEstado` leídos de `auditoria`; sin cambio de esquema). La cancelación incluye usuario, instante y motivo; se muestra en «Movimientos e historial» de [[Visitas]] junto a los movimientos físicos. Un reintento de cancelación responde 409 y no duplica el evento (bloqueo `FOR UPDATE` + estado).
+- **Implementado:** en [[Control de accesos]] el detalle lista vehículos y dispositivos activos de la persona; cada uno se aprueba o rechaza sobre su propia autorización de objeto ([[Autorizaciones de vehículos y dispositivos]]), con estados explícitos (Pendiente/Aprobado/Rechazado/Sin solicitud) y «Ver decisiones» con las transiciones. «Solicitar» crea la autorización de objeto asociada (`idAutorizacion`) con sede, área, fechas y horario del ingreso; si el ingreso no tiene fecha de fin no se solicita aquí.
+- **Implementado:** modal de [[Personas]] por secciones (franja de identidad, datos personales, acceso y registro, información asociada) con botón «Dispositivos» en `--color-acento` (#D5F379). Franja de cabecera de los detalles en gris (`--color-superficie`); el verde queda como acento.
+- **Verificado:** `tsc -b` ok; `vitest` 42/42; `dotnet test` Visitas + objetos 27/27. **No verificado** en navegador; la API en ejecución debe reiniciarse para servir `historial`.

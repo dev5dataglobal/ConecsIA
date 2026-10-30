@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ApiConecsia.Services;
@@ -50,8 +50,9 @@ public sealed class AutorizacionesAccesoTests(ApiFactory api) : IClassFixture<Ap
         _areaA = await Area(_orgA, _sedeA, "Gerencia");
         _areaA2 = await Area(_orgA, _sedeA, "Bodega");
         _areaB = await Area(_orgB, _sedeB, "Recepción B");
-        _puntoA = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, es_punto_acceso, modo_acceso, activo) VALUES (@p0, @p1, 'Portería', true, 'Ambos', true) RETURNING id_zona", _orgA, _sedeA);
-        _zonaA = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, es_punto_acceso, activo) VALUES (@p0, @p1, 'Laboratorio', false, true) RETURNING id_zona", _orgA, _sedeA);
+        var zonaPorteria = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Recepción', true, now()) RETURNING id_zona", _orgA, _sedeA);
+        _puntoA = await api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, id_zona, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, @p2, 'Portería', 'Ambos', true, now()) RETURNING id_punto_acceso", _orgA, _sedeA, zonaPorteria);
+        _zonaA = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Laboratorio', true, now()) RETURNING id_zona", _orgA, _sedeA);
         _membresiaAdmin = await Membresia(Correo("admin"));
         _membresiaAdminB = await Membresia(Correo("adminb"));
         _cc = await api.ScalarAsync<int>("SELECT id_tipo_documento FROM tipo_documento WHERE codigo = 'CC'");

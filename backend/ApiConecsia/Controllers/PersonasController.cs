@@ -30,7 +30,7 @@ public sealed class PersonasController(
 
     [HttpGet]
     [RequiereModulo(CodigosModulo.Personas, AccionModulo.Consultar)]
-    public async Task<ActionResult<IEnumerable<PersonaListaDto>>> Listar([FromQuery] string? buscar = null, [FromQuery] string? estado = null, [FromQuery] int? idTipoPersona = null, CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<PersonaListaDto>>> Listar([FromQuery] string? buscar = null, [FromQuery] string? estado = null, [FromQuery] int? idTipoPersona = null, [FromQuery] string? tipoPermiso = null, CancellationToken ct = default)
     {
         var query = Db.Personas.AsQueryable();
         if (estado is "Activo" or "Inactivo") query = query.Where(x => x.Activo == (estado == "Activo"));
@@ -41,7 +41,14 @@ public sealed class PersonasController(
             query = query.Where(x => EF.Functions.ILike(x.Nombres + " " + x.Apellidos, texto) || EF.Functions.ILike(x.NumeroDocumento, texto)
                 || (x.Correo != null && EF.Functions.ILike(x.Correo, texto)));
         }
-        return Ok(await Proyectar(query.OrderBy(x => x.Apellidos).ThenBy(x => x.Nombres)).Take(500).ToListAsync(ct));
+        if (tipoPermiso is ReglasPermisoAcceso.Recurrente or ReglasPermisoAcceso.Extemporaneo)
+        {
+            var recurrentes = (await ReglasPermisoAcceso.AccesosAsync(Db, null, await SedesAlcanceAsync(ct), null, DateTime.UtcNow, ct)).Keys.ToList();
+            query = tipoPermiso == ReglasPermisoAcceso.Recurrente ? query.Where(x => recurrentes.Contains(x.IdPersona)) : query.Where(x => !recurrentes.Contains(x.IdPersona));
+        }
+        var personas = await Proyectar(query.OrderBy(x => x.Apellidos).ThenBy(x => x.Nombres)).Take(500).ToListAsync(ct);
+        await CompletarPermisoAsync(personas, ct);
+        return Ok(personas);
     }
 
     /// <summary>Búsqueda exacta por identificación (flujo «buscar primero»). 404 si no existe en la organización.</summary>
@@ -52,7 +59,9 @@ public sealed class PersonasController(
         if (string.IsNullOrWhiteSpace(numero)) return Invalido("Indique el número de documento.");
         var normalizado = ReglasPersona.NormalizarDocumento(numero);
         var dto = await Proyectar(Db.Personas.Where(x => x.IdTipoDocumento == idTipoDocumento && x.NumeroDocumentoNormalizado == normalizado)).SingleOrDefaultAsync(ct);
-        return dto is null ? NoEncontrado("No hay una persona registrada con ese documento.") : Ok(dto);
+        if (dto is null) return NoEncontrado("No hay una persona registrada con ese documento.");
+        await CompletarPermisoAsync([dto], ct);
+        return Ok(dto);
     }
 
     [HttpGet("{idPersona:int}")]
@@ -354,6 +363,18 @@ public sealed class PersonasController(
         persona.Observacion = Limpiar(request.Observacion);
     }
 
+    /// <summary>Completa el tipo de permiso derivado (D-46) con las autorizaciones de las sedes del alcance del usuario.</summary>
+    private async Task CompletarPermisoAsync(List<PersonaListaDto> personas, CancellationToken ct)
+    {
+        if (personas.Count == 0) return;
+        var accesos = await ReglasPermisoAcceso.AccesosAsync(Db, personas.Select(x => x.IdPersona).ToList(), await SedesAlcanceAsync(ct), null, DateTime.UtcNow, ct);
+        foreach (var p in personas)
+        {
+            p.AccesosRecurrentes = accesos.GetValueOrDefault(p.IdPersona) ?? [];
+            p.TipoPermiso = p.AccesosRecurrentes.Count > 0 ? ReglasPermisoAcceso.Recurrente : ReglasPermisoAcceso.Extemporaneo;
+        }
+    }
+
     private static void AplicarVehiculo(Vehiculo vehiculo, VehiculoPersonaEntrada request)
     {
         vehiculo.Tipo = request.Tipo;
@@ -411,12 +432,14 @@ public sealed class PersonasController(
     {
         var p = await Proyectar(Db.Personas.Where(x => x.IdPersona == idPersona)).AsNoTracking().SingleOrDefaultAsync(ct);
         if (p is null) return null;
+        await CompletarPermisoAsync([p], ct);
         return new PersonaDetalleDto
         {
             IdPersona = p.IdPersona, IdOrganizacion = p.IdOrganizacion, IdTipoPersona = p.IdTipoPersona, TipoPersona = p.TipoPersona,
             IdTipoDocumento = p.IdTipoDocumento, TipoDocumento = p.TipoDocumento, NumeroDocumento = p.NumeroDocumento,
             Nombres = p.Nombres, Apellidos = p.Apellidos, Correo = p.Correo, EmpresaProcedencia = p.EmpresaProcedencia, Observacion = p.Observacion,
             TieneFoto = p.TieneFoto, Activo = p.Activo, CreadoEn = p.CreadoEn,
+            TipoPermiso = p.TipoPermiso, AccesosRecurrentes = p.AccesosRecurrentes,
             RegistradoPor = await (from x in Db.Personas.AsNoTracking()
                                    join u in Db.Usuarios on x.IdUsuarioCrea equals u.IdUsuario
                                    where x.IdPersona == idPersona

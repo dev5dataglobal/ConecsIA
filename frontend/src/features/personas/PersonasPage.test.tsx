@@ -22,6 +22,7 @@ const PERSONA = {
   idPersona: 11, idOrganizacion: 1, idTipoPersona: 3, tipoPersona: 'Visitante', idTipoDocumento: 1, tipoDocumento: 'CC', numeroDocumento: '1020304050',
   nombres: 'Ana', apellidos: 'Gómez', correo: 'ana@ejemplo.test', empresaProcedencia: null, observacion: null, telefonoPrincipal: '+57 3001234567',
   tieneFoto: false, activo: true, creadoEn: '2026-10-26T12:00:00Z',
+  tipoPermiso: 'Recurrente', accesosRecurrentes: [{ idAutorizacion: 40, modalidad: 'Recurrente', idSede: 1, sede: 'Sede Norte', fechaInicio: '2026-10-01', fechaFin: null }],
 }
 const DETALLE = {
   ...PERSONA,
@@ -47,6 +48,10 @@ describe('Personas', () => {
 
     expect(await screen.findByText('Ana Gómez')).toBeInTheDocument()
     expect(screen.getByText('1020304050')).toBeInTheDocument()
+    // Tipo de permiso derivado (D-46): pastilla con texto y la sede que lo sustenta.
+    const fila = screen.getByText('Ana Gómez').closest('tr')!
+    expect(within(fila).getByText('Recurrente')).toBeInTheDocument()
+    expect(within(fila).getByText('Sede Norte')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Nueva persona/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Inactivar Ana Gómez/ })).not.toBeInTheDocument()
   })
