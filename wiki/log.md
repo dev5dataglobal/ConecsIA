@@ -661,7 +661,7 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Páginas: [[Modelo unificado de control de accesos]]. Restricciones obligatorias diferidas a Fase 3.
 
 ## [2026-11-03] revision | Cierre de feature/control-accesos con git flow
-- Los cambios acumulados en `develop` (administración, personas, visitas, autorizaciones de objetos, zonas/puntos de acceso, sesión renovable, Docker, migraciones hasta `20261103163234_RegistroAccesoUnificado`) se commitean en `feature/control-accesos` y se cierran con `git flow feature finish`.
-- Se dejan de versionar los artefactos generados (`**/bin`, `**/obj`, `frontend/dist`, `frontend/node_modules`); ya estaban en `.gitignore`. Siguen en disco.
+- Los cambios acumulados en `develop` (administración, personas, visitas, autorizaciones de objetos, zonas/puntos de acceso, sesión renovable, Docker, migraciones hasta `20261103163234_RegistroAccesoUnificado`) se commitean en `feature/control-accesos` y se cierran con `git flow feature finish` (merge fast-forward, commit `51f3c08`). El push de `develop` queda pendiente: la sesión no tiene credenciales de GitHub.
+- Se dejan de versionar los artefactos generados (`**/bin`, `**/obj`, `frontend/dist`, `frontend/node_modules`); ya estaban en `.gitignore`. El fast-forward de `develop` los borró del disco: se regeneran con `dotnet build` y `npm run build`.
 - Pendiente (decisión del usuario): `appsettings.Development.json` conserva la contraseña de PostgreSQL en texto plano y ya figura en el historial desde `43ced64`; conviene rotarla y moverla a `appsettings.Local.json` o a user-secrets.
 - Sin cambios funcionales en esta entrada; no se volvieron a ejecutar pruebas.
