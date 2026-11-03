@@ -2,6 +2,8 @@ erDiagram
 
     %% =====================================================
     %% Modelo ER — versión 2 (2026-10-17)
+    %% 2026-10-26: Personas alineado con el esquema real (migración
+    %%   PersonasRelacionesYCatalogos): FKs de persona, teléfonos y vehículos.
     %% Ver wiki/consultas/Revisión del modelo ER db.md
     %% Convenciones:
     %%  - Toda entidad de cliente lleva id_organizacion NOT NULL y FKs
@@ -11,7 +13,9 @@ erDiagram
     %%    horaria de la sede (ADR-008).
     %%  - "activo" = inactivación lógica; "estado" = ciclo de vida (ADR-009).
     %%  - La vigencia de una autorización se calcula, no se persiste.
-    %%  - Punto de acceso = ZONA con es_punto_acceso (ADR-019, propuesta).
+    %%  - 2026-10-31 (ADR-028): sin zonas de acceso; PUNTO_ACCESO pertenece a la
+    %%    sede. La zona empresarial se resuelve desde SEDE (sin vínculo con
+    %%    ORGANIZACION). Bitácora de migración: migracion_zonas_adr028.
     %%  - Nombres de columnas (id_organizacion vs organization_id): pendiente
     %%    fijar convención antes de EF Core.
     %% =====================================================
@@ -98,6 +102,7 @@ erDiagram
         string telefono
         string correo
         string zona_horaria "IANA, obligatoria (ADR-008)"
+        int id_zona_empresarial FK "nullable; cero o una zona (ADR-028)"
         int id_membresia_responsable FK "nullable"
         boolean activo
     }
@@ -120,16 +125,16 @@ erDiagram
         boolean activo
     }
 
-    ZONA {
-        int id_zona PK
+    PUNTO_ACCESO {
+        int id_punto_acceso PK
         int id_organizacion FK
-        int id_sede FK
-        int id_zona_padre FK "nullable"
-        string nombre
+        int id_sede FK "FK compuesta (id_organizacion, id_sede)"
+        string nombre "único por sede (nombre_normalizado)"
         string descripcion
-        boolean es_punto_acceso
-        string modo_acceso "Entrada | Salida | Ambos; CHECK solo si es_punto_acceso"
+        string modo_acceso "Entrada | Salida | Ambos"
+        boolean es_comun_zona_empresarial "solo si la sede tiene zona"
         boolean activo
+        timestamptz creado_en
     }
 
 
@@ -206,7 +211,7 @@ erDiagram
     MEMBRESIA_PUNTO_ACCESO {
         int id_organizacion FK
         int id_membresia FK
-        int id_zona FK "zona con es_punto_acceso"
+        int id_punto_acceso FK
     }
 
 
@@ -232,24 +237,25 @@ erDiagram
 
     TIPO_DOCUMENTO {
         int id_tipo_documento PK
-        string codigo
+        string codigo "UK; global: CC, TI, CE, PA, PPT, NIT"
         string nombre
         string pais_emisor "D-09"
+        string patron_validacion "regex sobre el número normalizado (Propuesta, D-09)"
         boolean activo
     }
 
     TIPO_PERSONA {
         int id_tipo_persona PK
-        int id_organizacion FK
-        string nombre
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_tipo_persona)"
+        string nombre "UK(id_organizacion, nombre)"
         string descripcion
         boolean activo
     }
 
     PERSONA {
         int id_persona PK
-        int id_organizacion FK
-        int id_tipo_persona FK
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_persona)"
+        int id_tipo_persona FK "FK compuesta (id_organizacion, id_tipo_persona); índice NO único"
         int id_tipo_documento FK
         string numero_documento
         string numero_documento_normalizado "UK(id_organizacion, id_tipo_documento, numero_documento_normalizado)"
@@ -257,7 +263,8 @@ erDiagram
         string apellidos
         string correo
         string empresa_procedencia
-        uuid id_archivo_foto FK "nullable"
+        uuid id_archivo_foto FK "nullable; FK archivo (almacenamiento privado)"
+        string tipo_acceso "Recurrente|Extemporaneo; default Extemporaneo; CHECK (D-38)"
         string observacion
         boolean activo
         timestamptz creado_en
@@ -267,10 +274,11 @@ erDiagram
     PERSONA_TELEFONO {
         int id_telefono PK
         int id_organizacion FK
-        int id_persona FK
-        string numero
-        string tipo
-        boolean principal
+        int id_persona FK "FK compuesta (id_organizacion, id_persona) → persona"
+        string codigo_pais "default +57"
+        string numero "solo dígitos; UK parcial (org, persona, codigo_pais, numero) WHERE activo"
+        string tipo "Móvil | Fijo | Trabajo | Emergencia | Otro"
+        boolean principal "UK parcial (org, persona) WHERE principal AND activo"
         boolean activo
     }
 
@@ -279,7 +287,6 @@ erDiagram
         int id_organizacion FK
         int id_persona FK
         int id_sede FK "nullable = toda la organización"
-        int id_zona FK "nullable"
         string tipo_restriccion
         string motivo
         timestamptz fecha_inicio
@@ -298,7 +305,7 @@ erDiagram
 
     VEHICULO {
         int id_vehiculo PK
-        int id_organizacion FK
+        int id_organizacion FK "FK organizacion; AK(id_organizacion, id_vehiculo)"
         string placa
         string placa_normalizada "UK por organización (D-17)"
         string tipo
@@ -309,11 +316,11 @@ erDiagram
     }
 
     PERSONA_VEHICULO {
-        int id_organizacion FK
-        int id_persona FK
-        int id_vehiculo FK
-        string relacion "Propietario | Responsable"
-        boolean activo
+        int id_organizacion FK "PK(id_organizacion, id_persona, id_vehiculo)"
+        int id_persona FK "FK compuesta → persona"
+        int id_vehiculo FK "FK compuesta → vehiculo; N:M, un vehículo puede tener varias personas"
+        string relacion "Propietario | Responsable | Conductor"
+        boolean activo "inactivar el vínculo no inactiva el vehículo"
     }
 
 
@@ -334,20 +341,21 @@ erDiagram
         int id_organizacion FK
         int id_persona_responsable FK
         int id_tipo_dispositivo FK
-        string codigo_identificador
+        string codigo_identificador "normalizado; UK (id_organizacion, codigo_identificador) provisional D-17"
         string serial
-        string serial_normalizado "unicidad por definir (D-17)"
+        string serial_normalizado "sin unicidad (D-17)"
         string marca
         string modelo
         string color
         string descripcion
-        boolean activo
+        boolean activo "inactivar conserva autorizaciones y movimientos"
         timestamptz creado_en
+        int id_usuario_crea FK "usuario autenticado que lo registró"
     }
 
 
     %% =====================================================
-    %% ZONA EMPRESARIAL: agrupación administrativa distinta de ZONA (espacio físico)
+    %% ZONA EMPRESARIAL: agrupación de sedes; catálogo de plataforma (ADR-028)
     ZONA_EMPRESARIAL {
         int id_zona_empresarial PK
         string nombre UK
@@ -355,13 +363,8 @@ erDiagram
         boolean activa
         timestamptz creada_en
     }
-    ZONA_EMPRESARIAL_ORGANIZACION {
-        int id_organizacion PK, FK
-        int id_zona_empresarial PK, FK
-        boolean es_administradora
-        boolean activa
-    }
     %% La pertenencia se define en sede; una sede tiene cero o una zona empresarial.
+    %% zona_empresarial_organizacion se retiró (ADR-028).
 
     %% AUTORIZACIONES (ADR-007, ADR-009, ADR-010)
     %% =====================================================
@@ -409,12 +412,6 @@ erDiagram
         time hora_fin "hora_fin > hora_inicio hasta D-06"
     }
 
-    AUTORIZACION_ZONA {
-        int id_organizacion FK
-        int id_autorizacion FK
-        int id_zona FK "debe pertenecer a la sede de la autorización"
-    }
-
     AUTORIZACION_VEHICULO {
         int id_organizacion FK
         int id_autorizacion FK
@@ -425,6 +422,42 @@ erDiagram
         int id_organizacion FK
         int id_autorizacion FK
         int id_dispositivo FK
+    }
+
+    AUTORIZACION_OBJETO {
+        int id_autorizacion_objeto PK
+        int id_organizacion FK
+        string tipo_objeto "Vehiculo | Dispositivo (CHECK con id_vehiculo/id_dispositivo)"
+        int id_vehiculo FK "nullable"
+        int id_dispositivo FK "nullable"
+        int id_persona FK
+        int id_sede FK
+        int id_area FK "nullable"
+        int id_autorizacion FK "nullable; vínculo trazable a la autorización de la persona (ADR-026)"
+        date fecha_inicio
+        date fecha_fin "obligatoria (D-18)"
+        time hora_inicio "ambas o ninguna"
+        time hora_fin
+        string motivo
+        string estado "Pendiente | Aprobada | Rechazada | Revocada; vigencia calculada"
+        string motivo_decision
+        int id_usuario_solicita FK
+        timestamptz solicitado_en
+        int id_usuario_decide FK "nullable"
+        timestamptz decidido_en
+        xid xmin "token de concurrencia"
+    }
+
+    AUTORIZACION_OBJETO_TRANSICION {
+        bigint id_transicion PK
+        int id_organizacion FK
+        int id_autorizacion_objeto FK
+        int id_sede FK
+        string estado_anterior "null en la creación"
+        string estado_nuevo
+        string motivo
+        int id_usuario_actor FK
+        timestamptz ocurrido_en "solo inserción (trigger)"
     }
 
     TOKEN_QR {
@@ -463,6 +496,8 @@ erDiagram
         int id_area FK
         int id_membresia_responsable FK
         int id_usuario_registra FK
+        boolean excepcion_tipo_acceso "persona Recurrente registrada por excepción (D-39)"
+        string motivo_excepcion "nullable; obligatorio si excepción (CHECK)"
         string politica_aplicada "nullable; ingreso sin autorización (PRD 6.3)"
         string motivo
         string observacion
@@ -489,7 +524,8 @@ erDiagram
         int id_organizacion FK
         int id_persona FK
         int id_sede FK
-        int id_zona_punto_acceso FK "ZONA con es_punto_acceso"
+        int id_punto_acceso FK "FK compuesta con la sede del movimiento"
+        string zona_historica "nombre de la zona retirada (solo histórico)"
         int id_visita FK "nullable en intentos denegados"
         int id_autorizacion FK "nullable"
         int id_permanencia FK "nullable en intentos denegados"
@@ -518,7 +554,7 @@ erDiagram
         int id_organizacion FK
         int id_dispositivo FK
         int id_sede FK
-        int id_zona_punto_acceso FK
+        int id_zona_punto_acceso "sin FK; pendiente alinear con punto_acceso (D-48)"
         int id_persona_responsable FK
         int id_visita FK
         int id_usuario_registra FK
@@ -633,7 +669,7 @@ erDiagram
         string entidad
         string id_registro
         string resultado "Exito | Denegado | Error"
-        text valor_anterior
+        text valor_anterior "tabla solo inserción: trigger rechaza UPDATE/DELETE (2026-10-26)"
         text valor_nuevo
         string direccion_ip
         string id_correlacion
@@ -659,8 +695,8 @@ erDiagram
     SEDE ||--o{ AREA : contiene
     AREA |o--o{ AREA : contiene
     AREA ||--o{ AREA_RESPONSABLE : asigna
-    SEDE ||--o{ ZONA : contiene
-    ZONA |o--o{ ZONA : contiene
+    SEDE ||--o{ PUNTO_ACCESO : contiene
+    ZONA_EMPRESARIAL |o--o{ SEDE : agrupa
 
 
     %% =====================================================
@@ -681,7 +717,7 @@ erDiagram
     MEMBRESIA_ORGANIZACION ||--o{ MEMBRESIA_SEDE : alcance
     SEDE ||--o{ MEMBRESIA_SEDE : permite
     MEMBRESIA_ORGANIZACION ||--o{ MEMBRESIA_PUNTO_ACCESO : opera
-    ZONA ||--o{ MEMBRESIA_PUNTO_ACCESO : operada
+    PUNTO_ACCESO ||--o{ MEMBRESIA_PUNTO_ACCESO : operado
     MEMBRESIA_ORGANIZACION ||--o{ AREA_RESPONSABLE : responsable
 
 
@@ -694,6 +730,7 @@ erDiagram
     TIPO_DOCUMENTO ||--o{ PERSONA : identifica
     ORGANIZACION ||--o{ PERSONA : registra
     ARCHIVO |o--o{ PERSONA : foto
+    USUARIO ||--o{ PERSONA : "registra (id_usuario_crea)"
     PERSONA ||--o{ PERSONA_TELEFONO : posee
     PERSONA ||--o{ RESTRICCION_ACCESO : posee
 
@@ -704,6 +741,7 @@ erDiagram
     ORGANIZACION ||--o{ TIPO_DISPOSITIVO : configura
     TIPO_DISPOSITIVO ||--o{ DISPOSITIVO : clasifica
     PERSONA ||--o{ DISPOSITIVO : responsable
+    USUARIO |o--o{ DISPOSITIVO : registra
 
 
     %% =====================================================
@@ -715,12 +753,20 @@ erDiagram
     AREA ||--o{ AUTORIZACION : destino
     AUTORIZACION ||--o{ AUTORIZACION_TRANSICION : historial
     AUTORIZACION ||--o{ AUTORIZACION_HORARIO : define
-    AUTORIZACION ||--o{ AUTORIZACION_ZONA : habilita
-    ZONA ||--o{ AUTORIZACION_ZONA : permitida
     AUTORIZACION ||--o{ AUTORIZACION_VEHICULO : incluye
     VEHICULO ||--o{ AUTORIZACION_VEHICULO : incluido
     AUTORIZACION ||--o{ AUTORIZACION_DISPOSITIVO : incluye
     DISPOSITIVO ||--o{ AUTORIZACION_DISPOSITIVO : incluido
+    PERSONA ||--o{ AUTORIZACION_OBJETO : responsable
+    VEHICULO |o--o{ AUTORIZACION_OBJETO : autorizado
+    DISPOSITIVO |o--o{ AUTORIZACION_OBJETO : autorizado
+    SEDE ||--o{ AUTORIZACION_OBJETO : habilita
+    AREA |o--o{ AUTORIZACION_OBJETO : destino
+    AUTORIZACION |o--o{ AUTORIZACION_OBJETO : "vinculada (opcional)"
+    USUARIO ||--o{ AUTORIZACION_OBJETO : "solicita / decide"
+    AUTORIZACION_OBJETO ||--o{ AUTORIZACION_OBJETO_TRANSICION : historial
+    SEDE ||--o{ AUTORIZACION_OBJETO_TRANSICION : contexto
+    USUARIO ||--o{ AUTORIZACION_OBJETO_TRANSICION : actor
     AUTORIZACION ||--o{ TOKEN_QR : identifica
     AUTORIZACION ||--o{ INVITACION_ENVIO : notifica
     TOKEN_QR ||--o{ INVITACION_ENVIO : contiene
@@ -740,7 +786,7 @@ erDiagram
     SEDE ||--o{ PERMANENCIA : en
 
     PERSONA ||--o{ MOVIMIENTO_ACCESO : realiza
-    ZONA ||--o{ MOVIMIENTO_ACCESO : punto_acceso
+    PUNTO_ACCESO ||--o{ MOVIMIENTO_ACCESO : registra
     VISITA |o--o{ MOVIMIENTO_ACCESO : genera
     PERMANENCIA |o--o{ MOVIMIENTO_ACCESO : abre_cierra
     USUARIO ||--o{ MOVIMIENTO_ACCESO : registra
@@ -749,7 +795,6 @@ erDiagram
     VEHICULO ||--o{ MOVIMIENTO_VEHICULO : utilizado
     MOVIMIENTO_ACCESO ||--o{ MOVIMIENTO_VEHICULO : acompana
     DISPOSITIVO ||--o{ MOVIMIENTO_DISPOSITIVO : registra
-    ZONA ||--o{ MOVIMIENTO_DISPOSITIVO : punto_acceso
     VISITA |o--o{ MOVIMIENTO_DISPOSITIVO : asociada
 
     ORGANIZACION ||--o{ SOLICITUD_IDEMPOTENTE : registra
@@ -776,3 +821,20 @@ erDiagram
 
     ORGANIZACION |o--o{ AUDITORIA : registra
     USUARIO |o--o{ AUDITORIA : ejecuta
+
+## Visitas, permanencias y movimientos (migración 20261027015608_VisitasCicloOperativo, 2026-10-26)
+
+- `visita`: + `fecha_esperada`, `hora_esperada_inicio`, `hora_esperada_fin`, `motivo_cierre`, `id_usuario_actualiza`, `actualizado_en`; CHECK `ck_visita_estado` (Pendiente, Autorizada, Ingreso, Finalizada, Rechazada, Cancelada, Vencida) y `ck_visita_horario_esperado`; FK compuestas a persona, sede, área, autorización y membresía responsable; FK a usuario (registra/actualiza).
+- `permanencia`: + `duracion_segundos`; únicos `ux_permanencia_visita (id_organizacion, id_visita)` y `ux_permanencia_abierta_persona_sede (id_organizacion, id_persona, id_sede) WHERE estado = 'Abierta'`; CHECK de estado y cierre (`cerrada_en >= abierta_en`, duración ≥ 0); FK compuestas a persona, sede, visita y movimientos de entrada/salida.
+- `movimiento_acceso`: CHECK de tipo (Entrada/Salida) y resultado (Confirmado/Denegado); FK compuestas a sede y visita; índices por visita y por sede + instante.
+- `zona`: el índice único `(id_organizacion, id_sede)` pasa a no único (una sede tiene varias zonas y puntos de acceso).
+- `app_modulos`: ruta `/visitas`.
+
+## Zona empresarial por sede y retiro de zonas de acceso (migración 20261031145759_ZonasEmpresarialesPorSedeYRetiroZonasAcceso, 2026-10-31, ADR-028)
+
+- Se eliminan `zona`, `autorizacion_zona` y `zona_empresarial_organizacion`; `punto_acceso.id_zona`, `movimiento_acceso.id_zona` y `restriccion_acceso.id_zona`.
+- `punto_acceso`: FK compuesta `(id_organizacion, id_sede) → sede`; + `es_comun_zona_empresarial`.
+- `movimiento_acceso`: + `zona_historica` (nombre legible de la zona en que se registró).
+- `sede.id_zona_empresarial` es la única relación con la zona empresarial.
+- Bitácora `migracion_zonas_adr028` (fuera del modelo EF) con lo migrado, retirado, histórico y **pendiente** (vínculos organización↔zona sin traslado inequívoco).
+- `movimiento_dispositivo.id_zona_punto_acceso` (sin FK ni uso funcional) se conserva hasta resolver D-48.

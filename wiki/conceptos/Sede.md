@@ -3,11 +3,13 @@ tipo: concepto
 estado: base
 fuentes: [PRD v0.1]
 relacionados: [RF-03, CA-02]
-actualizado: 2026-10-17
+actualizado: 2026-10-31
 tags: [conecsia]
 ---
 
 # Sede
+
+> [!note] 2026-10-31 — **Implementado** ([[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]]): la sede tiene cero o una [[Zona empresarial]], asignada en su formulario (zona activa del catálogo); con áreas o puntos comunes no puede cambiarla. Los puntos de acceso pertenecen directamente a la sede ([[Puntos de acceso]]); ya no hay zonas de acceso.
 
 **Base.** Instalación física de una [[Organización]]. Término de trabajo; en el fuente aparece como *ubicación* (D-01).
 

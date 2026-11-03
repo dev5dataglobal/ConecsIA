@@ -10,5 +10,6 @@ public sealed class TipoDocumentoConfiguration : EntityConfigurationBase<TipoDoc
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdTipoDocumento);
+        builder.HasIndex(x => x.Codigo).IsUnique();
     }
 }

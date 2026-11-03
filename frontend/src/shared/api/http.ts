@@ -57,9 +57,21 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   return body as T
 }
 
+/**
+ * Descarga un archivo protegido (p. ej. la foto de una persona) con el mismo token, organización y renovación de
+ * sesión que {@link apiFetch}. Sin renovación, un token vencido dejaba la imagen sin cargar.
+ */
+export async function apiBlob(path: string): Promise<Blob> {
+  const init: RequestInit = { headers: { Accept: '*/*' } }
+  let response = await enviar(path, init)
+  if (response.status === 401 && leerAccessToken() && (await renovarSesion())) response = await enviar(path, init)
+  if (!response.ok) throw new ApiError(response.status, { status: response.status })
+  return response.blob()
+}
+
 async function enviar(path: string, init: RequestInit): Promise<Response> {
   const headers = new Headers(init.headers)
-  headers.set('Accept', 'application/json')
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json')
   // FormData define su propio Content-Type (multipart con boundary).
   if (init.body !== undefined && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')

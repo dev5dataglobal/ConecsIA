@@ -11,7 +11,7 @@ public sealed class AreaConfiguration : EntityConfigurationBase<Area>, IEntityTy
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdArea);
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdArea }).IsUnique();
-        builder.HasIndex(x => new { x.IdOrganizacion, x.IdSede }).IsUnique();
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdSede, x.Nombre }).IsUnique();
         builder.HasOne<Sede>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede }).OnDelete(DeleteBehavior.Restrict);
     }
 }

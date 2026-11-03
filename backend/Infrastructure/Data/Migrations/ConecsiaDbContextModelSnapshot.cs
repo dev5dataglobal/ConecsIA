@@ -291,7 +291,7 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("IdOrganizacion", "IdArea")
                         .IsUnique();
 
-                    b.HasIndex("IdOrganizacion", "IdSede")
+                    b.HasIndex("IdOrganizacion", "IdSede", "Nombre")
                         .IsUnique();
 
                     b.ToTable("area", "public");
@@ -338,6 +338,11 @@ namespace Infrastructure.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("accion");
+
+                    b.Property<string>("AgenteUsuario")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("agente_usuario");
 
                     b.Property<string>("DireccionIp")
                         .HasMaxLength(2000)
@@ -397,6 +402,10 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdAuditoria");
 
+                    b.HasIndex("IdOrganizacion", "OcurridoEn");
+
+                    b.HasIndex("IdOrganizacion", "Entidad", "IdRegistro");
+
                     b.ToTable("auditoria", "public");
                 });
 
@@ -423,6 +432,10 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("cupo_ingresos");
 
+                    b.Property<DateTime?>("DecididoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decidido_en");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(2000)
@@ -437,9 +450,21 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("date")
                         .HasColumnName("fecha_inicio");
 
+                    b.Property<TimeOnly?>("HoraFin")
+                        .HasColumnType("time")
+                        .HasColumnName("hora_fin");
+
+                    b.Property<TimeOnly?>("HoraInicio")
+                        .HasColumnType("time")
+                        .HasColumnName("hora_inicio");
+
                     b.Property<int>("IdArea")
                         .HasColumnType("integer")
                         .HasColumnName("id_area");
+
+                    b.Property<int?>("IdCategoriaAcceso")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_categoria_acceso");
 
                     b.Property<int>("IdMembresiaResponsable")
                         .HasColumnType("integer")
@@ -461,6 +486,14 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_usuario_crea");
 
+                    b.Property<int?>("IdUsuarioDecide")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_decide");
+
+                    b.Property<int?>("IdVisitaOrigen")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_visita_origen");
+
                     b.Property<int?>("IdZonaEmpresarialEmisora")
                         .HasColumnType("integer")
                         .HasColumnName("id_zona_empresarial_emisora");
@@ -480,16 +513,33 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("motivo");
 
+                    b.Property<string>("MotivoDecision")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_decision");
+
                     b.Property<string>("Observacion")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("observacion");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Manual")
+                        .HasColumnName("origen");
 
                     b.Property<string>("TipoEmisor")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("tipo_emisor");
+
+                    b.Property<bool>("UsaHorarioBase")
+                        .HasColumnType("boolean")
+                        .HasColumnName("usa_horario_base");
 
                     b.Property<long>("Version")
                         .IsConcurrencyToken()
@@ -498,20 +548,40 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdAutorizacion");
 
+                    b.HasIndex("IdUsuarioCrea");
+
+                    b.HasIndex("IdUsuarioDecide");
+
                     b.HasIndex("IdZonaEmpresarialEmisora");
+
+                    b.HasIndex("IdOrganizacion", "Estado");
 
                     b.HasIndex("IdOrganizacion", "IdArea");
 
                     b.HasIndex("IdOrganizacion", "IdAutorizacion")
                         .IsUnique();
 
-                    b.HasIndex("IdOrganizacion", "IdPersona");
+                    b.HasIndex("IdOrganizacion", "IdCategoriaAcceso");
 
                     b.HasIndex("IdOrganizacion", "IdSede");
+
+                    b.HasIndex("IdOrganizacion", "IdVisitaOrigen");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona", "FechaInicio");
 
                     b.ToTable("autorizacion", "public", t =>
                         {
                             t.HasCheckConstraint("ck_autorizacion_emisor_alcance", "(tipo_emisor = 'Empresa' AND id_zona_empresarial_emisora IS NULL AND alcance = 'Privado') OR (tipo_emisor = 'ZonaEmpresarial' AND id_zona_empresarial_emisora IS NOT NULL AND alcance = 'Comun')");
+
+                            t.HasCheckConstraint("ck_autorizacion_estado", "estado IN ('Pendiente','Aprobada','Rechazada','Cancelada','Revocada','Vencida','Agotada')");
+
+                            t.HasCheckConstraint("ck_autorizacion_fechas", "(modalidad = 'Permanente' AND fecha_fin IS NULL) OR (modalidad = 'Recurrente' AND (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)) OR (modalidad IN ('Unica','Diaria') AND fecha_fin = fecha_inicio) OR (modalidad = 'Temporal' AND fecha_fin >= fecha_inicio)");
+
+                            t.HasCheckConstraint("ck_autorizacion_horas", "(modalidad = 'Temporal' AND hora_inicio IS NOT NULL AND hora_fin IS NOT NULL AND (fecha_fin > fecha_inicio OR hora_fin > hora_inicio)) OR (modalidad IN ('Unica','Diaria') AND ((hora_inicio IS NULL AND hora_fin IS NULL) OR (hora_inicio IS NOT NULL AND hora_fin IS NOT NULL AND hora_fin > hora_inicio))) OR (modalidad IN ('Recurrente','Permanente') AND hora_inicio IS NULL AND hora_fin IS NULL)");
+
+                            t.HasCheckConstraint("ck_autorizacion_modalidad", "modalidad IN ('Unica','Diaria','Temporal','Recurrente','Permanente')");
+
+                            t.HasCheckConstraint("ck_autorizacion_origen", "origen IN ('Manual','Politica','Migracion')");
                         });
                 });
 
@@ -565,10 +635,204 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdAutorizacionHorario");
 
+                    b.HasIndex("IdAutorizacion", "DiaSemana");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
+
                     b.ToTable("autorizacion_horario", "public", t =>
                         {
                             t.HasCheckConstraint("ck_autorizacion_horario_dia", "dia_semana BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("ck_autorizacion_horario_horas", "hora_fin > hora_inicio");
                         });
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionObjeto", b =>
+                {
+                    b.Property<int>("IdAutorizacionObjeto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id_autorizacion_objeto");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdAutorizacionObjeto"));
+
+                    b.Property<DateTime?>("DecididoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decidido_en");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateOnly>("FechaFin")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_fin");
+
+                    b.Property<DateOnly>("FechaInicio")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_inicio");
+
+                    b.Property<TimeOnly?>("HoraFin")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_fin");
+
+                    b.Property<TimeOnly?>("HoraInicio")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_inicio");
+
+                    b.Property<int?>("IdArea")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_area");
+
+                    b.Property<int?>("IdAutorizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_autorizacion");
+
+                    b.Property<int?>("IdDispositivo")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_dispositivo");
+
+                    b.Property<int>("IdOrganizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_organizacion");
+
+                    b.Property<int>("IdPersona")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_persona");
+
+                    b.Property<int>("IdSede")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_sede");
+
+                    b.Property<int?>("IdUsuarioDecide")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_decide");
+
+                    b.Property<int>("IdUsuarioSolicita")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_solicita");
+
+                    b.Property<int?>("IdVehiculo")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_vehiculo");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo");
+
+                    b.Property<string>("MotivoDecision")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_decision");
+
+                    b.Property<DateTime>("SolicitadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("solicitado_en");
+
+                    b.Property<string>("TipoObjeto")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_objeto");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("IdAutorizacionObjeto");
+
+                    b.HasIndex("IdUsuarioDecide");
+
+                    b.HasIndex("IdUsuarioSolicita");
+
+                    b.HasIndex("IdOrganizacion", "IdArea");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacionObjeto")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdDispositivo");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona");
+
+                    b.HasIndex("IdOrganizacion", "IdSede");
+
+                    b.HasIndex("IdOrganizacion", "IdVehiculo");
+
+                    b.HasIndex("IdOrganizacion", "Estado", "FechaInicio");
+
+                    b.ToTable("autorizacion_objeto", "public", t =>
+                        {
+                            t.HasCheckConstraint("CK_autorizacion_objeto_estado", "estado IN ('Pendiente', 'Aprobada', 'Rechazada', 'Revocada')");
+
+                            t.HasCheckConstraint("CK_autorizacion_objeto_fechas", "fecha_fin >= fecha_inicio");
+
+                            t.HasCheckConstraint("CK_autorizacion_objeto_horas", "(hora_inicio IS NULL AND hora_fin IS NULL) OR (hora_inicio IS NOT NULL AND hora_fin IS NOT NULL AND hora_fin > hora_inicio)");
+
+                            t.HasCheckConstraint("CK_autorizacion_objeto_objeto", "(tipo_objeto = 'Vehiculo' AND id_vehiculo IS NOT NULL AND id_dispositivo IS NULL) OR (tipo_objeto = 'Dispositivo' AND id_dispositivo IS NOT NULL AND id_vehiculo IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionObjetoTransicion", b =>
+                {
+                    b.Property<long>("IdTransicion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_transicion");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdTransicion"));
+
+                    b.Property<string>("EstadoAnterior")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado_anterior");
+
+                    b.Property<string>("EstadoNuevo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado_nuevo");
+
+                    b.Property<int>("IdAutorizacionObjeto")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_autorizacion_objeto");
+
+                    b.Property<int>("IdOrganizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_organizacion");
+
+                    b.Property<int>("IdSede")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_sede");
+
+                    b.Property<int>("IdUsuarioActor")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_actor");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo");
+
+                    b.Property<DateTime>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrido_en");
+
+                    b.HasKey("IdTransicion");
+
+                    b.HasIndex("IdUsuarioActor");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacionObjeto");
+
+                    b.HasIndex("IdOrganizacion", "IdSede");
+
+                    b.ToTable("autorizacion_objeto_transicion", "public");
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionTransicion", b =>
@@ -615,6 +879,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdTransicion");
 
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
+
                     b.ToTable("autorizacion_transicion", "public");
                 });
 
@@ -637,23 +903,89 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("autorizacion_vehiculo", "public");
                 });
 
-            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionZona", b =>
+            modelBuilder.Entity("ConecsIA.Domain.Entities.CategoriaAcceso", b =>
                 {
+                    b.Property<int>("IdCategoriaAcceso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id_categoria_acceso");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdCategoriaAcceso"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("codigo");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<bool>("ExigeAnfitrion")
+                        .HasColumnType("boolean")
+                        .HasColumnName("exige_anfitrion");
+
+                    b.Property<bool>("ExigeMotivo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("exige_motivo");
+
+                    b.Property<string>("FlujoAprobacion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("flujo_aprobacion");
+
                     b.Property<int>("IdOrganizacion")
                         .HasColumnType("integer")
                         .HasColumnName("id_organizacion");
 
-                    b.Property<int>("IdAutorizacion")
+                    b.PrimitiveCollection<string[]>("ModalidadesPermitidas")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("modalidades_permitidas");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("Orden")
                         .HasColumnType("integer")
-                        .HasColumnName("id_autorizacion");
+                        .HasColumnName("orden");
 
-                    b.Property<int>("IdZona")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona");
+                    b.Property<bool>("PermiteDispositivos")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permite_dispositivos");
 
-                    b.HasKey("IdOrganizacion", "IdAutorizacion", "IdZona");
+                    b.Property<bool>("PermiteVehiculos")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permite_vehiculos");
 
-                    b.ToTable("autorizacion_zona", "public");
+                    b.HasKey("IdCategoriaAcceso");
+
+                    b.HasIndex("IdOrganizacion", "Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdCategoriaAcceso")
+                        .IsUnique();
+
+                    b.ToTable("categoria_acceso", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_categoria_acceso_flujo", "flujo_aprobacion IN ('Automatico','Anfitrion','Seguridad')");
+
+                            t.HasCheckConstraint("ck_categoria_acceso_modalidades", "cardinality(modalidades_permitidas) > 0 AND modalidades_permitidas <@ ARRAY['Unica','Diaria','Temporal','Recurrente','Permanente']::text[]");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.Ciudad", b =>
@@ -668,6 +1000,12 @@ namespace Infrastructure.Data.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean")
                         .HasColumnName("activo");
+
+                    b.Property<string>("CodigoDane")
+                        .HasMaxLength(5)
+                        .HasColumnType("character(5)")
+                        .HasColumnName("codigo_dane")
+                        .IsFixedLength();
 
                     b.Property<string>("Departamento")
                         .HasMaxLength(2000)
@@ -686,7 +1024,17 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("pais");
 
+                    b.Property<string>("ZonaHoraria")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("zona_horaria");
+
                     b.HasKey("IdCiudad");
+
+                    b.HasIndex("CodigoDane")
+                        .IsUnique()
+                        .HasFilter("codigo_dane IS NOT NULL");
 
                     b.ToTable("ciudad", "public");
                 });
@@ -706,8 +1054,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("CodigoIdentificador")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("codigo_identificador");
 
                     b.Property<string>("Color")
@@ -736,6 +1084,10 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_tipo_dispositivo");
 
+                    b.Property<int?>("IdUsuarioCrea")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_crea");
+
                     b.Property<string>("Marca")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
@@ -747,18 +1099,71 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnName("modelo");
 
                     b.Property<string>("Serial")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("serial");
 
                     b.Property<string>("SerialNormalizado")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("serial_normalizado");
 
                     b.HasKey("IdDispositivo");
 
+                    b.HasIndex("IdUsuarioCrea");
+
+                    b.HasIndex("IdOrganizacion", "CodigoIdentificador")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdDispositivo")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdPersonaResponsable");
+
+                    b.HasIndex("IdOrganizacion", "IdTipoDispositivo");
+
                     b.ToTable("dispositivo", "public");
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.HorarioBase", b =>
+                {
+                    b.Property<int>("IdHorarioBase")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id_horario_base");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdHorarioBase"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer")
+                        .HasColumnName("dia_semana");
+
+                    b.Property<TimeOnly>("HoraFin")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_fin");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_inicio");
+
+                    b.Property<int>("IdOrganizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_organizacion");
+
+                    b.Property<int?>("IdSede")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_sede");
+
+                    b.HasKey("IdHorarioBase");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "DiaSemana");
+
+                    b.ToTable("horario_base", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_horario_base_dia", "dia_semana BETWEEN 1 AND 7");
+
+                            t.HasCheckConstraint("ck_horario_base_horas", "hora_fin > hora_inicio");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.InvitacionEnvio", b =>
@@ -853,11 +1258,13 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_membresia");
 
-                    b.Property<int>("IdZona")
+                    b.Property<int>("IdPuntoAcceso")
                         .HasColumnType("integer")
-                        .HasColumnName("id_zona");
+                        .HasColumnName("id_punto_acceso");
 
-                    b.HasKey("IdOrganizacion", "IdMembresia", "IdZona");
+                    b.HasKey("IdOrganizacion", "IdMembresia", "IdPuntoAcceso");
+
+                    b.HasIndex("IdOrganizacion", "IdPuntoAcceso");
 
                     b.ToTable("membresia_punto_acceso", "public");
                 });
@@ -1014,6 +1421,10 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_persona");
 
+                    b.Property<int>("IdPuntoAcceso")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_punto_acceso");
+
                     b.Property<int>("IdSede")
                         .HasColumnType("integer")
                         .HasColumnName("id_sede");
@@ -1026,14 +1437,10 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_visita");
 
-                    b.Property<int>("IdZonaPuntoAcceso")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona_punto_acceso");
-
                     b.Property<string>("Medio")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("medio");
 
                     b.Property<string>("MotivoDenegacion")
@@ -1042,8 +1449,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnName("motivo_denegacion");
 
                     b.Property<string>("Observacion")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("observacion");
 
                     b.Property<DateTime>("OcurridoEn")
@@ -1052,23 +1459,43 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("Resultado")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("resultado");
 
                     b.Property<string>("TipoMovimiento")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("tipo_movimiento");
+
+                    b.Property<string>("ZonaHistorica")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("zona_historica");
 
                     b.HasKey("IdMovimiento");
 
+                    b.HasIndex("IdUsuarioRegistra");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
+
                     b.HasIndex("IdOrganizacion", "IdPersona");
 
-                    b.HasIndex("IdOrganizacion", "IdZonaPuntoAcceso");
+                    b.HasIndex("IdOrganizacion", "IdPuntoAcceso");
 
-                    b.ToTable("movimiento_acceso", "public");
+                    b.HasIndex("IdOrganizacion", "IdVisita");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "IdPuntoAcceso");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "OcurridoEn");
+
+                    b.ToTable("movimiento_acceso", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_movimiento_acceso_resultado", "resultado IN ('Confirmado','Denegado')");
+
+                            t.HasCheckConstraint("ck_movimiento_acceso_tipo", "tipo_movimiento IN ('Entrada','Salida')");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoDispositivo", b =>
@@ -1334,6 +1761,18 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("telefono");
 
+                    b.Property<bool>("TieneSedes")
+                        .HasColumnType("boolean")
+                        .HasColumnName("tiene_sedes");
+
+                    b.Property<string>("ZonaHoraria")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasDefaultValue("America/Bogota")
+                        .HasColumnName("zona_horaria");
+
                     b.HasKey("IdOrganizacion");
 
                     b.HasIndex("IdArchivoLogo");
@@ -1463,10 +1902,14 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("cerrada_en");
 
+                    b.Property<long?>("DuracionSegundos")
+                        .HasColumnType("bigint")
+                        .HasColumnName("duracion_segundos");
+
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
 
                     b.Property<long>("IdMovimientoEntrada")
@@ -1495,7 +1938,30 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdPermanencia");
 
-                    b.ToTable("permanencia", "public");
+                    b.HasIndex("IdOrganizacion", "IdMovimientoEntrada");
+
+                    b.HasIndex("IdOrganizacion", "IdMovimientoSalida");
+
+                    b.HasIndex("IdOrganizacion", "IdPermanencia")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdVisita")
+                        .IsUnique()
+                        .HasDatabaseName("ux_permanencia_visita");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona", "IdSede")
+                        .IsUnique()
+                        .HasDatabaseName("ux_permanencia_abierta_persona_sede")
+                        .HasFilter("estado = 'Abierta'");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "Estado");
+
+                    b.ToTable("permanencia", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_permanencia_cierre", "(estado = 'Abierta' AND cerrada_en IS NULL AND id_movimiento_salida IS NULL) OR (estado = 'Cerrada' AND cerrada_en IS NOT NULL AND id_movimiento_salida IS NOT NULL AND cerrada_en >= abierta_en AND duracion_segundos >= 0)");
+
+                            t.HasCheckConstraint("ck_permanencia_estado", "estado IN ('Abierta','Cerrada')");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.Permiso", b =>
@@ -1608,13 +2074,16 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdPersona");
 
+                    b.HasIndex("IdArchivoFoto");
+
                     b.HasIndex("IdTipoDocumento");
+
+                    b.HasIndex("IdUsuarioCrea");
 
                     b.HasIndex("IdOrganizacion", "IdPersona")
                         .IsUnique();
 
-                    b.HasIndex("IdOrganizacion", "IdTipoPersona")
-                        .IsUnique();
+                    b.HasIndex("IdOrganizacion", "IdTipoPersona");
 
                     b.HasIndex("IdOrganizacion", "IdTipoDocumento", "NumeroDocumentoNormalizado")
                         .IsUnique();
@@ -1634,6 +2103,14 @@ namespace Infrastructure.Data.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean")
                         .HasColumnName("activo");
+
+                    b.Property<string>("CodigoPais")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasDefaultValue("+57")
+                        .HasColumnName("codigo_pais");
 
                     b.Property<int>("IdOrganizacion")
                         .HasColumnType("integer")
@@ -1659,6 +2136,16 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnName("tipo");
 
                     b.HasKey("IdTelefono");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona")
+                        .IsUnique()
+                        .HasDatabaseName("UX_persona_telefono_principal")
+                        .HasFilter("principal AND activo");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona", "CodigoPais", "Numero")
+                        .IsUnique()
+                        .HasDatabaseName("UX_persona_telefono_numero_activo")
+                        .HasFilter("activo");
 
                     b.ToTable("persona_telefono", "public");
                 });
@@ -1688,6 +2175,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnName("relacion");
 
                     b.HasKey("IdOrganizacion", "IdPersona", "IdVehiculo");
+
+                    b.HasIndex("IdOrganizacion", "IdVehiculo");
 
                     b.ToTable("persona_vehiculo", "public");
                 });
@@ -1734,6 +2223,78 @@ namespace Infrastructure.Data.Migrations
                     b.HasKey("IdPlan", "IdModulo");
 
                     b.ToTable("plan_modulo", "public");
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PlantillaCategoriaAcceso", b =>
+                {
+                    b.Property<int>("IdPlantillaCategoriaAcceso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id_plantilla_categoria_acceso");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdPlantillaCategoriaAcceso"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("codigo");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<bool>("ExigeAnfitrion")
+                        .HasColumnType("boolean")
+                        .HasColumnName("exige_anfitrion");
+
+                    b.Property<string>("FlujoAprobacion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("flujo_aprobacion");
+
+                    b.Property<int>("IdTipoOrganizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_tipo_organizacion");
+
+                    b.PrimitiveCollection<string[]>("ModalidadesPermitidas")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("modalidades_permitidas");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer")
+                        .HasColumnName("orden");
+
+                    b.Property<bool>("PermiteDispositivos")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permite_dispositivos");
+
+                    b.Property<bool>("PermiteVehiculos")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permite_vehiculos");
+
+                    b.HasKey("IdPlantillaCategoriaAcceso");
+
+                    b.HasIndex("IdTipoOrganizacion", "Codigo")
+                        .IsUnique();
+
+                    b.ToTable("plantilla_categoria_acceso", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_plantilla_categoria_acceso_flujo", "flujo_aprobacion IN ('Automatico','Anfitrion','Seguridad')");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.PlantillaNotificacion", b =>
@@ -1815,6 +2376,86 @@ namespace Infrastructure.Data.Migrations
                     b.HasKey("IdPlantillaRol", "IdPermiso");
 
                     b.ToTable("plantilla_rol_permiso", "public");
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PuntoAcceso", b =>
+                {
+                    b.Property<int>("IdPuntoAcceso")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id_punto_acceso");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdPuntoAcceso"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTime?>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("descripcion");
+
+                    b.Property<bool>("EsComunZonaEmpresarial")
+                        .HasColumnType("boolean")
+                        .HasColumnName("es_comun_zona_empresarial");
+
+                    b.Property<int>("IdOrganizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_organizacion");
+
+                    b.Property<int>("IdSede")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_sede");
+
+                    b.Property<int?>("IdUsuarioActualiza")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_actualiza");
+
+                    b.Property<int?>("IdUsuarioCrea")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_crea");
+
+                    b.Property<string>("ModoAcceso")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("modo_acceso");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("NombreNormalizado")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre_normalizado")
+                        .HasComputedColumnSql("upper(btrim(nombre))", true);
+
+                    b.HasKey("IdPuntoAcceso");
+
+                    b.HasIndex("IdOrganizacion", "IdPuntoAcceso")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("ux_punto_acceso_sede_nombre");
+
+                    b.ToTable("punto_acceso", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_punto_acceso_modo", "modo_acceso IN ('Entrada','Salida','Ambos')");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.RecuperacionContrasena", b =>
@@ -1904,10 +2545,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("IdUsuarioRegistra")
                         .HasColumnType("integer")
                         .HasColumnName("id_usuario_registra");
-
-                    b.Property<int?>("IdZona")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona");
 
                     b.Property<DateTime?>("LevantadaEn")
                         .HasColumnType("timestamp with time zone")
@@ -2050,6 +2687,9 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("IdOrganizacion", "IdSede")
                         .IsUnique();
 
+                    b.HasIndex("IdOrganizacion", "Nombre")
+                        .IsUnique();
+
                     b.ToTable("sede", "public");
                 });
 
@@ -2106,6 +2746,74 @@ namespace Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("sesion_refresco", "public");
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.SolicitudContacto", b =>
+                {
+                    b.Property<long>("IdSolicitudContacto")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_solicitud_contacto");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdSolicitudContacto"));
+
+                    b.Property<string>("Correo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("correo");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_creacion");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("mensaje");
+
+                    b.Property<string>("NombreContacto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nombre_contacto");
+
+                    b.Property<int?>("NumeroSedes")
+                        .HasColumnType("integer")
+                        .HasColumnName("numero_sedes");
+
+                    b.Property<string>("Organizacion")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("organizacion");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("telefono");
+
+                    b.Property<string>("TipoOrganizacion")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("tipo_organizacion");
+
+                    b.HasKey("IdSolicitudContacto");
+
+                    b.HasIndex("FechaCreacion");
+
+                    b.ToTable("solicitud_contacto", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_solicitud_contacto_numero_sedes", "numero_sedes IS NULL OR numero_sedes BETWEEN 1 AND 9999");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.SolicitudIdempotente", b =>
@@ -2179,6 +2887,12 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdTipoDispositivo");
 
+                    b.HasIndex("IdOrganizacion", "IdTipoDispositivo")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "Nombre")
+                        .IsUnique();
+
                     b.ToTable("tipo_dispositivo", "public");
                 });
 
@@ -2212,7 +2926,15 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("pais_emisor");
 
+                    b.Property<string>("PatronValidacion")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("patron_validacion");
+
                     b.HasKey("IdTipoDocumento");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
 
                     b.ToTable("tipo_documento", "public");
                 });
@@ -2277,6 +2999,9 @@ namespace Infrastructure.Data.Migrations
                     b.HasKey("IdTipoPersona");
 
                     b.HasIndex("IdOrganizacion", "IdTipoPersona")
+                        .IsUnique();
+
+                    b.HasIndex("IdOrganizacion", "Nombre")
                         .IsUnique();
 
                     b.ToTable("tipo_persona", "public");
@@ -2458,15 +3183,35 @@ namespace Infrastructure.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdVisita"));
 
+                    b.Property<DateTime?>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("creado_en");
 
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
+
+                    b.Property<bool>("ExcepcionTipoAcceso")
+                        .HasColumnType("boolean")
+                        .HasColumnName("excepcion_tipo_acceso");
+
+                    b.Property<DateOnly?>("FechaEsperada")
+                        .HasColumnType("date")
+                        .HasColumnName("fecha_esperada");
+
+                    b.Property<TimeOnly?>("HoraEsperadaFin")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_esperada_fin");
+
+                    b.Property<TimeOnly?>("HoraEsperadaInicio")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("hora_esperada_inicio");
 
                     b.Property<int>("IdArea")
                         .HasColumnType("integer")
@@ -2492,14 +3237,28 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_sede");
 
+                    b.Property<int?>("IdUsuarioActualiza")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_actualiza");
+
                     b.Property<int>("IdUsuarioRegistra")
                         .HasColumnType("integer")
                         .HasColumnName("id_usuario_registra");
 
                     b.Property<string>("Motivo")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("motivo");
+
+                    b.Property<string>("MotivoCierre")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_cierre");
+
+                    b.Property<string>("MotivoExcepcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_excepcion");
 
                     b.Property<string>("Observacion")
                         .HasMaxLength(2000)
@@ -2507,8 +3266,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnName("observacion");
 
                     b.Property<string>("PoliticaAplicada")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("politica_aplicada");
 
                     b.Property<long>("Version")
@@ -2518,74 +3277,32 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("IdVisita");
 
+                    b.HasIndex("IdUsuarioActualiza");
+
+                    b.HasIndex("IdUsuarioRegistra");
+
+                    b.HasIndex("IdOrganizacion", "CreadoEn");
+
                     b.HasIndex("IdOrganizacion", "IdArea");
 
-                    b.HasIndex("IdOrganizacion", "IdPersona");
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
 
-                    b.HasIndex("IdOrganizacion", "IdSede");
+                    b.HasIndex("IdOrganizacion", "IdMembresiaResponsable");
+
+                    b.HasIndex("IdOrganizacion", "IdPersona");
 
                     b.HasIndex("IdOrganizacion", "IdVisita")
                         .IsUnique();
 
-                    b.ToTable("visita", "public");
-                });
+                    b.HasIndex("IdOrganizacion", "IdSede", "Estado");
 
-            modelBuilder.Entity("ConecsIA.Domain.Entities.Zona", b =>
-                {
-                    b.Property<int>("IdZona")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("IdZona"));
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("boolean")
-                        .HasColumnName("activo");
-
-                    b.Property<string>("Descripcion")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("descripcion");
-
-                    b.Property<bool>("EsPuntoAcceso")
-                        .HasColumnType("boolean")
-                        .HasColumnName("es_punto_acceso");
-
-                    b.Property<int>("IdOrganizacion")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_organizacion");
-
-                    b.Property<int>("IdSede")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_sede");
-
-                    b.Property<int?>("IdZonaPadre")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona_padre");
-
-                    b.Property<string>("ModoAcceso")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("modo_acceso");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("nombre");
-
-                    b.HasKey("IdZona");
-
-                    b.HasIndex("IdOrganizacion", "IdSede")
-                        .IsUnique();
-
-                    b.HasIndex("IdOrganizacion", "IdZona")
-                        .IsUnique();
-
-                    b.ToTable("zona", "public", t =>
+                    b.ToTable("visita", "public", t =>
                         {
-                            t.HasCheckConstraint("ck_zona_modo_acceso", "es_punto_acceso OR modo_acceso IS NULL OR modo_acceso IN ('Entrada','Salida','Ambos')");
+                            t.HasCheckConstraint("ck_visita_estado", "estado IN ('Pendiente','Autorizada','Ingreso','Finalizada','Rechazada','Cancelada','Vencida')");
+
+                            t.HasCheckConstraint("ck_visita_excepcion_motivo", "NOT excepcion_tipo_acceso OR motivo_excepcion IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_visita_horario_esperado", "hora_esperada_inicio IS NULL OR hora_esperada_fin IS NULL OR hora_esperada_fin > hora_esperada_inicio");
                         });
                 });
 
@@ -2625,42 +3342,6 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("zona_empresarial", "public");
                 });
 
-            modelBuilder.Entity("ConecsIA.Domain.Entities.ZonaEmpresarialOrganizacion", b =>
-                {
-                    b.Property<int>("IdOrganizacion")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_organizacion");
-
-                    b.Property<int>("IdZonaEmpresarial")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona_empresarial");
-
-                    b.Property<bool>("Activa")
-                        .HasColumnType("boolean")
-                        .HasColumnName("activa");
-
-                    b.Property<bool>("EsAdministradora")
-                        .HasColumnType("boolean")
-                        .HasColumnName("es_administradora");
-
-                    b.HasKey("IdOrganizacion", "IdZonaEmpresarial");
-
-                    b.HasIndex("IdOrganizacion")
-                        .IsUnique()
-                        .HasDatabaseName("UX_zona_empresarial_organizacion_empresa")
-                        .HasFilter("NOT es_administradora AND activa");
-
-                    b.HasIndex("IdZonaEmpresarial")
-                        .IsUnique()
-                        .HasDatabaseName("UX_zona_empresarial_organizacion_administradora")
-                        .HasFilter("es_administradora AND activa");
-
-                    b.HasIndex("IdOrganizacion", "IdZonaEmpresarial", "EsAdministradora")
-                        .IsUnique();
-
-                    b.ToTable("zona_empresarial_organizacion", "public");
-                });
-
             modelBuilder.Entity("ConecsIA.Domain.Entities.Area", b =>
                 {
                     b.HasOne("ConecsIA.Domain.Entities.Sede", null)
@@ -2673,6 +3354,17 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.Autorizacion", b =>
                 {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCrea")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioDecide")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ConecsIA.Domain.Entities.ZonaEmpresarial", null)
                         .WithMany()
                         .HasForeignKey("IdZonaEmpresarialEmisora")
@@ -2685,6 +3377,12 @@ namespace Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ConecsIA.Domain.Entities.CategoriaAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdCategoriaAcceso")
+                        .HasPrincipalKey("IdOrganizacion", "IdCategoriaAcceso")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ConecsIA.Domain.Entities.Persona", null)
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdPersona")
@@ -2696,6 +3394,175 @@ namespace Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdSede")
                         .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Visita", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVisitaOrigen")
+                        .HasPrincipalKey("IdOrganizacion", "IdVisita")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionHorario", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionObjeto", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioDecide")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioSolicita")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Area", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdArea")
+                        .HasPrincipalKey("IdOrganizacion", "IdArea")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Dispositivo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdDispositivo")
+                        .HasPrincipalKey("IdOrganizacion", "IdDispositivo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersona")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Vehiculo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVehiculo")
+                        .HasPrincipalKey("IdOrganizacion", "IdVehiculo")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionObjetoTransicion", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioActor")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.AutorizacionObjeto", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacionObjeto")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacionObjeto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AutorizacionTransicion", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.CategoriaAcceso", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.Dispositivo", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCrea")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersonaResponsable")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.TipoDispositivo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdTipoDispositivo")
+                        .HasPrincipalKey("IdOrganizacion", "IdTipoDispositivo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.HorarioBase", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.MembresiaPuntoAcceso", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.PuntoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPuntoAcceso")
+                        .HasPrincipalKey("IdOrganizacion", "IdPuntoAcceso")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -2729,6 +3596,18 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoAcceso", b =>
                 {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioRegistra")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ConecsIA.Domain.Entities.Persona", null)
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdPersona")
@@ -2736,10 +3615,23 @@ namespace Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ConecsIA.Domain.Entities.Zona", null)
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
                         .WithMany()
-                        .HasForeignKey("IdOrganizacion", "IdZonaPuntoAcceso")
-                        .HasPrincipalKey("IdOrganizacion", "IdZona")
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Visita", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVisita")
+                        .HasPrincipalKey("IdOrganizacion", "IdVisita")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.PuntoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede", "IdPuntoAcceso")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede", "IdPuntoAcceso")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -2764,11 +3656,66 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConecsIA.Domain.Entities.Permanencia", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.MovimientoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMovimientoEntrada")
+                        .HasPrincipalKey("IdOrganizacion", "IdMovimiento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.MovimientoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMovimientoSalida")
+                        .HasPrincipalKey("IdOrganizacion", "IdMovimiento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_permanencia_movimiento_acceso_id_organizacion_id_movimient~1");
+
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersona")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Visita", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVisita")
+                        .HasPrincipalKey("IdOrganizacion", "IdVisita")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConecsIA.Domain.Entities.Persona", b =>
                 {
+                    b.HasOne("ConecsIA.Domain.Entities.Archivo", null)
+                        .WithMany()
+                        .HasForeignKey("IdArchivoFoto")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ConecsIA.Domain.Entities.TipoDocumento", null)
                         .WithMany()
                         .HasForeignKey("IdTipoDocumento")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioCrea")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2776,6 +3723,52 @@ namespace Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdTipoPersona")
                         .HasPrincipalKey("IdOrganizacion", "IdTipoPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PersonaTelefono", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersona")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PersonaVehiculo", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersona")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Vehiculo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVehiculo")
+                        .HasPrincipalKey("IdOrganizacion", "IdVehiculo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PlantillaCategoriaAcceso", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.TipoOrganizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdTipoOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.PuntoAcceso", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -2812,12 +3805,63 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConecsIA.Domain.Entities.TipoDispositivo", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.TipoPersona", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.Vehiculo", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConecsIA.Domain.Entities.Visita", b =>
                 {
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioActualiza")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioRegistra")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ConecsIA.Domain.Entities.Area", null)
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdArea")
                         .HasPrincipalKey("IdOrganizacion", "IdArea")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.MembresiaOrganizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMembresiaResponsable")
+                        .HasPrincipalKey("IdOrganizacion", "IdMembresia")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2832,25 +3876,6 @@ namespace Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("IdOrganizacion", "IdSede")
                         .HasPrincipalKey("IdOrganizacion", "IdSede")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ConecsIA.Domain.Entities.Zona", b =>
-                {
-                    b.HasOne("ConecsIA.Domain.Entities.Sede", null)
-                        .WithMany()
-                        .HasForeignKey("IdOrganizacion", "IdSede")
-                        .HasPrincipalKey("IdOrganizacion", "IdSede")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ConecsIA.Domain.Entities.ZonaEmpresarialOrganizacion", b =>
-                {
-                    b.HasOne("ConecsIA.Domain.Entities.ZonaEmpresarial", null)
-                        .WithMany()
-                        .HasForeignKey("IdZonaEmpresarial")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

@@ -112,6 +112,10 @@ export function IngresarPage({ modo = 'ingresar' }: { modo?: ModoIngreso }) {
           </span>
         </div>
 
+        <Link className="lg-volver-inicio lg-entra" to="/" style={{ '--d': 1 } as CSSProperties}>
+          <span aria-hidden="true">←</span> Volver a la página inicial
+        </Link>
+
         <div className="lg-copy">
           <p className="lg-eyebrow lg-entra" style={{ '--d': 1 } as CSSProperties}>
             <span className="lg-pulso" aria-hidden="true" /> Control de accesos en tiempo real

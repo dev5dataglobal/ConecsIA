@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private IAlertaTransicionRepository? _alertaTransicionRepository;
     private IArchivoRepository? _archivoRepository;
     private IAreaRepository? _areaRepository;
+    private IPuntoAccesoRepository? _puntoAccesoRepository;
     private IAreaResponsableRepository? _areaResponsableRepository;
     private IAuditoriaRepository? _auditoriaRepository;
     private IAutorizacionRepository? _autorizacionRepository;
@@ -19,7 +20,6 @@ public class UnitOfWork : IUnitOfWork
     private IAutorizacionHorarioRepository? _autorizacionHorarioRepository;
     private IAutorizacionTransicionRepository? _autorizacionTransicionRepository;
     private IAutorizacionVehiculoRepository? _autorizacionVehiculoRepository;
-    private IAutorizacionZonaRepository? _autorizacionZonaRepository;
     private ICiudadRepository? _ciudadRepository;
     private IDispositivoRepository? _dispositivoRepository;
     private IInvitacionEnvioRepository? _invitacionEnvioRepository;
@@ -60,7 +60,6 @@ public class UnitOfWork : IUnitOfWork
     private IUsuarioRepository? _usuarioRepository;
     private IVehiculoRepository? _vehiculoRepository;
     private IVisitaRepository? _visitaRepository;
-    private IZonaRepository? _zonaRepository;
     private IZonaEmpresarialRepository? _zonaEmpresarialRepository;
 
     private readonly ConecsiaDbContext _context;
@@ -106,6 +105,15 @@ public class UnitOfWork : IUnitOfWork
             }
 
             return _archivoRepository;
+        }
+    }
+
+    public IPuntoAccesoRepository PuntoAccesoRepository
+    {
+        get
+        {
+            _puntoAccesoRepository ??= new PuntoAccesoRepository(_context);
+            return _puntoAccesoRepository;
         }
     }
 
@@ -213,18 +221,6 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    public IAutorizacionZonaRepository AutorizacionZonaRepository
-    {
-        get
-        {
-            if (_autorizacionZonaRepository == null)
-            {
-                _autorizacionZonaRepository = new AutorizacionZonaRepository(_context);
-            }
-
-            return _autorizacionZonaRepository;
-        }
-    }
 
     public ICiudadRepository CiudadRepository
     {
@@ -746,18 +742,6 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    public IZonaRepository ZonaRepository
-    {
-        get
-        {
-            if (_zonaRepository == null)
-            {
-                _zonaRepository = new ZonaRepository(_context);
-            }
-
-            return _zonaRepository;
-        }
-    }
 
     public IAppModuloRepository AppModuloRepository
     {
@@ -785,6 +769,7 @@ public class UnitOfWork : IUnitOfWork
             return _zonaEmpresarialRepository;
         }
     }
+
 
     public async Task<int> SaveAsync()
     {

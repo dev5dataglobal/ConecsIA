@@ -7,5 +7,6 @@ public sealed class AreaDto
     public int? IdAreaPadre { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string? Descripcion { get; set; }
+    public bool EsComunZonaEmpresarial { get; set; }
     public bool Activo { get; set; }
 }

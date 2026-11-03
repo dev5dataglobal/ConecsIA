@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IAlertaTransicionRepository AlertaTransicionRepository { get; }
     IArchivoRepository ArchivoRepository { get; }
     IAreaRepository AreaRepository { get; }
+    IPuntoAccesoRepository PuntoAccesoRepository { get; }
     IAreaResponsableRepository AreaResponsableRepository { get; }
     IAuditoriaRepository AuditoriaRepository { get; }
     IAutorizacionRepository AutorizacionRepository { get; }
@@ -16,7 +17,6 @@ public interface IUnitOfWork : IDisposable
     IAutorizacionHorarioRepository AutorizacionHorarioRepository { get; }
     IAutorizacionTransicionRepository AutorizacionTransicionRepository { get; }
     IAutorizacionVehiculoRepository AutorizacionVehiculoRepository { get; }
-    IAutorizacionZonaRepository AutorizacionZonaRepository { get; }
     ICiudadRepository CiudadRepository { get; }
     IDispositivoRepository DispositivoRepository { get; }
     IInvitacionEnvioRepository InvitacionEnvioRepository { get; }
@@ -58,7 +58,6 @@ public interface IUnitOfWork : IDisposable
     IUsuarioRepository UsuarioRepository { get; }
     IVehiculoRepository VehiculoRepository { get; }
     IVisitaRepository VisitaRepository { get; }
-    IZonaRepository ZonaRepository { get; }
     IZonaEmpresarialRepository ZonaEmpresarialRepository { get; }
     Task<int> SaveAsync();
 }

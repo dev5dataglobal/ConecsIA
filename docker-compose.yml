@@ -1,0 +1,79 @@
+# Entorno local con Docker (ADR-017). Solo datos sintéticos. Valores desde .env (ver .env.example).
+name: conecsia
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-conecsia}
+      POSTGRES_USER: ${POSTGRES_USER:-conecsia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      # Volumen con nombre: los datos sobreviven a down/up. Solo `down -v` los borra.
+      - postgres-datos:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Aplica las migraciones EF Core pendientes y termina (equivale a `dotnet ef database update`).
+  migraciones:
+    build:
+      context: ./backend
+      dockerfile: ApiConecsia/Dockerfile
+      target: migraciones
+    environment:
+      # La fábrica de diseño (DesignTimeDbContextFactory) lee esta variable.
+      CONECSIA_CONNECTION_STRING: Host=postgres;Database=${POSTGRES_DB:-conecsia};Username=${POSTGRES_USER:-conecsia};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  mailpit:
+    # Captura local de correo (recuperación de contraseña, invitaciones). Interfaz: http://localhost:8025
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: ApiConecsia/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Conecsia: Host=postgres;Database=${POSTGRES_DB:-conecsia};Username=${POSTGRES_USER:-conecsia};Password=${POSTGRES_PASSWORD}
+      JWT__Key: ${JWT_KEY:?Define JWT_KEY en .env}
+      JWT__Issuer: ${JWT_ISSUER:-ConecsIA}
+      JWT__Audience: ${JWT_AUDIENCE:-ConecsIA.Client}
+      JWT__DurationInMinutes: ${JWT_DURATION_MINUTES:-60}
+      Sesion__UrlFrontend: http://localhost:${WEB_HOST_PORT:-8080}
+      Correo__Host: mailpit
+      Correo__Puerto: "1025"
+      Correo__UsarSsl: "false"
+      Correo__Remitente: no-responder@conecsia.local
+      Almacenamiento__RutaLocal: /app/App_Data/archivos
+    volumes:
+      - api-archivos:/app/App_Data/archivos
+    depends_on:
+      migraciones:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-5080}:8080"
+
+  web:
+    build:
+      context: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:${WEB_HOST_PORT:-8080}:8080"
+
+volumes:
+  postgres-datos:
+  api-archivos:

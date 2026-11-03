@@ -3,7 +3,12 @@ import type { ReactNode } from 'react'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { AdministracionInicio, AdministracionPage } from '../features/administracion/AdministracionPage'
 import { SECCIONES } from '../features/administracion/secciones'
+import { PersonasPage } from '../features/personas/PersonasPage'
+import { AutorizacionesPage } from '../features/autorizaciones/AutorizacionesPage'
+import { VisitasPage } from '../features/visitas/VisitasPage'
+import { ControlAccesosPage } from '../features/control-accesos/ControlAccesosPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
+import { PresentacionPage } from '../features/presentacion/PresentacionPage'
 import { haySesion } from '../features/sesion/sesion'
 import { AppShell } from './shell/AppShell'
 import { RutaModulo } from './shell/RutaModulo'
@@ -14,8 +19,15 @@ export function RutaProtegida({ children }: { children: ReactNode }) {
   return children
 }
 
+function Inicio() {
+  return haySesion() ? <Navigate to="/dashboard" replace /> : <PresentacionPage />
+}
+
 export const rutas: RouteObject[] = [
-  { index: true, element: <Navigate to="/dashboard" replace /> },
+  // Raíz: visitantes sin sesión ven la presentación pública; con sesión se abre el panel.
+  { index: true, element: <Inicio /> },
+  // Página pública: no pasa por RutaProtegida.
+  { path: 'presentacion', element: <PresentacionPage /> },
   { path: 'ingresar', element: <IngresarPage /> },
   { path: 'recuperar-contrasena', element: <IngresarPage modo="recuperar" /> },
   { path: 'restablecer-contrasena', element: <IngresarPage modo="restablecer" /> },
@@ -23,6 +35,10 @@ export const rutas: RouteObject[] = [
     element: <RutaProtegida><AppShell /></RutaProtegida>,
     children: [
       { path: 'dashboard', element: <RutaModulo codigo="dashboard"><DashboardPage /></RutaModulo> },
+      { path: 'personas', element: <RutaModulo codigo="personas"><PersonasPage /></RutaModulo> },
+      { path: 'autorizaciones', element: <RutaModulo codigo="autorizaciones"><AutorizacionesPage /></RutaModulo> },
+      { path: 'visitas', element: <RutaModulo codigo="visitas"><VisitasPage /></RutaModulo> },
+      { path: 'control-accesos', element: <RutaModulo codigo="control_accesos"><ControlAccesosPage /></RutaModulo> },
       { path: 'administracion', element: <AdministracionInicio /> },
       ...SECCIONES.map((s) => ({
         path: `administracion/${s.id}`,

@@ -57,3 +57,6 @@ backend/ApiConecsia/App_Data/archivos/
 *.swp
 *.swo
 *.orig
+
+# Almacenamiento local de archivos subidos (logos, adjuntos)
+backend/ApiConecsia/App_Data/

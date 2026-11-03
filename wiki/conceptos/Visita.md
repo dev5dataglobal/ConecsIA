@@ -14,3 +14,7 @@ tags: [conecsia]
 - Visita ocasional pendiente no ingresa si la política exige aprobación (CA-07).
 - Preautorización e invitación (RF-12) recuperable por [[QR]].
 - Finalizar una visita **no** cierra una autorización recurrente vigente.
+
+## Implementación (2026-10-26)
+
+**Implementado:** ciclo persistido Pendiente → Autorizada → Ingreso → Finalizada (+ Rechazada/Cancelada/Vencida), entrada y salida transaccionales e idempotentes, una permanencia por visita. Detalle: [[Visitas]].

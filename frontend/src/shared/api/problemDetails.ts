@@ -13,6 +13,8 @@ export interface ProblemDetails {
   code?: string
   /** Errores de validación por campo. */
   errors?: Record<string, string[]>
+  /** Motivos concretos de una denegación (p. ej. ingreso no vigente). */
+  motivos?: string[]
 }
 
 export class ApiError extends Error {
@@ -55,6 +57,7 @@ export function parseProblemDetails(body: unknown, status: number): ProblemDetai
     traceId: text('traceId'),
     code: text('code'),
     errors: readErrors(body.errors),
+    motivos: Array.isArray(body.motivos) ? body.motivos.filter((m): m is string => typeof m === 'string') : undefined,
   }
 }
 

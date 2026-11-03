@@ -6,6 +6,12 @@ namespace ApiConecsia.Extensions;
 
 public static class RateLimitingExtensions
 {
+    /// <summary>Recuperación de contraseña: 5 solicitudes por IP cada 15 minutos (además del límite global).</summary>
+    public const string PoliticaRecuperacion = "recuperacion";
+
+    /// <summary>Formulario público de contacto: 5 envíos por IP cada hora (además del límite global).</summary>
+    public const string PoliticaContacto = "contacto";
+
     public static IServiceCollection AddGlobalRateLimiting(
         this IServiceCollection services)
     {
@@ -22,6 +28,26 @@ public static class RateLimitingExtensions
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             QueueLimit = 0
                         }));
+
+            options.AddPolicy(PoliticaRecuperacion, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(15),
+                        QueueLimit = 0
+                    }));
+
+            options.AddPolicy(PoliticaContacto, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromHours(1),
+                        QueueLimit = 0
+                    }));
 
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });

@@ -25,7 +25,7 @@ Registrar dispositivos y equipos externos de las [[Persona|personas]], sus entra
 ## Historias
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
-| HU-049 | Registrar dispositivos externos | M | Lista para refinar | D-02 (prioridad) |
+| HU-049 | Registrar dispositivos externos | M | En revisión (2026-10-26: [[Autorizaciones de vehículos y dispositivos]]) | D-17, D-31 |
 | HU-050 | Movimientos de dispositivos y equipos dentro | M | Lista para refinar (núcleo Base) | D-10 para custodia |
 
 ---

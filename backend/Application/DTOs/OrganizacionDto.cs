@@ -11,6 +11,7 @@ public sealed class OrganizacionDto
     public string? Direccion { get; set; }
     public string? Telefono { get; set; }
     public string? Correo { get; set; }
+    public bool TieneSedes { get; set; }
     public string Estado { get; set; } = string.Empty;
     public DateTime CreadoEn { get; set; }
 }

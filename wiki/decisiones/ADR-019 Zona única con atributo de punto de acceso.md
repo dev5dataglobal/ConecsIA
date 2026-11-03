@@ -1,6 +1,6 @@
 ---
 tipo: adr
-estado: propuesta
+estado: obsoleto
 area: persistencia
 origen: PRD §2.3
 fuentes: [PRD v0.1]
@@ -32,3 +32,5 @@ Si en el futuro se integran torniquetes/lectores, puede requerir separar la enti
 ## Pendientes
 Confirmar el modelo con producto (verificación exigida por CLAUDE.md).
 
+> [!warning] Obsoleta 2026-10-28
+> Reemplazada por [[ADR-027 Punto de acceso como entidad dentro de la zona]] a solicitud del usuario.

@@ -22,10 +22,9 @@ public sealed class ConecsiaDbContext(
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Sede> Sedes => Set<Sede>();
     public DbSet<ZonaEmpresarial> ZonasEmpresariales => Set<ZonaEmpresarial>();
-    public DbSet<ZonaEmpresarialOrganizacion> ZonasEmpresarialesOrganizaciones => Set<ZonaEmpresarialOrganizacion>();
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<AreaResponsable> AreasResponsables => Set<AreaResponsable>();
-    public DbSet<Zona> Zonas => Set<Zona>();
+    public DbSet<PuntoAcceso> PuntosAcceso => Set<PuntoAcceso>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<MembresiaOrganizacion> MembresiasOrganizacion => Set<MembresiaOrganizacion>();
     public DbSet<Permiso> Permisos => Set<Permiso>();
@@ -47,11 +46,15 @@ public sealed class ConecsiaDbContext(
     public DbSet<TipoDispositivo> TiposDispositivo => Set<TipoDispositivo>();
     public DbSet<Dispositivo> Dispositivos => Set<Dispositivo>();
     public DbSet<Autorizacion> Autorizaciones => Set<Autorizacion>();
+    public DbSet<PlantillaCategoriaAcceso> PlantillasCategoriaAcceso => Set<PlantillaCategoriaAcceso>();
+    public DbSet<CategoriaAcceso> CategoriasAcceso => Set<CategoriaAcceso>();
+    public DbSet<HorarioBase> HorariosBase => Set<HorarioBase>();
     public DbSet<AutorizacionTransicion> AutorizacionesTransiciones => Set<AutorizacionTransicion>();
     public DbSet<AutorizacionHorario> AutorizacionesHorarios => Set<AutorizacionHorario>();
-    public DbSet<AutorizacionZona> AutorizacionesZonas => Set<AutorizacionZona>();
     public DbSet<AutorizacionVehiculo> AutorizacionesVehiculos => Set<AutorizacionVehiculo>();
     public DbSet<AutorizacionDispositivo> AutorizacionesDispositivos => Set<AutorizacionDispositivo>();
+    public DbSet<AutorizacionObjeto> AutorizacionesObjeto => Set<AutorizacionObjeto>();
+    public DbSet<AutorizacionObjetoTransicion> AutorizacionesObjetoTransiciones => Set<AutorizacionObjetoTransicion>();
     public DbSet<TokenQr> TokensQr => Set<TokenQr>();
     public DbSet<InvitacionEnvio> InvitacionesEnvio => Set<InvitacionEnvio>();
     public DbSet<Visita> Visitas => Set<Visita>();
@@ -71,6 +74,7 @@ public sealed class ConecsiaDbContext(
     public DbSet<ModuloPermiso> ModulosPermisos => Set<ModuloPermiso>();
     public DbSet<SesionRefresco> SesionesRefresco => Set<SesionRefresco>();
     public DbSet<RecuperacionContrasena> RecuperacionesContrasena => Set<RecuperacionContrasena>();
+    public DbSet<SolicitudContacto> SolicitudesContacto => Set<SolicitudContacto>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

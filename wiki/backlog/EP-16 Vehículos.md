@@ -26,7 +26,7 @@ Registrar vehículos por [[Organización]], asociarlos a [[Persona|personas]] y 
 ## Historias
 | ID | Historia | Tamaño | Estado | Bloqueada por |
 |---|---|---|---|---|
-| HU-047 | Registrar vehículos y asociarlos a personas y autorizaciones | M | Lista para refinar | D-02 (prioridad) |
+| HU-047 | Registrar vehículos y asociarlos a personas y autorizaciones | M | En revisión (2026-10-26: [[Personas]] + [[Autorizaciones de vehículos y dispositivos]]) | D-31 (modelo) |
 | HU-048 | Movimientos vehiculares | M | Lista para refinar (núcleo Base) | D-10 para reglas extendidas |
 
 ---

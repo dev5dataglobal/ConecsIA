@@ -1,7 +1,7 @@
 ---
 tipo: indice
 estado: vigente
-actualizado: 2026-10-24
+actualizado: 2026-10-26
 tags: [conecsia]
 ---
 
@@ -13,7 +13,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Organización]] — cliente SaaS y frontera de aislamiento
 - [[Sede]] — instalación física
 - [[Área o destino]] — unidad receptora de la visita
-- [[Zona y punto de acceso]] — sector físico; propuesta `esPuntoAcceso`
+- [[Zona y punto de acceso]] — **obsoleto 2026-10-31**: zonas de acceso retiradas; el punto pertenece a la sede (ADR-028)
 - [[Persona]] — individuo por organización, ≠ usuario
 - [[Usuarios, roles y permisos]] — perfiles y acceso efectivo
 - [[Autorización]] — modalidades, vigencia, consumo
@@ -38,6 +38,10 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-022 Autenticación de desarrollo provisional]] — Aprobada 2026-10-19, solo Development y pruebas
 - [[ADR-023 Acceso a módulos por rol en base de datos]] — Implementado 2026-10-22: app_modulos, modulos_permisos y denegación por defecto
 - [[ADR-024 Acciones por módulo y contexto de organización]] — Implementado 2026-10-24: Consultar/Añadir/Editar por módulo, selector de organización solo para plataforma
+- [[ADR-027 Punto de acceso como entidad dentro de la zona]] — Obsoleta 2026-10-31 (reemplazada por ADR-028)
+- [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] — Implementado 2026-10-31: zona empresarial desde la sede, sin vínculo con organizaciones; puntos de acceso directos en la sede; migración con bitácora de pendientes
+- [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] — Implementado 2026-10-26: ciclo propio Pendiente/Aprobada/Rechazada/Revocada, separado de la autorización de la persona, historial inmutable
+- [[ADR-029 Registro de acceso unificado]] — Propuesta 2026-11-03: `autorizacion` como registro de acceso, `visita` como episodio
 - [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
@@ -66,12 +70,20 @@ Inicio: [[overview]] · Bitácora: [[log]]
 ## Arquitectura
 - [[Stack y arquitectura]] — confirmado vs propuesto
 - [[Seguridad y auditoría]] — controles transversales
+- [[Modelo unificado de control de accesos]] — Propuesta 2026-11-03: registro de acceso, categorías, horarios, ER
 - [[Sistema visual]] — paleta oficial, tokens Tailwind y patrones del mockup de Figma
 
 ## Módulos
 - [[Plataforma base]] — fundaciones técnicas F0 (HU-001 a HU-004)
 - [[Sedes]] — primera vertical funcional: HU-013 con aislamiento, contexto por membresía y auditoría
 - [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
+- [[Personas]] — registro por organización, catálogos, foto privada, teléfonos 1:N, vehículos N:M y dispositivos 1:N
+- [[Autorizaciones de vehículos y dispositivos]] — dispositivos por persona y autorizaciones de ingreso de objetos con historial y auditoría inmutables
+- [[Puntos de acceso]] — puntos de acceso por sede (RF-05, ADR-028), marca común de la zona empresarial
+- [[Zonas y puntos de acceso]] — **obsoleto 2026-10-31** (reemplazado por [[Puntos de acceso]])
+- [[Visitas]] — registro de visitas, estados, entrada/salida idempotentes, permanencias y personas dentro
+- [[Control de accesos]] — solicitudes de autorización de ingreso de personas, aprobación y rechazo (2026-10-28)
+- [[Página pública de presentación]] — landing pública `/presentacion` con formulario de contacto conectado a `POST /api/publico/contactos`
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código
@@ -83,6 +95,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[PRD v0.1]] — PRD funcional y técnico (original en `fuentes/raw/`)
 
 ## Consultas
+- [[Unificación de Visitas y Control de accesos - análisis inicial]] — estado actual, supuestos y D-49..D-55 (2026-11-03)
 - [[Revisión del backlog v1]] — inconsistencias y bloqueos detectados al crear el backlog
 - [[Revisión del modelo ER db.md]] — 35 adaptaciones propuestas al diagrama ER frente a PRD y ADR
 - [[Opciones para decidir D-03]] — opciones de identidad y sesión (D-03a–f) con la recomendación del agente

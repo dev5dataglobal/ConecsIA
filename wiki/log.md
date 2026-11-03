@@ -414,3 +414,254 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - `Selector`: props `invalido` e `icono`; variantes `sel-campo`, `sel-shell`, `sel-oscuro`; abre hacia arriba si no cabe; se corrigió la doble apertura dentro de `<label>`.
 - Verificado: `tsc` y `vitest` 16/16; navegador (5174/5192) con mouse y teclado en modal, barra y dashboard.
 - Página tocada: [[Administración]].
+
+## [2026-10-26] implementacion | Restauración del módulo de autenticación y reconciliación de sedes/áreas
+- Se revirtió `6b3127b` sin commit (vuelve a estar `cf458da`: auth, módulos, administración, dashboard, tests, ADR-023/024/025, [[Administración]], [[Zona empresarial]]).
+- Se reaplicaron los cambios de sedes/áreas del usuario; los controladores quedan protegidos con `RequiereModulo(Sedes)`. Se agregó `IOrganizationContext.UserId`.
+- Se regeneró una sola migración `SedesAreasYCatalogoCiudad` (zona horaria de ciudad, `tiene_sedes`, índices únicos por nombre).
+- Verificado: build, 35 tests backend, 16 tests frontend. Pendiente: `database update` y probar el login en la app. Páginas: [[Estado de implementación]], [[Sedes]].
+
+## [2026-10-26] implementacion | Migración SedesAreasYCatalogoCiudad aplicada
+- `dotnet ef database update` aplicó `20261026171951_SedesAreasYCatalogoCiudad` en la base local sin errores.
+- Pendiente: reiniciar el API y probar el login y las sedes en la app. Página: [[Estado de implementación]].
+
+## [2026-10-26] implementacion | Módulo de Personas con teléfonos y vehículos
+- Backend `PersonasController` + `CatalogosPersonaController` (organización del contexto, unicidad documental con índice, formatos por tipo de documento, auditoría, foto privada, teléfonos 1:N, vehículos N:M con módulo Vehículos); retirados 5 controladores scaffold inseguros.
+- Migración `20261026180826_PersonasRelacionesYCatalogos`: 7 FKs faltantes, índice único erróneo `persona(org, tipo_persona)` corregido, siembra de catálogos; aplicada en `conecsia`. `db.md` actualizado.
+- Pruebas: backend 56/56 (21 nuevas), frontend 20/20 (4 nuevas), flujo verificado en navegador.
+- Páginas: [[Personas]] (nueva), [[Estado de implementación]], [[EP-06 Personas]], [[tablero-scrum]], [[PLAN-DE-TRABAJO]], [[Decisiones pendientes]] (D-09, D-17 provisionales), [[index]].
+- Pendientes: D-09, D-13, D-14, D-17; motivo de inactivación; FK `persona.id_usuario_crea`; registro `DOC-001`; `VehiculoController` scaffold.
+
+## [2026-10-26] consulta | ¿Hay que aplicar la migración de Personas?
+- `PersonasRelacionesYCatalogos` ya está aplicada en `conecsia`; `has-pending-model-changes` sin cambios pendientes.
+- Otras bases deben aplicar `dotnet ef database update`; puede fallar (sin pérdida de datos) ante nombres de tipo de persona duplicados, códigos de documento duplicados o filas huérfanas.
+- Sin cambios en otras páginas de la wiki.
+
+## [2026-10-26] implementacion | Sedes y áreas con la UI de Zonas empresariales y catálogo de ciudades
+- Se reescribió `SedesAreasSeccion` con los componentes de administración, igual que Zonas empresariales. Se eliminó `sedesAreas.css`.
+- Causa de «no salen ciudades»: `/api/Ciudad` exige el módulo `configuracion`. Nuevo endpoint `GET /api/sedes/ciudades` bajo el módulo `sedes`.
+- Activar/inactivar sedes y áreas con permiso Editar y auditoría; las áreas auditan crear y modificar.
+- Verificado: 60/60 pruebas backend (4 nuevas en `SedesAreasTests`) y `tsc` ok. Pendiente: probarlo en la app real. Página: [[Sedes]].
+
+## [2026-10-26] consulta | ¿De dónde se carga el catálogo de ciudades?
+- No hay seed de `ciudad` en migraciones ni scripts. Hoy se puede cargar por `POST /api/Ciudad` (módulo `configuracion`, añadir) o con SQL directo.
+- Pendiente: decidir si se agrega una migración seed (p. ej. capitales de Colombia) o una pantalla de catálogo. Sin cambios en la wiki.
+
+## [2026-10-26] consulta | Catálogo de ciudades desde DIVIPOLA (DANE)
+- Se puede usar DIVIPOLA del DANE (datos abiertos) como fuente de departamentos y municipios.
+- Propuesta: agregar `ciudad.codigo_dane` (único) para cargas idempotentes y actualizaciones; cargar como migración seed o script. Pendiente de decisión del usuario.
+
+## [2026-10-26] implementacion | Catálogo de ciudades DIVIPOLA (DANE)
+- Nueva columna `ciudad.codigo_dane` y migración `CatalogoCiudadesDivipola` con 1.122 municipios desde el CSV del DANE (versionado en `Infrastructure/Data/Seeds`).
+- Aplicada a la base local; 61/61 pruebas. Página: [[Sedes]].
+- Pendiente: buscador en el selector de ciudad; posibles duplicados con ciudades creadas a mano antes.
+
+## [2026-10-26] implementacion | Búsqueda en el selector de ciudad
+- `shared/ui/Selector` acepta `buscable` (campo de búsqueda sin distinguir tildes ni mayúsculas; flechas/Enter/Escape desde el campo; «Sin resultados»). Sin la prop se comporta igual que antes.
+- Se usa en el formulario de sede con «Buscar ciudad o departamento».
+- Verificado: prueba nueva en `Selector.test.tsx`, 21/21 en vitest, `tsc` ok. Pendiente: probarlo en el navegador. Página: [[Sedes]].
+
+## [2026-10-26] implementacion | Foto de personas, dispositivos y autorizaciones de vehículos y dispositivos
+- Causa de la foto invisible: `useUrlObjeto` (useMemo + revocación en efecto) rompía la URL en el doble montaje de `StrictMode`; corregido con prueba que lo reproduce. Además: `apiBlob` con renovación de sesión y «Descartar selección» que conserva la foto guardada.
+- Nuevo: dispositivos por persona (CRUD, tipos, inactivación), «Registrado por» desde el token, autorizaciones de objetos con ciclo Pendiente/Aprobada/Rechazada/Revocada, vigencia calculada, historial y auditoría inmutables (triggers), página `/autorizaciones`. Migración `20261026224617_DispositivosYAutorizacionesObjeto` sin aplicar a `conecsia`.
+- Páginas: [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] (nueva), [[Autorizaciones de vehículos y dispositivos]] (nueva), [[Personas]], [[Decisiones pendientes]] (D-31, D-32, D-33; D-17 ampliada), [[Registro de ADR]], [[Estado de implementación]], [[PLAN-DE-TRABAJO]], [[tablero-scrum]], [[EP-16 Vehículos]], [[EP-17 Equipos externos]], [[index]]; `db.md`.
+- Contradicción registrada en ADR-026: el PRD incluye el objeto en la autorización de la persona; se implementó entidad propia vinculable (D-31).
+- Pendiente: verificación en navegador tras migrar; D-31/D-32/D-33; movimientos HU-048/HU-050.
+
+- 2026-10-26 (cierre): migración regenerada como `20261026224617_DispositivosYAutorizacionesObjeto` al añadir la FK `persona.id_usuario_crea → usuario`; nombre actualizado en las páginas.
+- Verificación final con la migración regenerada: backend 73/73 (`dotnet test -c Release`), frontend 30/30 (`vitest`), `tsc` limpio. Una corrida intermedia se bloqueó 1 h 47 min y dejó 3 fallos; al repetir, 73/73 (se atribuye al entorno, no reproducido).
+
+## [2026-10-26] implementacion | Migración aplicada y verificación en navegador
+- A pedido del usuario se detuvo la API local, se aplicó `20261026224617_DispositivosYAutorizacionesObjeto` a `conecsia` (triggers y ruta `/autorizaciones` confirmados) y la API quedó corriendo en :5191 (configuración `api` agregada a `.claude/launch.json`).
+- Navegador (API :5192 + frontend :5174 sobre base desechable `conecsia_verificacion`, eliminada al terminar; no hay credenciales de prueba para `conecsia`): foto visible en detalle, edición y listado con StrictMode; guardar sin reemplazo la conserva; «Registrado por», dispositivos y vehículo; solicitud desde la UI, aprobación con historial y vigencia; auditoría y `id_usuario_crea` correctos en BD; vista móvil sin desborde de página.
+- Defecto encontrado y corregido: al crear una solicitud el listado no se refrescaba; prueba nueva en `AutorizacionesPage.test.tsx` (frontend 31/31).
+
+## [2026-10-26] implementacion | Módulo de visitas: registro, estados, entrada, salida y presencia
+- Nuevo `/api/visitas` y pantalla `/visitas`: visita ≠ persona ≠ autorización ≠ permanencia; entrada/salida en una transacción con bloqueo de fila, `Idempotency-Key`, índices únicos de permanencia y consumo atómico del cupo; motivos de denegación concretos y auditados.
+- Sin módulo de autorizaciones de personas (EP-07) las visitas solo leen `autorizacion`; no se simula aprobación. Política sin autorización = parámetro `visitas.permite_sin_autorizacion`, ausente por defecto.
+- Hallazgo corregido: índice único `zona(org, sede)` impedía varios puntos de acceso por sede. Retirados 4 controladores scaffold inseguros.
+- Pruebas: backend 86/86, frontend 34/34, navegador sobre base desechable. Migración `20261027015608_VisitasCicloOperativo` sin aplicar a `conecsia`.
+- Páginas: [[Visitas]] (nueva), [[Estado de implementación]], [[Decisiones pendientes]] (D-34..D-37), [[tablero-scrum]], [[Visita]], [[index]]; `db.md`.
+
+
+## [2026-10-26] implementacion | Migración de visitas aplicada a conecsia
+- A pedido del usuario se aplicó `20261027015608_VisitasCicloOperativo` a `conecsia`; confirmados historial de migraciones, `ux_permanencia_visita`, `ux_permanencia_abierta_persona_sede`, CHECK de visita/permanencia/movimiento y ruta `/visitas`.
+- La API en :5191 (otra sesión) no se reinició: sigue con el binario anterior hasta reiniciarla.
+- Páginas: [[Estado de implementación]], [[Visitas]].
+
+## [2026-10-27] implementacion | Rediseño del menú lateral (shell)
+- `frontend/src/app/shell/appShell.css`: el scroll del menú pasa al canal derecho del lateral (fuera del texto), invisible hasta hover y con desvanecido superior/inferior.
+- Nuevo lenguaje visual: iconos en "tiles", activo con tile degradado violeta + punto lima, títulos de grupo con línea, chip "Pronto" discreto, botón colapsar tipo tarjeta.
+- Solo presentación; sin cambios de lógica ni permisos. Build OK; no verificado visualmente con sesión iniciada.
+
+## [2026-10-27] implementacion | Tipo de permiso de acceso en Personas y Visitas solo extemporáneas
+- Nuevo `persona.tipo_acceso` (Recurrente/Extemporáneo) y excepción auditada en `visita`; migración `20261027235631_PersonaTipoAccesoYExcepcionVisita` sin aplicar a `conecsia`. Maqueta presentada en el chat antes de cerrar.
+- Visitas rechaza (409) personas recurrentes salvo excepción explícita con motivo; auditoría `CambiarTipoAcceso` y `ExcepcionTipoAcceso`.
+- Pruebas: backend 87/87, frontend 35/35, `tsc` limpio; sin verificación en navegador.
+- Páginas: [[Personas]], [[Visitas]], [[Decisiones pendientes]] (D-38, D-39 nuevas), [[Estado de implementación]]; `db.md`.
+
+## [2026-10-27] implementacion | Migración de tipo de acceso aplicada y verificación en navegador
+- Aplicada `20261027235631_PersonaTipoAccesoYExcepcionVisita` a `conecsia` (3 columnas confirmadas). La API en :5191 sigue con el binario anterior hasta reiniciarla.
+- Navegador (API :5192 + frontend :5174 sobre `conecsia_verificacion`, eliminada al terminar): columna/filtro «Permiso», edición a Recurrente, bloqueo en Visitas, excepción con motivo, detalle con la excepción; auditoría `CambiarTipoAcceso` y `ExcepcionTipoAcceso` con el usuario en BD; formulario en móvil sin desborde.
+- Páginas: [[Personas]], [[Visitas]], [[Estado de implementación]] (estado: aplicado y verificado).
+
+## [2026-10-28] implementacion | Control de accesos: solicitudes y aprobación; retiro del tipo de acceso en Personas
+- Nuevo módulo [[Control de accesos]] (`/api/autorizaciones-acceso`, `/control-accesos`): 5 modalidades con validación coherente, nace Pendiente, aprobar/rechazar con Autorizaciones·Editar, decisor/instante/motivo, historial y auditoría; incompatibles bajo concurrencia.
+- [[Personas]]: retirado `tipo_acceso` (contradicción con 2026-10-27 registrada); botón «Gestionar acceso». [[Visitas]]: sin excepción; valida franjas de Temporal/Única/Diaria.
+- Migración `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso` sin aplicar a `conecsia`. Pruebas: backend 94/94, frontend 38/38, navegador sobre base desechable.
+- Decisiones: D-38/D-39 obsoletas; nuevas D-40, D-41, D-42. Páginas: [[Control de accesos]], [[Personas]], [[Visitas]], [[Decisiones pendientes]], [[Estado de implementación]], index.
+
+## [2026-10-28] implementacion | Migración de Control de accesos aplicada a conecsia
+- Aplicada `20261028223749_AutorizacionesAccesoYRetiroTipoAcceso`: `persona.tipo_acceso` eliminada, CHECK de autorización creados, ruta `/control-accesos`.
+- API :5191 detenida y reiniciada con el binario nuevo (`/api/autorizaciones-acceso` responde 401 sin sesión).
+- Páginas: [[Control de accesos]], [[Estado de implementación]].
+
+## [2026-10-28] consulta | Por qué «Permanente» aparece deshabilitada
+- Respuesta: falta el parámetro `autorizaciones.permite_permanente = true` de la organización (D-42, Propuesta; ausente = no permitido). Sin cambios en páginas.
+
+## [2026-10-28] implementacion | Zonas y puntos de acceso (RF-05)
+- Punto de acceso pasa a entidad propia dentro de la zona (Sede → Zona → Punto): [[ADR-027 Punto de acceso como entidad dentro de la zona]]; [[ADR-019 Zona única con atributo de punto de acceso]] queda obsoleta (contradicción registrada en [[Zona y punto de acceso]]).
+- Administración de zonas y puntos (crear, editar, activar/inactivar, eliminar sin historial, filtros, trazabilidad), restricción de autorizaciones por zona (opcional u obligatoria por política) y validación del punto en cada movimiento.
+- Migración `ZonasYPuntosAcceso` creada, no aplicada a `conecsia`. Pruebas: backend 100/100, frontend 41/41. Sin verificación en navegador.
+- Páginas: [[Zonas y puntos de acceso]] (nueva), ADR-027 (nueva), [[Zona y punto de acceso]], [[Decisiones pendientes]] (D-43..D-45), [[Registro de ADR]], [[Estado de implementación]], [[tablero-scrum]], EP-04, index.
+
+## [2026-10-29] consulta | Solicitud de reintroducir el tipo de permiso de acceso en Personas
+- La solicitud repite la implementada el 2026-10-27 (`persona.tipo_acceso`, excepción en Visitas) y retirada el 2026-10-28 al crear [[Control de accesos]] (D-38/D-39 obsoletas; el tipo de acceso es la modalidad de la [[Autorización]]).
+- No se modificó código: se pidió al usuario elegir entre reactivar el campo manual (revierte D-38/D-39), derivarlo de las autorizaciones aprobadas vigentes, o mantener el estado actual.
+- Sin cambios en otras páginas.
+
+## [2026-10-29] implementacion | Migración de zonas y puntos aplicada y verificación en navegador
+- Migración `ZonasYPuntosAcceso` aplicada a `conecsia`; base desechable `conecsia_verificacion` creada, migrada y sembrada.
+- Verificado en navegador: listado, duplicado rechazado, creación con trazabilidad, eliminar solo sin historial.
+- Nueva configuración `api-verificacion` (Release, :5192) porque otra API de desarrollo bloquea los binarios Debug en :5191.
+- Páginas: [[Zonas y puntos de acceso]], [[Estado de implementación]].
+
+## [2026-10-29] implementacion | Tipo de permiso de acceso derivado en Personas y Visitas
+- Opción elegida por el usuario: derivar el tipo (Recurrente/Extemporáneo) de las autorizaciones Recurrente/Permanente aprobadas y vigentes; sin columna ni migración (nueva D-46, reemplaza D-38/D-39).
+- Personas: columna, filtro, detalle y nota de solo lectura en el formulario. Visitas: «Ingreso extemporáneo», muestra el tipo y bloquea (409 auditado `RechazarVisitaRecurrente`) registrar a una persona recurrente en su sede salvo vinculando su autorización (CA-11).
+- Pruebas: backend Visitas+Personas 37/37 (antes, suite completa 99/101 con las 2 fallas ya corregidas); frontend 41/41 + `tsc` limpio. Sin verificación en navegador. Maqueta presentada en el chat.
+- Páginas: [[Personas]], [[Visitas]], [[Decisiones pendientes]], [[Estado de implementación]].
+
+## [2026-10-29] implementacion | Rediseño de modales de detalle
+- Modales de detalle de Control de accesos, Autorizaciones (vehículos/dispositivos) y Visitas reorganizados en bloques: franja de estado, «Acceso autorizado/Condiciones/Destino», «Trazabilidad», «Motivos» y «Historial/Movimientos».
+- Nuevas clases `dt-*` en `frontend/src/features/personas/personas.css` con el verde lima de la paleta (#D5F379): marcador de bloque, notas y línea de tiempo; motivos de rechazo en rojo.
+- Solo presentación: sin cambios de lógica ni backend. `tsc` y 42 pruebas de Vitest en verde; no verificado visualmente en navegador.
+
+## [2026-10-29] implementacion | Detalles: visitas, persona, cancelación y decisión por objeto
+- Visitas: franja gris, historial de ciclo de vida desde `auditoria` (cancelación con usuario, fecha y motivo; sin duplicados). Prueba ampliada en `VisitasTests`.
+- Persona: modal por secciones + botón «Dispositivos» con `--color-acento`.
+- Control de accesos: aprobación/rechazo individual de vehículos y dispositivos reutilizando `autorizacion_objeto` y sus transiciones; aprobar el ingreso no los aprueba.
+- Páginas: [[Estado de implementación]]. Pendiente: verificación visual y reinicio de la API.
+
+## [2026-10-30] implementacion | Página pública de presentación
+- Nueva ruta pública `/presentacion` (`frontend/src/features/presentacion/`): hero, retos, cómo funciona, servicios, sectores, beneficios, vista demo, FAQ, contacto y pie; menú móvil, `prefers-reduced-motion`, foco visible.
+- Formulario con validación accesible; **sin endpoint de contacto**: no simula envío (`VITE_CONTACTO_URL`). Nueva pendiente D-47 (endpoint, aviso de privacidad, datos institucionales, landing en `/`).
+- Verificado: `tsc`, oxlint, 4 pruebas Vitest, navegador en escritorio y 375 px sin scroll horizontal.
+- Páginas: [[Página pública de presentación]], [[Decisiones pendientes]], `index.md`.
+
+## [2026-10-30] implementacion | Endpoint público de contactos
+- `POST /api/publico/contactos` anónimo: validación DataAnnotations + catálogo de tipos, límite 5/h por IP, campo trampa, tabla `solicitud_contacto` sin organización (migración `SolicitudesContacto`, aplicada en la base local).
+- Frontend conectado; 400/429/red nunca se muestran como enviados.
+- Verificado: `ContactoTests` (PostgreSQL real), 4 pruebas Vitest, envío real desde el navegador (202 + INSERT; log solo con id).
+- Páginas: [[Página pública de presentación]], [[Decisiones pendientes]] (D-47 acotada a atención/retención/privacidad), `index.md`.
+
+## [2026-10-30] implementacion | Landing en la raíz
+- El usuario no veía la landing al abrir `/` (redirigía a `/dashboard` → `/ingresar`). Ahora `/` muestra la presentación sin sesión y el panel con sesión; `/ingresar` sin cambios.
+- Verificado en navegador y Vitest. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Rediseño visual de la página pública
+- Fondo ambiental en capas, bandas por sección, escena del hero con parallax y flujo de autorización animado, filas reto→respuesta, línea de tiempo, bento, mensaje destacado, carrusel accesible de sectores, ventana de producto.
+- Nuevos `Carrusel.tsx` y `FormularioContacto.tsx` (extraído); `contenido.ts` con retos/sectores ampliados (sin capacidades nuevas).
+- Corregido en verificación: el carrusel no retrocedía desde el final. Verificado en 800/768/375 px; tsc, oxlint, prettier, 5 pruebas Vitest.
+- No hay skill de UI en el proyecto. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Carrusel «Para quién» con tarjeta central
+- Nuevo `CarruselSectores.tsx` (coverflow circular, teclado, gesto, `aria-live`) + `IlustracionSector.tsx` (7 SVG propios); se elimina `Carrusel.tsx` y su CSS.
+- `SECTORES` gana `escena` y `acento`; título con «cada organización» en lima; fondo con halos y arcos.
+- Verificado: navegación y ciclo en navegador, gesto táctil simulado, móvil 375 px sin desbordamiento, 7 pruebas Vitest. Movimiento reducido no emulado.
+- Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Sección «El reto» rediseñada
+- Nuevo `ComparativaRetos.tsx` (reemplaza el bloque inline); iconos `documento` y `mensaje` en `Icono.tsx`; primer reto usa `documento`.
+- Corregido en verificación: estilos de la ilustración afectaban a los SVG de los iconos.
+- Verificado: escritorio y 375 px, 8 pruebas Vitest, tsc, oxlint. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | «Cómo funciona» rediseñada
+- Nuevo `RecorridoPasos.tsx` (trayectoria SVG, nodos, tarjetas con iconos) + prueba; icono `reloj`; se eliminan estilos `lp-linea`/`lp-hito`.
+- Verificado: geometría a 1280 px y 375 px por JS, 9 pruebas Vitest, tsc, oxlint. Sin captura (panel sin dibujar): revisión visual pendiente.
+- Página: [[Página pública de presentación]].
+
+## [2026-10-30] revision | «Cómo funciona» aprobada visualmente
+- El usuario confirmó que la sección se ve bien; se retira el pendiente de revisión visual en [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | «Servicios» rediseñada
+- Nuevo `ServiciosBento.tsx` (+ prueba); se elimina el bento anterior (`DetalleServicio`, `lp-bento`, `lp-bloque`, `lp-mini-*`).
+- Corregido en verificación: choque de clase `lp-sv-accesos` entre tarjeta y contenido; icono que se partía del título en tarjetas estrechas.
+- Verificado: capturas 1280/800 px, medición 768/375 px, 11 pruebas Vitest, tsc, oxlint. Página: [[Página pública de presentación]].
+
+## [2026-10-30] implementacion | Contacto y pie rediseñados
+- Contacto con pasos conectados e ilustración; formulario blanco con halo violeta, placeholders neutros y selector propio; lógica de envío intacta.
+- Pie con «Elaborado por DataGlobal» junto al copyright; `Marca` reutilizada con «IA» resaltada.
+- Ajuste: prueba de Servicios alineada con la retirada (por el usuario) de la nota ilustrativa; se elimina `.lp-sv-nota`.
+- Verificado: capturas 1280/375 px, 11 pruebas, tsc, oxlint, prettier. Página: [[Página pública de presentación]].
+
+## [2026-10-31] implementacion | Zona empresarial por sede y retiro de zonas de acceso
+- Decisiones del usuario: restricción solo por sede; áreas/puntos comunes los administra la dueña de la sede; punto siempre en la sede con marca «común de la zona». Nuevo [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] (reemplaza ADR-027); D-44/D-45 obsoletas; nueva D-48.
+- Backend, migración `20261031145759_ZonasEmpresarialesPorSedeYRetiroZonasAcceso` (bitácora `migracion_zonas_adr028`, no reversible, no aplicada a bases reales) y frontend (Administración › Puntos de acceso).
+- Contradicciones registradas en [[Zona empresarial]], [[Zona y punto de acceso]], [[Zonas y puntos de acceso]] y ADR-027; notas en [[Sede]], [[Autorización]], [[Criterios de aceptación]]. Nueva página [[Puntos de acceso]]; actualizados [[Estado de implementación]], [[Decisiones pendientes]], [[Registro de ADR]], `index.md`, `PRD.md` (enmienda) y `db.md`.
+- Verificado: backend 104/104, frontend 53/53 (en serie), tsc. Sin navegador. Pendiente: D-48.
+
+## [2026-10-31] revision | Estabilidad de MigracionZonasTests
+- Tiempo de espera de 300 s para migrar y borrar la base temporal (fallaba por tiempo en paralelo); suite backend 104/104.
+- Páginas tocadas: [[Estado de implementación]] (nota del fallo de limpieza conocido en ContactoTests). Sin páginas nuevas; index sin cambios.
+
+## [2026-10-31] implementacion | Migración ADR-028 aplicada a conecsia_verificacion
+- Respaldo `conecsia_verificacion_respaldo_20261031`; migraciones `SolicitudesContacto` y `ZonasEmpresarialesPorSedeYRetiroZonasAcceso` aplicadas. Bitácora sin pendientes (4 zonas retiradas, 3 puntos migrados).
+- Verificado en navegador: puntos migrados, zona en sede, punto común. `conecsia` sigue sin migrar.
+- Páginas: [[Estado de implementación]]. Observación: etiqueta «Sedes y zonas · Pronto» del módulo `sedes` en `app_modulos`.
+
+## [2026-10-31] implementacion | Dockerización del layout actual (HU-003)
+- Integración previa (commits 7bb572b, 4c7ee69, 5731b34) adaptada a `backend/ApiConecsia`: `docker-compose.yml`, `.env.example`, `backend/ApiConecsia/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/.dockerignore`, `frontend/nginx.conf`, `DOCKER.md`.
+- Servicios: postgres 18 (volumen `postgres-data`), `migraciones` (bundle EF Core, solo aplica pendientes), mailpit, api (volumen `api-archivos`), web (nginx con proxy `/api/`). Un solo usuario de BD: los roles migrador/app del esquema anterior ya no existen en el código.
+- Verificado: `docker compose config`, `dotnet publish` Release, `npm run build`. **No verificado**: build de imágenes y arranque; el motor de Docker Desktop no respondió en esta máquina.
+- Páginas: [[Estado de implementación]].
+
+## [2026-10-31] revision | Docker Desktop sigue sin responder
+- Nueva comprobación de `docker info`: el motor (`dockerDesktopLinuxEngine`) no existe; build y arranque de Compose siguen **no verificados**.
+- Sin otros cambios en la wiki; no se crearon páginas (index.md sin cambios).
+
+## [2026-11-03] implementacion | Docker Compose verificado en ejecución
+- Docker Desktop se reparó: se renombró `%LOCALAPPDATA%\Docker\run`, que tenía sockets obsoletos imposibles de borrar.
+- `migraciones` ahora recibe `CONECSIA_CONNECTION_STRING` (antes fallaba en la fábrica de diseño). El volumen nuevo `postgres-datos` deja intacto el antiguo `conecsia_postgres-data`.
+- Verificado: build de imágenes, 16 migraciones, API/SPA/proxy/Mailpit respondiendo, persistencia tras `down`/`up` e idempotencia de las migraciones.
+- Páginas: [[Estado de implementación]]. Pendiente: probar inicio de sesión con usuario real y subida de archivos.
+
+## [2026-11-03] implementacion | Datos locales copiados a la base de Docker
+- La base de Docker nacía vacía; los usuarios estaban en el PostgreSQL 17 local (`conecsia`, 15 migraciones).
+- Se copió con `pg_dump`/`pg_restore` (la base local solo se leyó): 2 usuarios, 2 organizaciones, 1 persona. `migraciones` aplicó a la copia la migración de ADR-028.
+- Verificado: login por nginx con usuario real y clave errónea → 401, sin errores en la API. No verificado: login correcto (no se conocen las contraseñas).
+- Procedimiento documentado en `DOCKER.md`. Páginas: [[Estado de implementación]].
+
+## [2026-11-03] consulta | Unificación de Visitas y Control de accesos: análisis inicial
+- Revisado el estado actual: `autorizacion` ya es el núcleo del permiso; la duplicidad está en UI/endpoints y en que la entrada depende de `visita`.
+- Nueva página [[Unificación de Visitas y Control de accesos - análisis inicial]] con supuestos (Propuesta).
+- Nuevas decisiones D-49..D-55 en [[Decisiones pendientes]]; `index.md` actualizado.
+- Sin código; se espera confirmación del usuario antes del entregable 1.
+
+## [2026-11-03] decision | Entregable 1: modelo unificado de control de accesos
+- D-49 aprobada por el usuario: `visita` se conserva como episodio.
+- Nuevas páginas [[Modelo unificado de control de accesos]] (cambios por tabla, ER Mermaid, estados, plantillas por tipo, migración) y [[ADR-029 Registro de acceso unificado]] (Propuesta).
+- D-50..D-55 siguen pendientes; el modelo aplica supuestos marcados como Propuesta.
+- Sin código; se espera confirmación antes de la Fase 2 (migraciones).
+
+## [2026-11-03] implementacion | Fase 2: migración RegistroAccesoUnificado (ADR-029)
+- Entidades `CategoriaAcceso`, `PlantillaCategoriaAcceso`, `HorarioBase`; campos nuevos en `Autorizacion`, `Organizacion`, `Auditoria`; FK movimiento → autorización.
+- Migración `20261103163234_RegistroAccesoUnificado` con traslado de visitas sin autorización y bitácora `migracion_accesos_adr029`.
+- Verificado en copia desechable (Up/Down/Up) y `dotnet test` 104/104; no aplicada a `conecsia`.
+- Páginas: [[Modelo unificado de control de accesos]]. Restricciones obligatorias diferidas a Fase 3.
+
+## [2026-11-03] revision | Cierre de feature/control-accesos con git flow
+- Los cambios acumulados en `develop` (administración, personas, visitas, autorizaciones de objetos, zonas/puntos de acceso, sesión renovable, Docker, migraciones hasta `20261103163234_RegistroAccesoUnificado`) se commitean en `feature/control-accesos` y se cierran con `git flow feature finish`.
+- Se dejan de versionar los artefactos generados (`**/bin`, `**/obj`, `frontend/dist`, `frontend/node_modules`); ya estaban en `.gitignore`. Siguen en disco.
+- Pendiente (decisión del usuario): `appsettings.Development.json` conserva la contraseña de PostgreSQL en texto plano y ya figura en el historial desde `43ced64`; conviene rotarla y moverla a `appsettings.Local.json` o a user-secrets.
+- Sin cambios funcionales en esta entrada; no se volvieron a ejecutar pruebas.
