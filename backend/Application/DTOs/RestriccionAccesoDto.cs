@@ -5,7 +5,6 @@ public sealed class RestriccionAccesoDto
     public int IdRestriccion { get; set; }
     public int IdPersona { get; set; }
     public int? IdSede { get; set; }
-    public int? IdZona { get; set; }
     public string TipoRestriccion { get; set; } = string.Empty;
     public string? Motivo { get; set; }
     public DateTime FechaInicio { get; set; }

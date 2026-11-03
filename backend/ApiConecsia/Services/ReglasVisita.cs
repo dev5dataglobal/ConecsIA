@@ -59,11 +59,10 @@ public static class ReglasVisita
 
     /// <summary>
     /// Motivos por los que la autorización no habilita un ingreso ahora (vacío = vigente).
-    /// <paramref name="zonasPunto"/>: zona del punto de acceso y sus ancestros (null = aún no se eligió el punto).
+    /// La ubicación se valida por sede (ADR-028): la autorización vale en cualquier punto de acceso de su sede.
     /// </summary>
     public static List<string> MotivosAutorizacion(
-        Autorizacion a, IReadOnlyCollection<AutorizacionHorario> horarios, IReadOnlyCollection<int> zonasPermitidas,
-        Visita visita, IReadOnlyCollection<int>? zonasPunto, DateTime local)
+        Autorizacion a, IReadOnlyCollection<AutorizacionHorario> horarios, Visita visita, DateTime local)
     {
         var motivos = new List<string>();
         if (a.Estado == AutorizacionPendiente) motivos.Add("La autorización está pendiente de decisión.");
@@ -86,9 +85,6 @@ public static class ReglasVisita
             else if (!delDia.Any(h => h.HoraFin > h.HoraInicio && ahora >= h.HoraInicio && ahora < h.HoraFin))
                 motivos.Add($"Fuera del horario autorizado ({string.Join(", ", delDia.Select(h => $"{h.HoraInicio:HH\\:mm}–{h.HoraFin:HH\\:mm}"))}).");
         }
-
-        if (zonasPunto is not null && zonasPermitidas.Count > 0 && !zonasPunto.Any(zonasPermitidas.Contains))
-            motivos.Add("El punto de acceso no está en las zonas autorizadas.");
 
         if (CupoEfectivo(a) is int cupo && a.IngresosConsumidos >= cupo)
             motivos.Add(cupo == 1 ? "La autorización de ingreso único ya fue utilizada." : "La autorización agotó su cupo de ingresos.");

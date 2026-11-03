@@ -128,10 +128,9 @@ public sealed class VisitasController(
             Responsables = responsables,
             PuntosAcceso = await (
                 from pa in Db.PuntosAcceso.AsNoTracking()
-                join z in Db.Zonas on pa.IdZona equals z.IdZona
-                where pa.Activo && z.Activo && idsSede.Contains(pa.IdSede) && (puntos == null || puntos.Contains(pa.IdPuntoAcceso))
+                where pa.Activo && idsSede.Contains(pa.IdSede) && (puntos == null || puntos.Contains(pa.IdPuntoAcceso))
                 orderby pa.Nombre
-                select new PuntoAccesoVisitaDto { Id = pa.IdPuntoAcceso, IdSede = pa.IdSede, IdZona = z.IdZona, Zona = z.Nombre, Nombre = pa.Nombre, ModoAcceso = pa.ModoAcceso }).ToListAsync(ct),
+                select new PuntoAccesoVisitaDto { Id = pa.IdPuntoAcceso, IdSede = pa.IdSede, Nombre = pa.Nombre, ModoAcceso = pa.ModoAcceso }).ToListAsync(ct),
             PermiteSinAutorizacion = await PoliticaSinAutorizacionAsync(ct),
         });
     }
@@ -340,10 +339,9 @@ public sealed class VisitasController(
         }
 
         var sede = await Db.Sedes.AsNoTracking().SingleAsync(x => x.IdSede == visita.IdSede, ct);
-        // El punto debe ser de la organización (filtro global) y de la sede de la visita; él y su zona, activos.
+        // El punto debe ser de la organización (filtro global), de la sede de la visita y estar activo.
         var punto = await Db.PuntosAcceso.AsNoTracking().SingleOrDefaultAsync(x => x.IdPuntoAcceso == request.IdPuntoAcceso && x.IdSede == visita.IdSede, ct);
         if (punto is null || !punto.Activo) return Invalido("El punto de acceso no existe en la sede de la visita o está inactivo.");
-        if (!await Db.Zonas.AnyAsync(x => x.IdZona == punto.IdZona && x.Activo, ct)) return Invalido("La zona del punto de acceso está inactiva.");
         if (puntosPropios is not null && !puntosPropios.Contains(punto.IdPuntoAcceso))
             return await DenegarAsync(transaccion, visita, accion, StatusCodes.Status403Forbidden, ["No estás asignado a este punto de acceso."], null, ct);
         var modo = punto.ModoAcceso;
@@ -360,13 +358,13 @@ public sealed class VisitasController(
         Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaccion, Visita visita, Sede sede, PuntoAcceso punto,
         string? observacion, string comando, string clave, string hash, DateTime ahora, CancellationToken ct)
     {
-        var evaluacion = await EvaluarIngresoAsync(visita, sede, [punto.IdZona], ahora, ct);
+        var evaluacion = await EvaluarIngresoAsync(visita, sede, ahora, ct);
         if (evaluacion.Motivos.Count > 0)
             return await DenegarAsync(transaccion, visita, "RegistrarEntrada", StatusCodes.Status409Conflict, evaluacion.Motivos, evaluacion.EstadoDerivado, ct);
 
         var movimiento = new MovimientoAcceso
         {
-            IdOrganizacion = OrganizacionActiva, IdPersona = visita.IdPersona, IdSede = visita.IdSede, IdPuntoAcceso = punto.IdPuntoAcceso, IdZona = punto.IdZona,
+            IdOrganizacion = OrganizacionActiva, IdPersona = visita.IdPersona, IdSede = visita.IdSede, IdPuntoAcceso = punto.IdPuntoAcceso,
             IdVisita = visita.IdVisita, IdAutorizacion = visita.IdAutorizacion, IdUsuarioRegistra = User.IdUsuario()!.Value,
             TipoMovimiento = "Entrada", Resultado = "Confirmado", Medio = "Manual", OcurridoEn = ahora, Observacion = observacion,
         };
@@ -396,7 +394,7 @@ public sealed class VisitasController(
         visita.Estado = Ingreso;
         Tocar(visita);
         Auditar(OrganizacionActiva, "RegistrarEntrada", Entidad, visita.IdVisita.ToString(), anterior,
-            new { visita.Estado, IdMovimiento = movimiento.IdMovimiento, permanencia.IdPermanencia, IdPuntoAcceso = punto.IdPuntoAcceso, IdZonaPunto = punto.IdZona, visita.IdAutorizacion, visita.PoliticaAplicada, OcurridoEn = ahora });
+            new { visita.Estado, IdMovimiento = movimiento.IdMovimiento, permanencia.IdPermanencia, IdPuntoAcceso = punto.IdPuntoAcceso, visita.IdAutorizacion, visita.PoliticaAplicada, OcurridoEn = ahora });
         return await ConfirmarAsync(transaccion, visita.IdVisita, comando, clave, hash, ct);
     }
 
@@ -418,7 +416,7 @@ public sealed class VisitasController(
 
         var movimiento = new MovimientoAcceso
         {
-            IdOrganizacion = OrganizacionActiva, IdPersona = visita.IdPersona, IdSede = visita.IdSede, IdPuntoAcceso = punto.IdPuntoAcceso, IdZona = punto.IdZona,
+            IdOrganizacion = OrganizacionActiva, IdPersona = visita.IdPersona, IdSede = visita.IdSede, IdPuntoAcceso = punto.IdPuntoAcceso,
             IdVisita = visita.IdVisita, IdAutorizacion = visita.IdAutorizacion, IdPermanencia = permanencia.IdPermanencia,
             IdUsuarioRegistra = User.IdUsuario()!.Value, TipoMovimiento = "Salida", Resultado = "Confirmado", Medio = "Manual",
             OcurridoEn = ahora, Observacion = observacion,
@@ -433,7 +431,7 @@ public sealed class VisitasController(
         visita.Estado = Finalizada;
         Tocar(visita);
         Auditar(OrganizacionActiva, "RegistrarSalida", Entidad, visita.IdVisita.ToString(), anterior,
-            new { visita.Estado, IdMovimiento = movimiento.IdMovimiento, permanencia.IdPermanencia, IdPuntoAcceso = punto.IdPuntoAcceso, IdZonaPunto = punto.IdZona, DuracionSegundos = duracion, OcurridoEn = ahora });
+            new { visita.Estado, IdMovimiento = movimiento.IdMovimiento, permanencia.IdPermanencia, IdPuntoAcceso = punto.IdPuntoAcceso, DuracionSegundos = duracion, OcurridoEn = ahora });
         return await ConfirmarAsync(transaccion, visita.IdVisita, comando, clave, hash, ct);
     }
 
@@ -497,7 +495,7 @@ public sealed class VisitasController(
     private sealed record Evaluacion(List<string> Motivos, Autorizacion? Autorizacion, string? EstadoDerivado);
 
     /// <summary>Evalúa si la visita puede ingresar en <paramref name="ahora"/>. <paramref name="zonasPunto"/> null = sin punto elegido.</summary>
-    private async Task<Evaluacion> EvaluarIngresoAsync(Visita visita, Sede sede, IReadOnlyCollection<int>? zonasPunto, DateTime ahora, CancellationToken ct)
+    private async Task<Evaluacion> EvaluarIngresoAsync(Visita visita, Sede sede, DateTime ahora, CancellationToken ct)
     {
         var motivos = new List<string>();
         var local = HoraLocal(ahora, sede.ZonaHoraria);
@@ -522,8 +520,7 @@ public sealed class VisitasController(
         if (autorizacion is not null)
         {
             var horarios = await Db.AutorizacionesHorarios.AsNoTracking().Where(x => x.IdAutorizacion == autorizacion.IdAutorizacion).ToListAsync(ct);
-            var zonas = await Db.AutorizacionesZonas.AsNoTracking().Where(x => x.IdAutorizacion == autorizacion.IdAutorizacion).Select(x => x.IdZona).ToListAsync(ct);
-            motivos.AddRange(MotivosAutorizacion(autorizacion, horarios, zonas, visita, zonasPunto, local));
+            motivos.AddRange(MotivosAutorizacion(autorizacion, horarios, visita, local));
         }
         var abierta = await Db.Permanencias.AsNoTracking()
             .Where(x => x.IdPersona == visita.IdPersona && x.IdSede == visita.IdSede && x.Estado == "Abierta" && x.IdVisita != visita.IdVisita)
@@ -631,7 +628,6 @@ public sealed class VisitasController(
                 CupoIngresos = x.CupoIngresos, IngresosConsumidos = x.IngresosConsumidos, IdSede = x.IdSede, IdArea = x.IdArea,
                 Horarios = Db.AutorizacionesHorarios.Where(h => h.IdAutorizacion == x.IdAutorizacion).OrderBy(h => h.DiaSemana).ThenBy(h => h.HoraInicio)
                     .Select(h => new HorarioAutorizacionDto { DiaSemana = h.DiaSemana, HoraInicio = h.HoraInicio, HoraFin = h.HoraFin }).ToList(),
-                Zonas = (from az in Db.AutorizacionesZonas join z in Db.Zonas on az.IdZona equals z.IdZona where az.IdAutorizacion == x.IdAutorizacion select z.Nombre).ToList(),
             }).SingleOrDefaultAsync(ct);
         }
         // El historial de movimientos es un permiso aparte (ControlAccesos.Consultar).
@@ -641,12 +637,11 @@ public sealed class VisitasController(
             detalle.Movimientos = await (
                 from m in Db.MovimientosAcceso.AsNoTracking()
                 join pa in Db.PuntosAcceso on m.IdPuntoAcceso equals pa.IdPuntoAcceso
-                join z in Db.Zonas on m.IdZona equals z.IdZona
                 where m.IdVisita == id
                 orderby m.OcurridoEn, m.IdMovimiento
                 select new MovimientoVisitaDto
                 {
-                    IdMovimiento = m.IdMovimiento, TipoMovimiento = m.TipoMovimiento, Resultado = m.Resultado, PuntoAcceso = pa.Nombre, Zona = z.Nombre,
+                    IdMovimiento = m.IdMovimiento, TipoMovimiento = m.TipoMovimiento, Resultado = m.Resultado, PuntoAcceso = pa.Nombre, ZonaHistorica = m.ZonaHistorica,
                     Operador = Db.Usuarios.Where(u => u.IdUsuario == m.IdUsuarioRegistra).Select(u => u.Correo).FirstOrDefault(),
                     OcurridoEn = m.OcurridoEn, Observacion = m.Observacion,
                 }).ToListAsync(ct);
@@ -663,7 +658,7 @@ public sealed class VisitasController(
             }).ToListAsync(ct);
         // La cancelación ocurre una sola vez (bloqueo + estado), así que su motivo es el motivo de cierre vigente.
         foreach (var e in detalle.Historial.Where(e => e.Accion == "Cancelar")) e.Motivo = visita.MotivoCierre;
-        var evaluacion = await EvaluarIngresoAsync(visita, sede, null, DateTime.UtcNow, ct);
+        var evaluacion = await EvaluarIngresoAsync(visita, sede, DateTime.UtcNow, ct);
         detalle.Evaluacion = new EvaluacionIngresoDto
         {
             PuedeIngresar = evaluacion.Motivos.Count == 0,

@@ -10,6 +10,7 @@ import {
   consultarAreas,
   consultarCiudadesSede,
   consultarSedes,
+  consultarZonasSede,
   crearArea,
   crearSede,
   editarArea,
@@ -70,6 +71,8 @@ export function SedesAreasSeccion({ pestanas }: SeccionProps) {
   const ciudades = useQuery({ queryKey: ['ciudades-sede'], queryFn: consultarCiudadesSede, enabled: acciones.consultar, staleTime: 5 * 60_000 })
 
   const ciudadPorId = useMemo(() => new Map((ciudades.data ?? []).map((c) => [c.idCiudad, c])), [ciudades.data])
+  const zonas = useQuery({ queryKey: ['zonas-sede'], queryFn: consultarZonasSede, enabled: acciones.consultar, staleTime: 60_000 })
+  const nombreZona = useMemo(() => new Map((zonas.data ?? []).map((z) => [z.id, z.nombre])), [zonas.data])
   const sedePorId = useMemo(() => new Map((sedes.data ?? []).map((s) => [s.idSede, s])), [sedes.data])
   const areasPorSede = useMemo(() => {
     const conteo = new Map<number, number>()
@@ -158,7 +161,7 @@ export function SedesAreasSeccion({ pestanas }: SeccionProps) {
               </header>
               <ul className="ad-etiquetas">
                 <li className="ad-etiqueta">{sede.zonaHoraria}</li>
-                {sede.idZonaEmpresarial && <li className="ad-etiqueta">Zona empresarial</li>}
+                {sede.idZonaEmpresarial && <li className="ad-etiqueta">{nombreZona.get(sede.idZonaEmpresarial) ?? 'Zona empresarial'}</li>}
               </ul>
               {(sede.direccion || sede.telefono || sede.correo) && (
                 <p>{[sede.direccion, sede.telefono, sede.correo].filter(Boolean).join(' · ')}</p>
@@ -250,18 +253,26 @@ function SedeFormulario({ sede, ciudades, cargandoCiudades, errorCiudades, onClo
   const [direccion, setDireccion] = useState(sede?.direccion ?? '')
   const [telefono, setTelefono] = useState(sede?.telefono ?? '')
   const [correo, setCorreo] = useState(sede?.correo ?? '')
+  const [idZona, setIdZona] = useState(sede?.idZonaEmpresarial ? String(sede.idZonaEmpresarial) : '')
   const [errores, setErrores] = useState<{ nombre?: string; idCiudad?: string; correo?: string }>({})
+  const zonas = useQuery({ queryKey: ['zonas-sede'], queryFn: consultarZonasSede, staleTime: 60_000 })
+  // El catálogo solo trae zonas activas; la zona actual se conserva aunque se haya inactivado.
+  const opcionesZona = [...(zonas.data ?? []).map((z) => ({ valor: String(z.id), texto: z.nombre })),
+    ...(idZona && sede?.idZonaEmpresarial && !zonas.data?.some((z) => z.id === sede.idZonaEmpresarial)
+      ? [{ valor: String(sede.idZonaEmpresarial), texto: 'Zona actual (inactiva)' }] : [])]
   const ciudad = ciudades.find((c) => String(c.idCiudad) === idCiudad)
   const guardar = useMutation({
     mutationFn: () => {
       const datos = {
-        nombre: nombre.trim(), idCiudad: Number(idCiudad), idZonaEmpresarial: sede?.idZonaEmpresarial ?? null,
+        nombre: nombre.trim(), idCiudad: Number(idCiudad), idZonaEmpresarial: idZona ? Number(idZona) : null,
         direccion: direccion.trim() || null, telefono: telefono.trim() || null, correo: correo.trim() || null,
       }
       return sede ? editarSede(sede.idSede, datos) : crearSede(datos)
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['admin-sedes'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-zonas'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-puntos-acceso'] })
       onGuardado(sede ? 'Sede actualizada.' : 'Sede creada.')
     },
   })
@@ -297,7 +308,13 @@ function SedeFormulario({ sede, ciudades, cargandoCiudades, errorCiudades, onClo
           <Campo etiqueta="Zona horaria">
             <input value={ciudad?.zonaHoraria ?? sede?.zonaHoraria ?? ''} readOnly placeholder="Se toma de la ciudad" />
           </Campo>
+          <Campo etiqueta="Zona empresarial (opcional)" ancho="completo">
+            <Selector className="sel-campo" etiqueta="Zona empresarial" valor={idZona} onChange={setIdZona} deshabilitado={zonas.isLoading}
+              opciones={[{ valor: '', texto: 'Ninguna' }, ...opcionesZona]} />
+          </Campo>
         </div>
+        <p className="ad-ayuda">La zona se resuelve desde la sede. Si la sede tiene áreas o puntos comunes de su zona, retira primero esa marca para cambiarla.</p>
+        {Boolean(zonas.error) && <p className="ad-mensaje" role="alert">{mensajeError(zonas.error, 'No se pudieron cargar las zonas empresariales.')}</p>}
         {sinCiudades && <p className="ad-mensaje" role="alert">No hay ciudades activas registradas. Pide al administrador que cargue el catálogo de ciudades.</p>}
         {Boolean(errorCiudades) && <p className="ad-mensaje" role="alert">{mensajeError(errorCiudades, 'No se pudieron cargar las ciudades.')}</p>}
       </fieldset>

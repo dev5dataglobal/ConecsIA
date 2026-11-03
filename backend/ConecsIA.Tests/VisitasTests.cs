@@ -14,7 +14,7 @@ namespace ConecsIA.Tests;
 /// </summary>
 public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IAsyncLifetime
 {
-    private int _orgA, _orgB, _sedeA, _sedeA2, _areaA, _areaA2, _puntoA, _puntoA2, _puntoSoloSalida, _zonaOtra, _sedeB, _areaB, _puntoB;
+    private int _orgA, _orgB, _sedeA, _sedeA2, _areaA, _areaA2, _puntoA, _puntoA2, _puntoSoloSalida, _sedeB, _areaB, _puntoB;
     private int _membresiaAdmin, _membresiaAdminB, _usuarioAdmin, _tipoPersonaA, _cc;
     private string _sufijo = "";
     private static string Hoy => DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
@@ -54,7 +54,6 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         _puntoA = await Punto(_orgA, _sedeA, "Portería principal", "Ambos");
         _puntoA2 = await Punto(_orgA, _sedeA2, "Portería A2", "Ambos");
         _puntoSoloSalida = await Punto(_orgA, _sedeA, "Salida norte", "Salida");
-        _zonaOtra = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Laboratorio', true, now()) RETURNING id_zona", _orgA, _sedeA);
         _puntoB = await Punto(_orgB, _sedeB, "Portería B", "Ambos");
 
         _membresiaAdmin = await Membresia(Correo("admin"));
@@ -79,12 +78,9 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         api.ScalarAsync<int>("INSERT INTO sede (id_organizacion, id_ciudad, nombre, zona_horaria, activo) VALUES (@p0, @p1, @p2, 'UTC', true) RETURNING id_sede", org, ciudad, nombre);
     private Task<int> Area(int org, int sede, string nombre) =>
         api.ScalarAsync<int>("INSERT INTO area (id_organizacion, id_sede, nombre, es_comun_zona_empresarial, activo) VALUES (@p0, @p1, @p2, false, true) RETURNING id_area", org, sede, nombre);
-    /// <summary>Punto de acceso dentro de una zona propia (zona «Acceso &lt;nombre&gt;» de la sede).</summary>
-    private async Task<int> Punto(int org, int sede, string nombre, string modo)
-    {
-        var zona = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, @p2, true, now()) RETURNING id_zona", org, sede, $"Acceso {nombre}");
-        return await api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, id_zona, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, @p2, @p3, @p4, true, now()) RETURNING id_punto_acceso", org, sede, zona, nombre, modo);
-    }
+    /// <summary>Punto de acceso de la sede (ADR-028: sin zonas de acceso).</summary>
+    private Task<int> Punto(int org, int sede, string nombre, string modo) =>
+        api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, @p2, @p3, true, now()) RETURNING id_punto_acceso", org, sede, nombre, modo);
     private Task<int> Membresia(string correo) =>
         api.ScalarAsync<int>("SELECT m.id_membresia FROM membresia_organizacion m JOIN usuario u ON u.id_usuario = m.id_usuario WHERE u.correo = @p0", correo);
 
@@ -253,7 +249,7 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
     }
 
     [Fact]
-    public async Task Fuera_de_vigencia_dia_horario_o_zona_se_rechaza_sin_abrir_permanencia()
+    public async Task Fuera_de_vigencia_o_dia_horario_se_rechaza_sin_abrir_permanencia()
     {
         var admin = await Cliente("admin");
         var (persona, _) = await PersonaAsync(admin);
@@ -270,13 +266,7 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         var r2 = await Leer(await Movimiento(admin, idHorario, "entrada", _puntoA), HttpStatusCode.Conflict);
         Assert.Contains("día de la semana", r2.GetProperty("detail").GetString());
 
-        var conZona = await AutorizacionAsync(persona, fin: EnDias(5));
-        await api.EjecutarAsync("INSERT INTO autorizacion_zona (id_organizacion, id_autorizacion, id_zona) VALUES (@p0, @p1, @p2)", _orgA, conZona, _zonaOtra);
-        var idZona = (await RegistrarAsync(admin, Visita(persona, conZona))).GetProperty("idVisita").GetInt32();
-        var r3 = await Leer(await Movimiento(admin, idZona, "entrada", _puntoA), HttpStatusCode.Conflict);
-        Assert.Contains("zonas autorizadas", r3.GetProperty("detail").GetString());
-
-        foreach (var id in new[] { idFutura, idHorario, idZona }) Assert.Equal(0, await Permanencias(id));
+        foreach (var id in new[] { idFutura, idHorario }) Assert.Equal(0, await Permanencias(id));
 
         // Autorización de otra sede o destino no se puede vincular.
         var otraSede = await AutorizacionAsync(persona, sede: _sedeA2, area: _areaA2, fin: EnDias(5));
@@ -290,9 +280,9 @@ public sealed class VisitasTests(ApiFactory api) : IClassFixture<ApiFactory>, IA
         var autorizacion = new Autorizacion { IdPersona = 1, IdSede = 1, IdArea = 1, Estado = "Aprobada", Modalidad = "Recurrente", FechaInicio = new DateOnly(2026, 10, 1) };
         var lunes = new DateTime(2026, 10, 26, 8, 0, 0);
         var horarios = new[] { new AutorizacionHorario { DiaSemana = 1, HoraInicio = new TimeOnly(8, 0), HoraFin = new TimeOnly(17, 0) } };
-        Assert.Empty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, [], visita, null, lunes));
-        Assert.NotEmpty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, [], visita, null, lunes.AddHours(9)));
-        Assert.NotEmpty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, [], visita, null, lunes.AddMinutes(-1)));
+        Assert.Empty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, visita, lunes));
+        Assert.NotEmpty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, visita, lunes.AddHours(9)));
+        Assert.NotEmpty(ReglasVisita.MotivosAutorizacion(autorizacion, horarios, visita, lunes.AddMinutes(-1)));
         Assert.Equal(new DateTime(2026, 10, 26, 3, 0, 0), ReglasVisita.HoraLocal(new DateTime(2026, 10, 26, 8, 0, 0, DateTimeKind.Utc), "America/Bogota"));
     }
 

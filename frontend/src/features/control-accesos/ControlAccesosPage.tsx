@@ -14,7 +14,7 @@ import '../autorizaciones/autorizaciones.css'
 import './controlAccesos.css'
 import {
   DIAS, MODALIDADES, consultarAutorizacionAcceso, consultarAutorizacionesAcceso, consultarOpcionesAcceso, decidirAutorizacionAcceso,
-  editarZonasAutorizacionAcceso, solicitarAutorizacionAcceso, textoModalidad,
+  solicitarAutorizacionAcceso, textoModalidad,
   type AutorizacionAcceso, type AutorizacionAccesoEntrada, type EstadoAutorizacionAcceso, type Modalidad, type OpcionesAutorizacionAcceso, type VigenciaAcceso,
 } from './apiControlAccesos'
 
@@ -154,8 +154,7 @@ export function ControlAccesosPage() {
           onClose={cerrarSolicitud}
           onCreada={(a) => { cerrarSolicitud(); avisar('Solicitud registrada. Queda pendiente de aprobación.'); setDetalle(a.idAutorizacion) }} />
       )}
-      {detalle !== null && <DetalleSolicitud id={detalle} puedeDecidir={decisiones.editar} puedeEditarZonas={acciones.editar}
-        opciones={opciones.data} onClose={() => setDetalle(null)} onDecidida={avisar} />}
+      {detalle !== null && <DetalleSolicitud id={detalle} puedeDecidir={decisiones.editar} onClose={() => setDetalle(null)} onDecidida={avisar} />}
       {aviso}
     </Marco>
   )
@@ -169,27 +168,13 @@ const ACCIONES: Record<Accion, { titulo: string; boton: string; exitoso: string;
   rechazar: { titulo: 'Rechazar solicitud', boton: 'Rechazar', exitoso: 'Solicitud rechazada. Se conserva en el historial.', requiereMotivo: true },
 }
 
-function DetalleSolicitud({ id, puedeDecidir, puedeEditarZonas, opciones, onClose, onDecidida }: {
+function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: {
   id: number
   puedeDecidir: boolean
-  puedeEditarZonas: boolean
-  opciones: OpcionesAutorizacionAcceso | undefined
   onClose: () => void
   onDecidida: (mensaje: string) => void
 }) {
   const queryClient = useQueryClient()
-  const [zonasEdicion, setZonasEdicion] = useState<number[] | null>(null)
-  const [errorZonas, setErrorZonas] = useState<string | null>(null)
-  const guardarZonas = useMutation({
-    mutationFn: (zonas: number[]) => editarZonasAutorizacionAcceso(id, zonas),
-    onSuccess: (resultado) => {
-      queryClient.setQueryData([CLAVE, 'detalle', id], resultado)
-      void queryClient.invalidateQueries({ queryKey: [CLAVE], predicate: (q) => q.queryKey[1] !== 'detalle' })
-      setZonasEdicion(null)
-      onDecidida('Zonas permitidas actualizadas.')
-    },
-    onError: () => void queryClient.invalidateQueries({ queryKey: [CLAVE, 'detalle', id] }),
-  })
   const detalle = useQuery({ queryKey: [CLAVE, 'detalle', id], queryFn: () => consultarAutorizacionAcceso(id) })
   const [accion, setAccion] = useState<Accion | null>(null)
   const [motivo, setMotivo] = useState('')
@@ -242,15 +227,6 @@ function DetalleSolicitud({ id, puedeDecidir, puedeEditarZonas, opciones, onClos
               <dl>
                 <div><dt>Sede y destino</dt><dd>{a.sede}<small>{a.area}</small></dd></div>
                 <div><dt>Condiciones</dt><dd>{condiciones(a)}</dd></div>
-                <div>
-                  <dt>Zonas</dt>
-                  <dd>
-                    {a.zonas.length ? a.zonas.map((z) => z.nombre).join(', ') : 'Sin restricción por zona'}
-                    {a.estado === 'Pendiente' && puedeEditarZonas && opciones && zonasEdicion === null && accion === null && (
-                      <> · <button type="button" className="ad-enlace" onClick={() => { guardarZonas.reset(); setErrorZonas(null); setZonasEdicion(a.zonas.map((z) => z.id)) }}>Editar zonas</button></>
-                    )}
-                  </dd>
-                </div>
               </dl>
             </section>
             <section className="dt-bloque" aria-label="Trazabilidad">
@@ -276,22 +252,6 @@ function DetalleSolicitud({ id, puedeDecidir, puedeEditarZonas, opciones, onClos
             <p className="ad-tenue pe-nota">
               Pendiente de aprobación: no habilita el ingreso.{!puedeDecidir && ' La decide un administrador de la organización.'}
             </p>
-          )}
-          {zonasEdicion !== null && opciones && (
-            <div className="pe-subformulario" role="group" aria-label="Editar zonas permitidas">
-              <strong>Zonas permitidas</strong>
-              <SelectorZonas zonas={opciones.zonas.filter((z) => z.idSede === a.idSede)} seleccion={zonasEdicion} exigeZonas={opciones.exigeZonas}
-                error={errorZonas ?? undefined} onChange={setZonasEdicion} />
-              {guardarZonas.error && <p className="ad-mensaje" role="alert">{mensajeError(guardarZonas.error)}</p>}
-              <div className="pe-subacciones">
-                <button type="button" className="ad-boton-sec" onClick={() => setZonasEdicion(null)}>Cancelar</button>
-                <button type="button" className="ad-boton" disabled={guardarZonas.isPending} onClick={() => {
-                  if (opciones.exigeZonas && zonasEdicion.length === 0) { setErrorZonas('La política de la organización exige al menos una zona.'); return }
-                  setErrorZonas(null)
-                  guardarZonas.mutate(zonasEdicion)
-                }}>{guardarZonas.isPending ? 'Guardando…' : 'Guardar zonas'}</button>
-              </div>
-            </div>
           )}
           {accion && (
             <div className="pe-subformulario" role="group" aria-label={ACCIONES[accion].titulo}>
@@ -458,7 +418,7 @@ function ObjetosAcceso({ acceso, puedeDecidir, onAviso }: { acceso: Autorizacion
 // ---------- Nueva solicitud ----------
 
 type Datos = Omit<AutorizacionAccesoEntrada, 'idPersona'>
-type ErroresAcceso = Partial<Record<'persona' | 'sede' | 'area' | 'responsable' | 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horas' | 'dias' | 'zonas' | 'motivo', string>>
+type ErroresAcceso = Partial<Record<'persona' | 'sede' | 'area' | 'responsable' | 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horas' | 'dias' | 'motivo', string>>
 
 /** Validación de cortesía por modalidad (el servidor vuelve a validar todo). Devuelve solo los campos que aplican. */
 export function validarSolicitudAcceso(idPersona: number, d: Datos, permitePermanente: boolean, hoy = hoyIso()): ErroresAcceso {
@@ -515,7 +475,7 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
   const [idPersona, setIdPersona] = useState(idPersonaInicial ?? 0)
   const [datos, setDatos] = useState<Datos>({
     idSede: opciones.sedes.length === 1 ? opciones.sedes[0]!.id : 0, idArea: 0, idMembresiaResponsable: 0,
-    modalidad: 'Unica', fechaInicio: hoyIso(), fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [], zonas: [], motivo: '', observacion: null,
+    modalidad: 'Unica', fechaInicio: hoyIso(), fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [], motivo: '', observacion: null,
   })
   const [buscar, setBuscar] = useState('')
   const [errores, setErrores] = useState<ErroresAcceso>({})
@@ -536,7 +496,6 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
   })
   const cambiar = (parcial: Partial<Datos>) => setDatos((d) => ({ ...d, ...parcial }))
   const areas = opciones.areas.filter((x) => x.idSede === datos.idSede)
-  const zonas = opciones.zonas.filter((x) => x.idSede === datos.idSede)
   // Si el destino tiene responsables designados, solo ellos; si no, cualquier usuario activo. Por defecto, quien solicita.
   const designados = opciones.responsables.filter((r) => r.areas.includes(datos.idArea))
   const responsables = designados.length ? designados : opciones.responsables
@@ -554,7 +513,6 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
   function enviar(event: FormEvent) {
     event.preventDefault()
     const nuevos = validarSolicitudAcceso(idPersona, datos, opciones.permitePermanente)
-    if (opciones.exigeZonas && datos.idSede && datos.zonas.length === 0) nuevos.zonas = 'La política de la organización exige restringir el acceso a una o más zonas.'
     setErrores(nuevos)
     if (Object.keys(nuevos).length === 0 && !crear.isPending) crear.mutate()
   }
@@ -615,7 +573,7 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
       <div className="ad-rejilla">
         <Campo etiqueta="Sede" error={errores.sede}>
           <Selector className="sel-campo" etiqueta="Sede" valor={String(datos.idSede || '')} invalido={Boolean(errores.sede)}
-            onChange={(v) => cambiar({ idSede: Number(v), idArea: 0, zonas: [] })}
+            onChange={(v) => cambiar({ idSede: Number(v), idArea: 0 })}
             opciones={[{ valor: '', texto: opciones.sedes.length ? 'Selecciona…' : 'No hay sedes en tu alcance', deshabilitada: true }, ...opciones.sedes.map((s) => ({ valor: String(s.id), texto: s.nombre }))]} />
         </Campo>
         <Campo etiqueta="Área o destino" error={errores.area}>
@@ -693,10 +651,6 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
           </Campo>
         )}
 
-        {datos.idSede > 0 && (zonas.length > 0 || opciones.exigeZonas) && (
-          <SelectorZonas zonas={zonas} seleccion={datos.zonas} exigeZonas={opciones.exigeZonas} error={errores.zonas}
-            onChange={(z) => cambiar({ zonas: z })} />
-        )}
         <Campo etiqueta="Motivo" error={errores.motivo} ancho="completo">
           <textarea value={datos.motivo} maxLength={500} aria-invalid={Boolean(errores.motivo)} onChange={(e) => cambiar({ motivo: e.target.value })} />
         </Campo>
@@ -710,31 +664,3 @@ function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
   )
 }
 
-/** Zonas activas de la sede (las entrega el servidor). Sin selección no hay restricción, salvo que la política la exija. */
-function SelectorZonas({ zonas, seleccion, exigeZonas, error, onChange }: {
-  zonas: { id: number; nombre: string }[]
-  seleccion: number[]
-  exigeZonas: boolean
-  error?: string
-  onChange: (zonas: number[]) => void
-}) {
-  return (
-    <fieldset className="ca-zonas" data-ancho="completo" aria-invalid={Boolean(error)}>
-      <legend>{exigeZonas ? 'Zonas permitidas (obligatorio por política de la organización)' : 'Zonas permitidas (opcional; sin selección, cualquier zona de la sede)'}</legend>
-      {zonas.length === 0 ? (
-        <p className="ad-tenue">La sede no tiene zonas activas. Regístralas en Administración › Zonas y puntos de acceso.</p>
-      ) : (
-        <div className="ca-zonas-opciones">
-          {zonas.map((z) => (
-            <label key={z.id}>
-              <input type="checkbox" checked={seleccion.includes(z.id)}
-                onChange={(e) => onChange(e.target.checked ? [...seleccion, z.id] : seleccion.filter((x) => x !== z.id))} />
-              {z.nombre}
-            </label>
-          ))}
-        </div>
-      )}
-      {error && <p className="ad-mensaje" role="alert">{error}</p>}
-    </fieldset>
-  )
-}

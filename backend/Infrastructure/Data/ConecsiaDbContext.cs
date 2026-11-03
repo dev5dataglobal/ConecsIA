@@ -22,10 +22,8 @@ public sealed class ConecsiaDbContext(
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
     public DbSet<Sede> Sedes => Set<Sede>();
     public DbSet<ZonaEmpresarial> ZonasEmpresariales => Set<ZonaEmpresarial>();
-    public DbSet<ZonaEmpresarialOrganizacion> ZonasEmpresarialesOrganizaciones => Set<ZonaEmpresarialOrganizacion>();
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<AreaResponsable> AreasResponsables => Set<AreaResponsable>();
-    public DbSet<Zona> Zonas => Set<Zona>();
     public DbSet<PuntoAcceso> PuntosAcceso => Set<PuntoAcceso>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<MembresiaOrganizacion> MembresiasOrganizacion => Set<MembresiaOrganizacion>();
@@ -50,7 +48,6 @@ public sealed class ConecsiaDbContext(
     public DbSet<Autorizacion> Autorizaciones => Set<Autorizacion>();
     public DbSet<AutorizacionTransicion> AutorizacionesTransiciones => Set<AutorizacionTransicion>();
     public DbSet<AutorizacionHorario> AutorizacionesHorarios => Set<AutorizacionHorario>();
-    public DbSet<AutorizacionZona> AutorizacionesZonas => Set<AutorizacionZona>();
     public DbSet<AutorizacionVehiculo> AutorizacionesVehiculos => Set<AutorizacionVehiculo>();
     public DbSet<AutorizacionDispositivo> AutorizacionesDispositivos => Set<AutorizacionDispositivo>();
     public DbSet<AutorizacionObjeto> AutorizacionesObjeto => Set<AutorizacionObjeto>();

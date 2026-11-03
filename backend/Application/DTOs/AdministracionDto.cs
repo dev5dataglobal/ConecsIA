@@ -64,13 +64,8 @@ public sealed class OrganizacionAdministracionDto
     public string Estado { get; set; } = string.Empty;
     public DateTime CreadoEn { get; set; }
     public bool TieneLogo { get; set; }
-    /// <summary>Zona empresarial a la que pertenece como empresa (vínculo activo), si aplica.</summary>
-    public int? IdZonaEmpresarial { get; set; }
-    public string? ZonaEmpresarial { get; set; }
-    /// <summary>Organización superior (administradora de esa zona).</summary>
-    public string? OrganizacionSuperior { get; set; }
-    /// <summary>La organización administra una zona empresarial (es organización superior).</summary>
-    public bool EsOrganizacionSuperior { get; set; }
+    /// <summary>Zonas empresariales en las que la organización tiene sedes (derivado de las sedes, ADR-028).</summary>
+    public IReadOnlyList<string> ZonasEmpresariales { get; set; } = [];
 }
 
 public sealed class OrganizacionAdministracionEntrada
@@ -89,8 +84,6 @@ public sealed class OrganizacionAdministracionEntrada
     public string Telefono { get; set; } = string.Empty;
     [Required(ErrorMessage = "El correo es obligatorio."), MaxLength(320), EmailAddress(ErrorMessage = "El correo no es válido.")]
     public string Correo { get; set; } = string.Empty;
-    /// <summary>Zona empresarial (organización superior) a la que pertenece; null = ninguna.</summary>
-    public int? IdZonaEmpresarial { get; set; }
     [RegularExpression("^(Activa|Inactiva)$", ErrorMessage = "El estado debe ser Activa o Inactiva.")]
     public string Estado { get; set; } = "Activa";
 }
@@ -126,14 +119,14 @@ public sealed class PerfilAdministracionDto
     public IReadOnlyList<PermisoDto> Permisos { get; set; } = [];
 }
 
-// ---------- Zonas empresariales (organizaciones superiores) ----------
+// ---------- Zonas empresariales (catálogo de plataforma; las sedes pertenecen a la zona, ADR-028) ----------
 
-public sealed class EmpresaZonaDto
+public sealed class SedeZonaDto
 {
-    public int IdOrganizacion { get; set; }
-    public string Nombre { get; set; } = string.Empty;
-    public string? Identificacion { get; set; }
-    public string Estado { get; set; } = string.Empty;
+    public int IdSede { get; set; }
+    public string Sede { get; set; } = string.Empty;
+    public string Organizacion { get; set; } = string.Empty;
+    public bool Activo { get; set; }
 }
 
 public sealed class ZonaEmpresarialAdministracionDto
@@ -144,8 +137,8 @@ public sealed class ZonaEmpresarialAdministracionDto
     public bool Activa { get; set; }
     public DateTime CreadaEn { get; set; }
     public int TotalSedes { get; set; }
-    public OrganizacionAdministracionDto? OrganizacionSuperior { get; set; }
-    public IReadOnlyList<EmpresaZonaDto> Empresas { get; set; } = [];
+    /// <summary>Sedes de la zona: todas para la plataforma; solo las propias para las demás organizaciones.</summary>
+    public IReadOnlyList<SedeZonaDto> Sedes { get; set; } = [];
 }
 
 public sealed class ZonaEmpresarialAdministracionEntrada
@@ -155,9 +148,4 @@ public sealed class ZonaEmpresarialAdministracionEntrada
     [MaxLength(2000)]
     public string? Descripcion { get; set; }
     public bool Activa { get; set; } = true;
-    /// <summary>Datos de la organización superior (se crea con la zona y se actualiza al editarla).</summary>
-    [Required(ErrorMessage = "Los datos de la organización superior son obligatorios.")]
-    public OrganizacionAdministracionEntrada? OrganizacionSuperior { get; set; }
-    /// <summary>Empresas que pertenecen a la zona (reemplaza la lista actual).</summary>
-    public IReadOnlyList<int> IdEmpresas { get; set; } = [];
 }

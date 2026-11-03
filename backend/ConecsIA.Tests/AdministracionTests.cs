@@ -62,7 +62,7 @@ public sealed class AdministracionTests(ApiFactory api) : IClassFixture<ApiFacto
         return rol;
     }
 
-    private object OrganizacionNueva(string nombre, int? idZona = null) => new
+    private object OrganizacionNueva(string nombre) => new
     {
         nombre,
         identificacion = $"NIT-{Guid.NewGuid():N}"[..20],
@@ -71,7 +71,6 @@ public sealed class AdministracionTests(ApiFactory api) : IClassFixture<ApiFacto
         direccion = "Calle 1 # 2-3",
         idTipoOrganizacion = _tipo,
         idPlan = _plan,
-        idZonaEmpresarial = idZona,
         estado = "Activa",
     };
 
@@ -289,58 +288,58 @@ public sealed class AdministracionTests(ApiFactory api) : IClassFixture<ApiFacto
         Assert.Equal(HttpStatusCode.NotFound, (await admin.PostAsync($"/api/administracion/organizaciones/{_orgB}/logo", otra)).StatusCode);
     }
 
-    // ---------- Zonas empresariales ----------
+    // ---------- Zonas empresariales (ADR-028: la zona se resuelve desde la sede) ----------
+
+    private Task<int> SedeEnZonaAsync(int org, string nombre, int? idZona) =>
+        api.ScalarAsync<int>("INSERT INTO sede (id_organizacion, id_ciudad, id_zona_empresarial, nombre, zona_horaria, activo) VALUES (@p0, (SELECT min(id_ciudad) FROM ciudad), @p1, @p2, 'UTC', true) RETURNING id_sede",
+            org, idZona is int z ? z : DBNull.Value, nombre);
 
     [Fact]
-    public async Task La_plataforma_crea_una_zona_con_su_organizacion_superior_y_gestiona_sus_empresas()
+    public async Task La_plataforma_gestiona_el_catalogo_de_zonas_y_las_organizaciones_las_obtienen_desde_sus_sedes()
     {
         var plataforma = await PlataformaAsync();
-        var empresa1 = await api.CrearOrganizacionAsync($"Empresa 1 {_sufijo}");
-        var empresa2 = await api.CrearOrganizacionAsync($"Empresa 2 {_sufijo}");
-        var zona = new { nombre = $"Zona Franca {_sufijo}", descripcion = "Parque", activa = true, organizacionSuperior = OrganizacionNueva($"Administradora {_sufijo}"), idEmpresas = new[] { empresa1, empresa2 } };
+        var zona = new { nombre = $"Zona Franca {_sufijo}", descripcion = "Parque", activa = true };
 
         var admin = await api.ClienteAutenticadoAsync(Correo("admin"));
         Assert.Equal(HttpStatusCode.Forbidden, (await admin.PostAsJsonAsync("/api/zonas-empresariales", zona)).StatusCode);
 
         var crear = await plataforma.PostAsJsonAsync("/api/zonas-empresariales", zona);
         Assert.Equal(HttpStatusCode.Created, crear.StatusCode);
-        var creada = await crear.Content.ReadFromJsonAsync<JsonElement>();
-        var idZona = creada.GetProperty("idZonaEmpresarial").GetInt32();
-        var idSuperior = creada.GetProperty("organizacionSuperior").GetProperty("idOrganizacion").GetInt32();
-        Assert.True(creada.GetProperty("organizacionSuperior").GetProperty("esOrganizacionSuperior").GetBoolean());
-        Assert.Equal(2, creada.GetProperty("empresas").GetArrayLength());
+        var idZona = (await crear.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("idZonaEmpresarial").GetInt32();
+        Assert.Equal(HttpStatusCode.Conflict, (await plataforma.PostAsJsonAsync("/api/zonas-empresariales", new { nombre = zona.nombre.ToUpper(), activa = true })).StatusCode);
 
-        // Una empresa no puede quedar en dos zonas activas.
-        var otra = new { nombre = $"Otra zona {_sufijo}", activa = true, organizacionSuperior = OrganizacionNueva($"Otra admin {_sufijo}"), idEmpresas = new[] { empresa1 } };
-        Assert.Equal(HttpStatusCode.Conflict, (await plataforma.PostAsJsonAsync("/api/zonas-empresariales", otra)).StatusCode);
+        // Una organización con sedes en dos zonas distintas: la zona sale de cada sede, no de la organización.
+        var otra = (await (await plataforma.PostAsJsonAsync("/api/zonas-empresariales", new { nombre = $"Parque Norte {_sufijo}", activa = true })).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("idZonaEmpresarial").GetInt32();
+        await SedeEnZonaAsync(_orgA, $"Bodega franca {_sufijo}", idZona);
+        await SedeEnZonaAsync(_orgA, $"Planta norte {_sufijo}", otra);
+        var organizacion = await plataforma.GetFromJsonAsync<JsonElement>($"/api/administracion/organizaciones/{_orgA}");
+        Assert.Equal(2, organizacion.GetProperty("zonasEmpresariales").GetArrayLength());
 
-        // Retirar una empresa desactiva el vínculo sin borrarlo.
-        var edicion = await plataforma.PutAsJsonAsync($"/api/zonas-empresariales/{idZona}", new { zona.nombre, zona.descripcion, activa = true, organizacionSuperior = zona.organizacionSuperior, idEmpresas = new[] { empresa1 } });
-        Assert.Equal(HttpStatusCode.OK, edicion.StatusCode);
-        Assert.False(await api.ScalarAsync<bool>("SELECT activa FROM zona_empresarial_organizacion WHERE id_organizacion = @p0 AND id_zona_empresarial = @p1", empresa2, idZona));
-        var organizacion = await plataforma.GetFromJsonAsync<JsonElement>($"/api/administracion/organizaciones/{empresa1}");
-        Assert.Equal(idZona, organizacion.GetProperty("idZonaEmpresarial").GetInt32());
+        var detalle = await plataforma.GetFromJsonAsync<JsonElement>($"/api/zonas-empresariales/{idZona}");
+        Assert.Equal(1, detalle.GetProperty("totalSedes").GetInt32());
 
-        // Inactivar la zona inactiva su organización superior sin tocar a las empresas.
+        // Inactivar la zona no toca organizaciones ni sedes.
         Assert.Equal(HttpStatusCode.OK, (await plataforma.PatchAsJsonAsync($"/api/zonas-empresariales/{idZona}/estado", new { activo = false })).StatusCode);
-        Assert.Equal("Inactiva", await api.ScalarAsync<string>("SELECT estado FROM organizacion WHERE id_organizacion = @p0", idSuperior));
-        Assert.Equal("Activa", await api.ScalarAsync<string>("SELECT estado FROM organizacion WHERE id_organizacion = @p0", empresa1));
+        Assert.Equal("Activa", await api.ScalarAsync<string>("SELECT estado FROM organizacion WHERE id_organizacion = @p0", _orgA));
+        Assert.Equal(2, await api.ScalarAsync<int>("SELECT count(*)::int FROM sede WHERE id_organizacion = @p0 AND id_zona_empresarial IS NOT NULL", _orgA));
     }
 
     [Fact]
-    public async Task Una_empresa_ve_su_zona_pero_no_las_demas_empresas()
+    public async Task Una_organizacion_ve_las_zonas_de_sus_sedes_pero_no_las_sedes_de_otras_empresas()
     {
         var plataforma = await PlataformaAsync();
-        var crear = await plataforma.PostAsJsonAsync("/api/zonas-empresariales", new { nombre = $"Zona B {_sufijo}", activa = true, organizacionSuperior = OrganizacionNueva($"Superior B {_sufijo}"), idEmpresas = new[] { _orgB } });
-        Assert.Equal(HttpStatusCode.Created, crear.StatusCode);
+        var idZona = (await (await plataforma.PostAsJsonAsync("/api/zonas-empresariales", new { nombre = $"Zona B {_sufijo}", activa = true })).Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("idZonaEmpresarial").GetInt32();
+        await SedeEnZonaAsync(_orgA, $"Sede A en zona {_sufijo}", idZona);
+        await SedeEnZonaAsync(_orgB, $"Sede B en zona {_sufijo}", idZona);
 
         var adminB = await api.ClienteAutenticadoAsync(Correo("adminb"));
-        var zonas = await adminB.GetFromJsonAsync<JsonElement>("/api/zonas-empresariales");
-        var zona = Assert.Single(zonas.EnumerateArray());
-        Assert.Equal(0, zona.GetProperty("empresas").GetArrayLength());
+        var zonaVista = Assert.Single((await adminB.GetFromJsonAsync<JsonElement>("/api/zonas-empresariales")).EnumerateArray());
+        var sede = Assert.Single(zonaVista.GetProperty("sedes").EnumerateArray());
+        Assert.Equal($"Sede B en zona {_sufijo}", sede.GetProperty("sede").GetString());
 
-        var adminA = await api.ClienteAutenticadoAsync(Correo("admin"));
-        Assert.Equal(0, (await adminA.GetFromJsonAsync<JsonElement>("/api/zonas-empresariales")).GetArrayLength());
+        Assert.Equal(2, (await plataforma.GetFromJsonAsync<JsonElement>($"/api/zonas-empresariales/{idZona}")).GetProperty("totalSedes").GetInt32());
     }
 
     // ---------- Contexto de organización ----------

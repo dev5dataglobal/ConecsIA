@@ -49,7 +49,7 @@ const RUTAS_IMPLEMENTADAS = new Set([
   '/administracion/perfiles',
   '/administracion/organizaciones',
   '/administracion/zonas-empresariales',
-  '/administracion/zonas-acceso',
+  '/administracion/puntos-acceso',
 ])
 
 export function construirNavegacion(modulos: AppModulo[]): GrupoNavegacion[] {

@@ -22,9 +22,6 @@ public static class ReglasAutorizacion
     /// <summary>Parámetro de organización que permite solicitar la modalidad Permanente. Ausente = no permitido (D-18).</summary>
     public const string ParametroPermitePermanente = "autorizaciones.permite_permanente";
 
-    /// <summary>Parámetro de organización que exige restringir cada autorización a una o más zonas (RF-05). Ausente = opcional.</summary>
-    public const string ParametroExigeZonas = "autorizaciones.exige_zonas";
-
     public static string TextoModalidad(string modalidad) => modalidad switch
     {
         Unica => "única", Diaria => "diaria", Temporal => "temporal", Recurrente => "recurrente", Permanente => "permanente", _ => modalidad,

@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ApiConecsia.Services;
 
 /// <summary>
-/// Reglas compartidas por organizaciones y zonas empresariales.
-/// Zona empresarial = agrupación administrada por una organización superior (vínculo es_administradora) a la que
-/// pertenecen empresas (vínculos no administradores). Reglas aplicadas (también con índices únicos parciales):
-/// una organización superior activa por zona, una zona activa por empresa y sin anidamiento
-/// (una organización superior no puede ser empresa de otra zona ni de la suya).
-/// Los vínculos de otras organizaciones solo los escribe el administrador de plataforma.
+/// Reglas compartidas de organizaciones. Desde ADR-028 la organización no se vincula con zonas empresariales:
+/// la zona se resuelve desde cada sede, así que una organización puede tener sedes en varias zonas.
 /// </summary>
 public static class ReglasOrganizacion
 {
@@ -47,48 +43,11 @@ public static class ReglasOrganizacion
         entity.Estado = request.Estado;
     }
 
-    /// <summary>Zona activa a la que pertenece la empresa (vínculo no administrador), si existe.</summary>
-    public static Task<ZonaEmpresarialOrganizacion?> ZonaDeEmpresaAsync(ConecsiaDbContext db, int idOrganizacion, CancellationToken ct) =>
-        db.ZonasEmpresarialesOrganizaciones.IgnoreQueryFilters()
-            .SingleOrDefaultAsync(x => x.IdOrganizacion == idOrganizacion && !x.EsAdministradora && x.Activa, ct);
-
-    public static Task<bool> EsSuperiorAsync(ConecsiaDbContext db, int idOrganizacion, CancellationToken ct) =>
-        db.ZonasEmpresarialesOrganizaciones.IgnoreQueryFilters().AnyAsync(x => x.IdOrganizacion == idOrganizacion && x.EsAdministradora && x.Activa, ct);
-
-    /// <summary>
-    /// Deja a la empresa en la zona indicada (o en ninguna). No borra vínculos: los desactiva para conservar la historia.
-    /// Requiere un ámbito de escritura que incluya a la empresa (<see cref="ConecsiaDbContext.PermitirEscrituraEn"/>).
-    /// </summary>
-    public static async Task<string?> AsignarZonaAsync(ConecsiaDbContext db, int idEmpresa, int? idZona, CancellationToken ct)
-    {
-        var actual = await ZonaDeEmpresaAsync(db, idEmpresa, ct);
-        if (actual?.IdZonaEmpresarial == idZona) return null;
-        if (idZona is int zona)
-        {
-            if (!await db.ZonasEmpresariales.AnyAsync(x => x.IdZonaEmpresarial == zona && x.Activa, ct))
-                return "La zona empresarial no existe o está inactiva.";
-            if (await EsSuperiorAsync(db, idEmpresa, ct))
-                return "Una organización superior no puede pertenecer a una zona empresarial.";
-        }
-        if (actual is not null) actual.Activa = false;
-        if (idZona is int nueva)
-        {
-            var existente = await db.ZonasEmpresarialesOrganizaciones.IgnoreQueryFilters()
-                .SingleOrDefaultAsync(x => x.IdOrganizacion == idEmpresa && x.IdZonaEmpresarial == nueva, ct);
-            if (existente is null)
-                db.ZonasEmpresarialesOrganizaciones.Add(new ZonaEmpresarialOrganizacion { IdOrganizacion = idEmpresa, IdZonaEmpresarial = nueva, EsAdministradora = false, Activa = true });
-            else
-                existente.Activa = true;
-        }
-        return null;
-    }
-
-    /// <summary>Proyección con tipo, plan, zona y organización superior (sin filtros de organización).</summary>
+    /// <summary>Proyección con tipo, plan y zonas empresariales de sus sedes (sin filtros de organización).</summary>
     public static IQueryable<OrganizacionAdministracionDto> Proyectar(ConecsiaDbContext db, IQueryable<Organizacion> origen)
     {
-        var links = db.ZonasEmpresarialesOrganizaciones.IgnoreQueryFilters();
+        var sedes = db.Sedes.IgnoreQueryFilters();
         return from org in origen
-               let pertenencia = links.Where(l => l.IdOrganizacion == org.IdOrganizacion && !l.EsAdministradora && l.Activa).Select(l => l.IdZonaEmpresarial).FirstOrDefault()
                select new OrganizacionAdministracionDto
                {
                    IdOrganizacion = org.IdOrganizacion, IdTipoOrganizacion = org.IdTipoOrganizacion,
@@ -96,13 +55,9 @@ public static class ReglasOrganizacion
                    IdPlan = org.IdPlan, Plan = db.Planes.Where(p => p.IdPlan == org.IdPlan).Select(p => p.Nombre).FirstOrDefault(),
                    Nombre = org.Nombre, Identificacion = org.Identificacion, Direccion = org.Direccion, Telefono = org.Telefono, Correo = org.Correo,
                    Estado = org.Estado, CreadoEn = org.CreadoEn, TieneLogo = org.IdArchivoLogo != null,
-                   IdZonaEmpresarial = pertenencia == 0 ? null : pertenencia,
-                   ZonaEmpresarial = db.ZonasEmpresariales.Where(z => z.IdZonaEmpresarial == pertenencia).Select(z => z.Nombre).FirstOrDefault(),
-                   OrganizacionSuperior = (from l in links
-                                           join sup in db.Organizaciones on l.IdOrganizacion equals sup.IdOrganizacion
-                                           where l.IdZonaEmpresarial == pertenencia && l.EsAdministradora && l.Activa
-                                           select sup.Nombre).FirstOrDefault(),
-                   EsOrganizacionSuperior = links.Any(l => l.IdOrganizacion == org.IdOrganizacion && l.EsAdministradora && l.Activa),
+                   ZonasEmpresariales = db.ZonasEmpresariales
+                       .Where(z => sedes.Any(s => s.IdOrganizacion == org.IdOrganizacion && s.IdZonaEmpresarial == z.IdZonaEmpresarial))
+                       .OrderBy(z => z.Nombre).Select(z => z.Nombre).ToList(),
                };
     }
 }

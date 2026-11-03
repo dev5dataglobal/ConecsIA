@@ -37,10 +37,8 @@ export interface OrganizacionAdmin {
   estado: string
   creadoEn: string
   tieneLogo: boolean
-  idZonaEmpresarial: number | null
-  zonaEmpresarial: string | null
-  organizacionSuperior: string | null
-  esOrganizacionSuperior: boolean
+  /** Zonas empresariales en las que tiene sedes (la zona se resuelve desde cada sede). */
+  zonasEmpresariales: string[]
 }
 
 export interface OrganizacionEntrada {
@@ -51,11 +49,10 @@ export interface OrganizacionEntrada {
   direccion: string | null
   telefono: string
   correo: string
-  idZonaEmpresarial: number | null
   estado: 'Activa' | 'Inactiva'
 }
 
-export interface CatalogosOrganizacion { tipos: Opcion[]; planes: Opcion[]; zonas: Opcion[] }
+export interface CatalogosOrganizacion { tipos: Opcion[]; planes: Opcion[] }
 
 export interface PerfilAdmin {
   idRol: number
@@ -68,7 +65,8 @@ export interface PerfilAdmin {
   permisos: { idPermiso: number; codigo: string; descripcion: string | null; activo: boolean }[]
 }
 
-export interface EmpresaZona { idOrganizacion: number; nombre: string; identificacion: string | null; estado: string }
+/** Sede que pertenece a la zona; las organizaciones solo reciben las propias. */
+export interface SedeZona { idSede: number; sede: string; organizacion: string; activo: boolean }
 
 export interface ZonaAdmin {
   idZonaEmpresarial: number
@@ -77,16 +75,13 @@ export interface ZonaAdmin {
   activa: boolean
   creadaEn: string
   totalSedes: number
-  organizacionSuperior: OrganizacionAdmin | null
-  empresas: EmpresaZona[]
+  sedes: SedeZona[]
 }
 
 export interface ZonaEntrada {
   nombre: string
   descripcion: string | null
   activa: boolean
-  organizacionSuperior: OrganizacionEntrada
-  idEmpresas: number[]
 }
 
 const json = (method: string, data: unknown): RequestInit => ({ method, body: JSON.stringify(data) })
@@ -142,8 +137,6 @@ export const cambiarEstadoPerfil = (idRol: number, activo: boolean) =>
 // Zonas empresariales
 export const consultarZonas = (params: { buscar?: string; activa?: string } = {}) =>
   apiFetch<ZonaAdmin[]>(`/api/zonas-empresariales?${consulta(params)}`)
-export const consultarEmpresasDisponibles = (idZona?: number) =>
-  apiFetch<EmpresaZona[]>(`/api/zonas-empresariales/empresas-disponibles${idZona ? `?idZona=${idZona}` : ''}`)
 export const crearZona = (data: ZonaEntrada) => apiFetch<ZonaAdmin>('/api/zonas-empresariales', json('POST', data))
 export const editarZona = (id: number, data: ZonaEntrada) => apiFetch<ZonaAdmin>(`/api/zonas-empresariales/${id}`, json('PUT', data))
 export const cambiarEstadoZona = (id: number, activo: boolean) => apiFetch<ZonaAdmin>(`/api/zonas-empresariales/${id}/estado`, json('PATCH', { activo }))

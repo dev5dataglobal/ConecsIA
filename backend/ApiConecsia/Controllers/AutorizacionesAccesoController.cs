@@ -14,7 +14,7 @@ namespace ApiConecsia.Controllers;
 /// Solicitudes de autorización de ingreso de personas (RF-09/RF-10, PRD §6.6) desde el módulo Control de accesos.
 /// La persona ya existe (se llega desde «Gestionar acceso» en Personas): aquí no se crea ni se duplica.
 /// Ciclo: toda solicitud nace Pendiente (no habilita ingresos) → Aprobada | Rechazada. Aprobada ≠ vigente: la entrada
-/// (Visitas) exige además fecha, hora, días, sede, destino, zonas y cupo. Una Rechazada se conserva en el historial.
+/// (Visitas) exige además fecha, hora, días, sede, destino y cupo. Una Rechazada se conserva en el historial.
 /// Permisos (Propuesta, D-40): consultar = Control de accesos · Consultar; solicitar = Control de accesos · Añadir;
 /// aprobar/rechazar = Autorizaciones · Editar (acción que se concede al perfil Administrador de organización).
 /// Organización: siempre la activa validada en servidor; alcance por sede de la membresía (D-34).
@@ -59,7 +59,7 @@ public sealed class AutorizacionesAccesoController(
         return dto is null ? NoEncontrado("La autorización no existe o no está en tu alcance.") : Ok(dto);
     }
 
-    /// <summary>Sedes, destinos, responsables y zonas del alcance, y la política de la modalidad Permanente.</summary>
+    /// <summary>Sedes, destinos, y responsables del alcance, y la política de la modalidad Permanente.</summary>
     [HttpGet("opciones")]
     [RequiereModulo(CodigosModulo.ControlAccesos, AccionModulo.Consultar)]
     public async Task<ActionResult<OpcionesAutorizacionAccesoDto>> Opciones(CancellationToken ct)
@@ -82,10 +82,7 @@ public sealed class AutorizacionesAccesoController(
             Areas = await Db.Areas.AsNoTracking().Where(x => x.Activo && idsSede.Contains(x.IdSede)).OrderBy(x => x.Nombre)
                 .Select(x => new OpcionAreaDto { Id = x.IdArea, IdSede = x.IdSede, Nombre = x.Nombre }).ToListAsync(ct),
             Responsables = responsables,
-            Zonas = await Db.Zonas.AsNoTracking().Where(x => x.Activo && idsSede.Contains(x.IdSede)).OrderBy(x => x.Nombre)
-                .Select(x => new ZonaAutorizacionDto { Id = x.IdZona, IdSede = x.IdSede, Nombre = x.Nombre }).ToListAsync(ct),
             PermitePermanente = await PermitePermanenteAsync(ct),
-            ExigeZonas = await ExigeZonasAsync(ct),
             IdMembresiaPropia = await MembresiaPropiaAsync(ct),
         });
     }
@@ -112,9 +109,6 @@ public sealed class AutorizacionesAccesoController(
         if (invalida is not null) return Invalido(invalida);
         if (condiciones!.Modalidad == Permanente && !await PermitePermanenteAsync(ct))
             return Conflicto("La política de la organización no permite solicitar autorizaciones permanentes.");
-
-        var zonas = (request.Zonas ?? []).Distinct().ToList();
-        if (await ValidarZonasAsync(zonas, sede.IdSede, ct) is { } zonasInvalidas) return zonasInvalidas;
 
         await using var transaccion = await Db.Database.BeginTransactionAsync(ct);
         // Clave negativa: no se cruza con el bloqueo de autorizaciones de objeto (org * 2 + tipo). Serializa solicitudes concurrentes de la misma persona para que la verificación de incompatibles sea fiable (doble envío).
@@ -147,47 +141,12 @@ public sealed class AutorizacionesAccesoController(
                 IdOrganizacion = OrganizacionActiva, IdAutorizacion = autorizacion.IdAutorizacion, DiaSemana = dia,
                 HoraInicio = condiciones.HorarioInicio!.Value, HoraFin = condiciones.HorarioFin!.Value,
             });
-        foreach (var zona in zonas)
-            Db.AutorizacionesZonas.Add(new AutorizacionZona { IdOrganizacion = OrganizacionActiva, IdAutorizacion = autorizacion.IdAutorizacion, IdZona = zona });
         RegistrarTransicion(autorizacion, "", autorizacion.Motivo);
         Auditar(OrganizacionActiva, "Solicitar", Entidad, autorizacion.IdAutorizacion.ToString(), null,
-            new { Resumen = Resumen(autorizacion), Dias = condiciones.Dias, condiciones.HorarioInicio, condiciones.HorarioFin, Zonas = zonas });
+            new { Resumen = Resumen(autorizacion), Dias = condiciones.Dias, condiciones.HorarioInicio, condiciones.HorarioFin });
         await Db.SaveChangesAsync(ct);
         await transaccion.CommitAsync(ct);
         return Created($"/api/autorizaciones-acceso/{autorizacion.IdAutorizacion}", await DetalleAsync(autorizacion.IdAutorizacion, ct));
-    }
-
-    // ---------- Zonas permitidas ----------
-
-    /// <summary>
-    /// Reemplaza las zonas a las que se restringe una solicitud pendiente (vacío = sin restricción, si la política lo admite).
-    /// Una vez decidida no se modifica: cambiar el alcance de una autorización aprobada exigiría una nueva aprobación.
-    /// </summary>
-    [HttpPut("{id:int}/zonas")]
-    [RequiereModulo(CodigosModulo.ControlAccesos, AccionModulo.Editar)]
-    public async Task<ActionResult<AutorizacionAccesoDto>> EditarZonas(int id, [FromBody] ZonasAutorizacionEntrada request, CancellationToken ct)
-    {
-        var alcance = await SedesAlcanceAsync(ct);
-        await using var transaccion = await Db.Database.BeginTransactionAsync(ct);
-        await Db.Database.ExecuteSqlInterpolatedAsync(
-            $"SELECT 1 FROM public.autorizacion WHERE id_organizacion = {OrganizacionActiva} AND id_autorizacion = {id} FOR UPDATE", ct);
-        var autorizacion = await Db.Autorizaciones.SingleOrDefaultAsync(x => x.IdAutorizacion == id, ct);
-        if (autorizacion is null || !EnAlcance(alcance, autorizacion.IdSede)) return NoEncontrado("La autorización no existe o no está en tu alcance.");
-        if (autorizacion.Estado != Pendiente)
-            return Conflicto($"Solo se modifican las zonas de solicitudes pendientes; esta autorización está {autorizacion.Estado.ToLowerInvariant()}.");
-        var zonas = request.Zonas.Distinct().ToList();
-        if (await ValidarZonasAsync(zonas, autorizacion.IdSede, ct) is { } invalidas) return invalidas;
-
-        var actuales = await Db.AutorizacionesZonas.Where(x => x.IdAutorizacion == id).ToListAsync(ct);
-        var anteriores = actuales.Select(x => x.IdZona).Order().ToList();
-        Db.AutorizacionesZonas.RemoveRange(actuales.Where(x => !zonas.Contains(x.IdZona)));
-        foreach (var zona in zonas.Except(anteriores))
-            Db.AutorizacionesZonas.Add(new AutorizacionZona { IdOrganizacion = OrganizacionActiva, IdAutorizacion = id, IdZona = zona });
-        autorizacion.Version++;
-        Auditar(OrganizacionActiva, "EditarZonas", Entidad, id.ToString(), new { Zonas = anteriores }, new { Zonas = zonas.Order().ToList() });
-        await Db.SaveChangesAsync(ct);
-        await transaccion.CommitAsync(ct);
-        return Ok(await DetalleAsync(id, ct));
     }
 
     // ---------- Decisión ----------
@@ -249,19 +208,6 @@ public sealed class AutorizacionesAccesoController(
         return alcance is null ? query : query.Where(x => alcance.Contains(x.IdSede));
     }
 
-    private async Task<bool> ExigeZonasAsync(CancellationToken ct) =>
-        await Db.ParametrosOrganizacion.AsNoTracking().AnyAsync(x => x.Clave == ParametroExigeZonas && x.Valor.ToLower() == "true", ct);
-
-    /// <summary>Zonas activas de la organización activa (filtro global) y de la sede de la autorización; obligatorias si la política lo exige.</summary>
-    private async Task<ObjectResult?> ValidarZonasAsync(List<int> zonas, int idSede, CancellationToken ct)
-    {
-        if (zonas.Count == 0)
-            return await ExigeZonasAsync(ct) ? Invalido("La política de la organización exige restringir la autorización a una o más zonas.") : null;
-        if (await Db.Zonas.CountAsync(x => zonas.Contains(x.IdZona) && x.IdSede == idSede && x.Activo, ct) != zonas.Count)
-            return Invalido("Alguna zona no pertenece a la sede de la autorización o está inactiva.");
-        return null;
-    }
-
     private async Task<bool> PermitePermanenteAsync(CancellationToken ct) =>
         await Db.ParametrosOrganizacion.AsNoTracking().AnyAsync(x => x.Clave == ParametroPermitePermanente && x.Valor.ToLower() == "true", ct);
 
@@ -295,7 +241,7 @@ public sealed class AutorizacionesAccesoController(
             MotivoDecision = a.MotivoDecision, ZonaHoraria = s.ZonaHoraria,
         };
 
-    /// <summary>Horarios (para la vigencia y el detalle) y, en el detalle, zonas e historial.</summary>
+    /// <summary>Horarios (para la vigencia y el detalle) y, en el detalle, el historial.</summary>
     private async Task CompletarAsync(List<AutorizacionAccesoDto> filas, bool detalle, CancellationToken ct)
     {
         var ids = filas.Select(x => x.IdAutorizacion).ToList();
@@ -308,11 +254,6 @@ public sealed class AutorizacionesAccesoController(
             fila.Vigencia = Vigencia(fila.Estado, fila.Modalidad, fila.FechaInicio, fila.FechaFin, fila.HoraInicio, fila.HoraFin,
                 fila.CupoIngresos, fila.IngresosConsumidos, HoraLocal(DateTime.UtcNow, fila.ZonaHoraria));
             if (!detalle) continue;
-            fila.Zonas = await (from az in Db.AutorizacionesZonas.AsNoTracking()
-                                join z in Db.Zonas on az.IdZona equals z.IdZona
-                                where az.IdAutorizacion == fila.IdAutorizacion
-                                orderby z.Nombre
-                                select new OpcionCatalogoDto { Id = z.IdZona, Nombre = z.Nombre }).ToListAsync(ct);
             fila.Historial = await (
                 from t in Db.AutorizacionesTransiciones.AsNoTracking()
                 where t.IdAutorizacion == fila.IdAutorizacion

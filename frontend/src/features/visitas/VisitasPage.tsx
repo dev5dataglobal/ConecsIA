@@ -307,7 +307,6 @@ function DetalleVisita({ id, opciones, onClose, onAviso }: { id: number; opcione
                 {d.autorizacion.fechaFin ? ` – ${fecha(d.autorizacion.fechaFin)}` : ' · sin fecha de fin'}
                 {d.autorizacion.cupoIngresos !== null && ` · ${d.autorizacion.ingresosConsumidos}/${d.autorizacion.cupoIngresos} ingresos`}
                 {d.autorizacion.horarios.length > 0 && ` · ${d.autorizacion.horarios.length} franja(s) horaria(s)`}
-                {d.autorizacion.zonas.length > 0 && ` · zonas: ${d.autorizacion.zonas.join(', ')}`}
               </p>
             ) : v.politicaAplicada ? (
               <p className="vi-linea">Sin autorización previa: la permitió la política de la organización <code>{v.politicaAplicada}</code>. Nadie la aprobó.</p>
@@ -345,7 +344,7 @@ function DetalleVisita({ id, opciones, onClose, onAviso }: { id: number; opcione
                   tono: e.accion === 'Cancelar' ? 'rechazo' : 'violeta',
                 })),
                 ...(control.consultar ? d.movimientos : []).map((m) => ({
-                  clave: `m${m.idMovimiento}`, en: m.ocurridoEn, titulo: `${m.tipoMovimiento} · ${m.puntoAcceso}${m.zona ? ` (${m.zona})` : ''}`,
+                  clave: `m${m.idMovimiento}`, en: m.ocurridoEn, titulo: `${m.tipoMovimiento} · ${m.puntoAcceso}${m.zonaHistorica ? ` (${m.zonaHistorica})` : ''}`,
                   actor: m.operador, nota: m.observacion, tono: undefined,
                 })),
               ].sort((x, y) => x.en.localeCompare(y.en))
@@ -399,7 +398,7 @@ function RegistrarMovimiento({ visita, tipo, puntos, onCancelar, onHecho, onDesa
       <strong>{tipo === 'entrada' ? 'Registrar entrada' : 'Registrar salida'}</strong>
       <Campo etiqueta="Punto de acceso" error={errorPunto ?? undefined}>
         <Selector className="sel-campo" etiqueta="Punto de acceso" valor={idPunto} invalido={Boolean(errorPunto)} onChange={(v) => { setIdPunto(v); clave.current = nuevaClave() }}
-          opciones={[{ valor: '', texto: disponibles.length ? 'Selecciona…' : 'La sede no tiene puntos de acceso disponibles para ti', deshabilitada: true }, ...disponibles.map((p) => ({ valor: String(p.id), texto: `${p.nombre} · ${p.zona}` }))]} />
+          opciones={[{ valor: '', texto: disponibles.length ? 'Selecciona…' : 'La sede no tiene puntos de acceso disponibles para ti', deshabilitada: true }, ...disponibles.map((p) => ({ valor: String(p.id), texto: p.nombre }))]} />
       </Campo>
       <Campo etiqueta="Observación (opcional)">
         <textarea value={observacion} maxLength={500} onChange={(e) => { setObservacion(e.target.value); clave.current = nuevaClave() }} />

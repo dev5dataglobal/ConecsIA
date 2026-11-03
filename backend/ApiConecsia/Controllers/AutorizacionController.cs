@@ -132,8 +132,6 @@ public class AutorizacionController : BaseApiController
             return BadRequest("Una autorización de zona solo puede habilitar áreas comunes de su propia zona empresarial.");
         if (entity.TipoEmisor == "ZonaEmpresarial" && !await _db.ZonasEmpresariales.AnyAsync(x => x.IdZonaEmpresarial == entity.IdZonaEmpresarialEmisora && x.Activa))
             return BadRequest("La zona empresarial no existe o está inactiva.");
-        if (entity.TipoEmisor == "ZonaEmpresarial" && !await _db.ZonasEmpresarialesOrganizaciones.AnyAsync(x => x.IdOrganizacion == entity.IdOrganizacion && x.IdZonaEmpresarial == entity.IdZonaEmpresarialEmisora && x.EsAdministradora && x.Activa))
-            return Forbid();
         return null;
     }
 }

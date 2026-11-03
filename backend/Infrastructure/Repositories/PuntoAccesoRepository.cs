@@ -4,6 +4,6 @@ using ConecsIA.Infrastructure.Data;
 
 namespace ConecsIA.Infrastructure.Repositories;
 
-public sealed class AutorizacionZonaRepository(ConecsiaDbContext db) : GenericRepository<AutorizacionZona>(db), IAutorizacionZonaRepository
+public sealed class PuntoAccesoRepository(ConecsiaDbContext db) : GenericRepository<PuntoAcceso>(db), IPuntoAccesoRepository
 {
 }

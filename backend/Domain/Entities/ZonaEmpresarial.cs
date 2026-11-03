@@ -1,5 +1,6 @@
 namespace ConecsIA.Domain.Entities;
 
+/// <summary>Agrupación física de sedes (parque, zona franca…). Catálogo de plataforma sin vínculo con organizaciones: pertenecen las sedes (ADR-028).</summary>
 public class ZonaEmpresarial
 {
     public int IdZonaEmpresarial { get; set; }

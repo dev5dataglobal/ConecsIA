@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { NombreIcono } from '../../shared/ui/Icono'
 
-export type Seccion = 'usuarios' | 'perfiles' | 'organizaciones' | 'zonas-empresariales' | 'sedes' | 'zonas-acceso'
+export type Seccion = 'usuarios' | 'perfiles' | 'organizaciones' | 'zonas-empresariales' | 'sedes' | 'puntos-acceso'
 
 export interface SeccionProps {
   /** Pestañas de navegación entre secciones (se muestran dentro de la cabecera). */
@@ -15,5 +15,5 @@ export const SECCIONES: { id: Seccion; codigo: string; etiqueta: string; icono: 
   { id: 'organizaciones', codigo: 'organizaciones', etiqueta: 'Organizaciones', icono: 'sede' },
   { id: 'zonas-empresariales', codigo: 'zonas_empresariales', etiqueta: 'Zonas empresariales', icono: 'administracion' },
   { id: 'sedes', codigo: 'sedes', etiqueta: 'Sedes y áreas', icono: 'sede' },
-  { id: 'zonas-acceso', codigo: 'sedes', etiqueta: 'Zonas y puntos de acceso', icono: 'accesos' },
+  { id: 'puntos-acceso', codigo: 'sedes', etiqueta: 'Puntos de acceso', icono: 'accesos' },
 ]

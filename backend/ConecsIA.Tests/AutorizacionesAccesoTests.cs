@@ -16,7 +16,7 @@ namespace ConecsIA.Tests;
 /// </summary>
 public sealed class AutorizacionesAccesoTests(ApiFactory api) : IClassFixture<ApiFactory>, IAsyncLifetime
 {
-    private int _orgA, _orgB, _sedeA, _areaA, _areaA2, _puntoA, _zonaA, _sedeB, _areaB;
+    private int _orgA, _orgB, _sedeA, _areaA, _areaA2, _puntoA, _sedeB, _areaB;
     private int _membresiaAdmin, _membresiaAdminB, _usuarioAdmin, _usuarioSolicitante, _tipoPersonaA, _cc;
     private string _sufijo = "";
     private static DateOnly HoyFecha => DateOnly.FromDateTime(DateTime.UtcNow);
@@ -50,9 +50,7 @@ public sealed class AutorizacionesAccesoTests(ApiFactory api) : IClassFixture<Ap
         _areaA = await Area(_orgA, _sedeA, "Gerencia");
         _areaA2 = await Area(_orgA, _sedeA, "Bodega");
         _areaB = await Area(_orgB, _sedeB, "Recepción B");
-        var zonaPorteria = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Recepción', true, now()) RETURNING id_zona", _orgA, _sedeA);
-        _puntoA = await api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, id_zona, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, @p2, 'Portería', 'Ambos', true, now()) RETURNING id_punto_acceso", _orgA, _sedeA, zonaPorteria);
-        _zonaA = await api.ScalarAsync<int>("INSERT INTO zona (id_organizacion, id_sede, nombre, activo, creado_en) VALUES (@p0, @p1, 'Laboratorio', true, now()) RETURNING id_zona", _orgA, _sedeA);
+        _puntoA = await api.ScalarAsync<int>("INSERT INTO punto_acceso (id_organizacion, id_sede, nombre, modo_acceso, activo, creado_en) VALUES (@p0, @p1, 'Portería', 'Ambos', true, now()) RETURNING id_punto_acceso", _orgA, _sedeA);
         _membresiaAdmin = await Membresia(Correo("admin"));
         _membresiaAdminB = await Membresia(Correo("adminb"));
         _cc = await api.ScalarAsync<int>("SELECT id_tipo_documento FROM tipo_documento WHERE codigo = 'CC'");
@@ -211,9 +209,8 @@ public sealed class AutorizacionesAccesoTests(ApiFactory api) : IClassFixture<Ap
         var temporal = Con(Solicitud(persona, "Temporal", _areaA2), ("fechaInicio", EnDias(2)), ("horaInicio", "08:00"), ("fechaFin", EnDias(2)), ("horaFin", "08:00"));
         await Leer(await Solicitar(admin, temporal), HttpStatusCode.BadRequest);
         await Leer(await Solicitar(admin, Con(temporal, ("horaFin", null))), HttpStatusCode.BadRequest);
-        var t = await Leer(await Solicitar(admin, Con(temporal, ("fechaFin", EnDias(4)), ("horaFin", "18:00"), ("zonas", new[] { _zonaA }))), HttpStatusCode.Created);
+        var t = await Leer(await Solicitar(admin, Con(temporal, ("fechaFin", EnDias(4)), ("horaFin", "18:00"))), HttpStatusCode.Created);
         Assert.Equal("08:00:00", t.GetProperty("horaInicio").GetString());
-        Assert.Equal("Laboratorio", t.GetProperty("zonas")[0].GetProperty("nombre").GetString());
 
         // Recurrente: días y franja; periodo opcional. Se valida con otra persona para no cruzarse.
         var (otra, _) = await PersonaAsync(admin);

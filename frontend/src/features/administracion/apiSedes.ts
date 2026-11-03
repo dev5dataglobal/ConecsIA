@@ -35,6 +35,8 @@ export type AreaEntrada = Pick<AreaAdmin, 'idSede' | 'idAreaPadre' | 'nombre' | 
 const json = (method: string, data: unknown): RequestInit => ({ method, body: JSON.stringify(data) })
 
 export const consultarCiudadesSede = () => apiFetch<CiudadOpcion[]>('/api/sedes/ciudades')
+/** Zonas empresariales activas que se pueden asignar a una sede (la zona se resuelve desde la sede, ADR-028). */
+export const consultarZonasSede = () => apiFetch<{ id: number; nombre: string }[]>('/api/sedes/zonas-empresariales')
 export const consultarSedes = () => apiFetch<SedeAdmin[]>('/api/sedes')
 export const crearSede = (data: SedeEntrada) => apiFetch<SedeAdmin>('/api/sedes', json('POST', data))
 export const editarSede = (id: number, data: SedeEntrada) => apiFetch<SedeAdmin>(`/api/sedes/${id}`, json('PUT', data))

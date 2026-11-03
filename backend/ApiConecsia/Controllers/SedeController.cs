@@ -24,7 +24,7 @@ public sealed class SedeController(IUnitOfWork unitOfWork, IOrganizationContext 
         if (!TryValidate(request, out var error)) return BadRequest(error);
         var orgId = RequireOrganization(); var ciudad = unitOfWork.CiudadRepository.Find(x => x.IdCiudad == request.IdCiudad && x.Activo).SingleOrDefault();
         if (ciudad is null) return BadRequest("La ciudad seleccionada no existe o está inactiva.");
-        if (request.IdZonaEmpresarial is not null && !unitOfWork.ZonaEmpresarialOrganizacionRepository.Find(x => x.IdOrganizacion == orgId && x.IdZonaEmpresarial == request.IdZonaEmpresarial && x.Activa).Any()) return BadRequest("La zona empresarial no está asociada a la organización.");
+        if (ValidarZona(request.IdZonaEmpresarial, null) is { } zonaInvalida) return BadRequest(zonaInvalida);
         if (unitOfWork.SedeRepository.Find(x => x.Nombre == request.Nombre.Trim()).Any()) return Conflict("Ya existe una sede con ese nombre.");
         var sede = new Sede { IdOrganizacion = orgId, IdCiudad = ciudad.IdCiudad, IdZonaEmpresarial = request.IdZonaEmpresarial, Nombre = request.Nombre.Trim(), Direccion = request.Direccion?.Trim(), Telefono = request.Telefono?.Trim(), Correo = request.Correo?.Trim(), ZonaHoraria = ciudad.ZonaHoraria, Activo = true };
         unitOfWork.SedeRepository.Add(sede); await unitOfWork.SaveAsync(); await Audit("sede.crear", sede.IdSede, null, ToDto(sede)); return CreatedAtAction(nameof(Get), new { id = sede.IdSede }, ToDto(sede));
@@ -36,10 +36,17 @@ public sealed class SedeController(IUnitOfWork unitOfWork, IOrganizationContext 
         if (!TryValidate(request, out var error)) return BadRequest(error);
         var sede = unitOfWork.SedeRepository.Find(x => x.IdSede == id).SingleOrDefault(); if (sede is null) return NotFound();
         var ciudad = unitOfWork.CiudadRepository.Find(x => x.IdCiudad == request.IdCiudad && x.Activo).SingleOrDefault(); if (ciudad is null) return BadRequest("La ciudad seleccionada no existe o está inactiva.");
-        if (request.IdZonaEmpresarial is not null && !unitOfWork.ZonaEmpresarialOrganizacionRepository.Find(x => x.IdOrganizacion == organizationContext.OrganizationId && x.IdZonaEmpresarial == request.IdZonaEmpresarial && x.Activa).Any()) return BadRequest("La zona empresarial no está asociada a la organización.");
+        if (ValidarZona(request.IdZonaEmpresarial, sede.IdZonaEmpresarial) is { } zonaInvalida) return BadRequest(zonaInvalida);
+        if (request.IdZonaEmpresarial != sede.IdZonaEmpresarial && TieneElementosComunes(id)) return Conflict("La sede tiene áreas o puntos de acceso comunes de su zona empresarial: retira primero esa marca para cambiar la zona.");
         if (unitOfWork.SedeRepository.Find(x => x.IdSede != id && x.Nombre == request.Nombre.Trim()).Any()) return Conflict("Ya existe una sede con ese nombre.");
         var anterior = ToDto(sede); sede.IdCiudad = ciudad.IdCiudad; sede.Nombre = request.Nombre.Trim(); sede.Direccion = request.Direccion?.Trim(); sede.Telefono = request.Telefono?.Trim(); sede.Correo = request.Correo?.Trim(); sede.ZonaHoraria = ciudad.ZonaHoraria; sede.IdZonaEmpresarial = request.IdZonaEmpresarial; unitOfWork.SedeRepository.Update(sede); await unitOfWork.SaveAsync(); await Audit("sede.modificar", id, anterior, ToDto(sede)); return Ok(ToDto(sede));
     }
+
+    /// <summary>Zonas empresariales activas para el formulario de sedes (catálogo de plataforma; no requiere el módulo de zonas).</summary>
+    [HttpGet("zonas-empresariales")]
+    [RequiereModulo(CodigosModulo.Sedes, AccionModulo.Consultar)]
+    public ActionResult<IEnumerable<OpcionCatalogoDto>> ZonasEmpresariales() => Ok(unitOfWork.ZonaEmpresarialRepository.Find(x => x.Activa).OrderBy(x => x.Nombre)
+        .Select(x => new OpcionCatalogoDto { Id = x.IdZonaEmpresarial, Nombre = x.Nombre }));
 
     /// <summary>Catálogo de ciudades activas para el formulario de sedes (no requiere el módulo de configuración).</summary>
     [HttpGet("ciudades")]
@@ -62,6 +69,18 @@ public sealed class SedeController(IUnitOfWork unitOfWork, IOrganizationContext 
         var anterior = ToDto(sede); sede.Activo = activo; unitOfWork.SedeRepository.Update(sede); await unitOfWork.SaveAsync();
         await Audit(activo ? "sede.activar" : "sede.inactivar", id, anterior, ToDto(sede)); return Ok(ToDto(sede));
     }
+
+    /// <summary>
+    /// La zona se resuelve desde la sede (ADR-028): basta con que exista y esté activa. La sede ya está acotada a la organización
+    /// activa por el filtro global; conservar la zona actual se admite aunque esta se haya inactivado.
+    /// </summary>
+    private string? ValidarZona(int? idZona, int? actual) =>
+        idZona is null || idZona == actual || unitOfWork.ZonaEmpresarialRepository.Find(x => x.IdZonaEmpresarial == idZona && x.Activa).Any()
+            ? null : "La zona empresarial no existe o está inactiva.";
+
+    private bool TieneElementosComunes(int idSede) =>
+        unitOfWork.AreaRepository.Find(x => x.IdSede == idSede && x.EsComunZonaEmpresarial).Any()
+        || unitOfWork.PuntoAccesoRepository.Find(x => x.IdSede == idSede && x.EsComunZonaEmpresarial).Any();
 
     private int RequireOrganization() => organizationContext.OrganizationId ?? throw new UnauthorizedAccessException("No hay una organización autenticada.");
     private static bool TryValidate(SedeDto x, out string error) { if (x.IdCiudad <= 0 || string.IsNullOrWhiteSpace(x.Nombre)) { error = "Ciudad y nombre son obligatorios."; return false; } if (!string.IsNullOrWhiteSpace(x.Correo) && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(x.Correo)) { error = "El correo no tiene un formato válido."; return false; } error = ""; return true; }

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ConecsIA.Infrastructure.Configuration.Entities;
 
-/// <summary>Punto de acceso de una zona (RF-05). Nombre único por sede; la FK compuesta impide asociarlo a una zona de otra sede u organización.</summary>
+/// <summary>Punto de acceso de una sede (RF-05, ADR-028). Nombre único por sede; la FK compuesta impide asociarlo a una sede de otra organización.</summary>
 public sealed class PuntoAccesoConfiguration : EntityConfigurationBase<PuntoAcceso>, IEntityTypeConfiguration<PuntoAcceso>
 {
     public void Configure(EntityTypeBuilder<PuntoAcceso> builder)
@@ -19,9 +19,8 @@ public sealed class PuntoAccesoConfiguration : EntityConfigurationBase<PuntoAcce
         builder.HasAlternateKey(x => new { x.IdOrganizacion, x.IdSede, x.IdPuntoAcceso });
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdPuntoAcceso }).IsUnique();
         builder.HasIndex("IdOrganizacion", "IdSede", "NombreNormalizado").IsUnique().HasDatabaseName("ux_punto_acceso_sede_nombre");
-        builder.HasIndex(x => new { x.IdOrganizacion, x.IdZona });
         builder.ToTable(t => t.HasCheckConstraint("ck_punto_acceso_modo", "modo_acceso IN ('Entrada','Salida','Ambos')"));
-        builder.HasOne<Zona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede, x.IdZona })
-            .HasForeignKey(x => new { x.IdOrganizacion, x.IdSede, x.IdZona }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Sede>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede })
+            .HasForeignKey(x => new { x.IdOrganizacion, x.IdSede }).OnDelete(DeleteBehavior.Restrict);
     }
 }

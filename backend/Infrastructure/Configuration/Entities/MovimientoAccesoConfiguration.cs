@@ -17,7 +17,6 @@ public sealed class MovimientoAccesoConfiguration : EntityConfigurationBase<Movi
         builder.Property(x => x.Observacion).HasMaxLength(500);
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdPersona });
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdPuntoAcceso });
-        builder.HasIndex(x => new { x.IdOrganizacion, x.IdZona });
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdVisita });
         builder.HasIndex(x => new { x.IdOrganizacion, x.IdSede, x.OcurridoEn });
         builder.ToTable(t =>
@@ -26,8 +25,8 @@ public sealed class MovimientoAccesoConfiguration : EntityConfigurationBase<Movi
             t.HasCheckConstraint("ck_movimiento_acceso_resultado", "resultado IN ('Confirmado','Denegado')");
         });
         builder.HasOne<Persona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdPersona }).HasForeignKey(x => new { x.IdOrganizacion, x.IdPersona }).OnDelete(DeleteBehavior.Restrict);
-        // id_zona conserva la zona del punto al momento del movimiento: mover o inactivar el punto después no altera el historial.
-        builder.HasOne<Zona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdZona }).HasForeignKey(x => new { x.IdOrganizacion, x.IdZona }).OnDelete(DeleteBehavior.Restrict);
+        // zona_historica: nombre legible de la zona de acceso retirada (ADR-028); solo lo tienen los movimientos anteriores a esa migración.
+        builder.Property(x => x.ZonaHistorica).HasMaxLength(150);
         // FK con la sede del movimiento: el punto debe pertenecer a la organización y sede del movimiento.
         builder.HasOne<PuntoAcceso>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede, x.IdPuntoAcceso }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede, x.IdPuntoAcceso }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Sede>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede }).OnDelete(DeleteBehavior.Restrict);

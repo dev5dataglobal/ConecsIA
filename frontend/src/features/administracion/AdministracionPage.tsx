@@ -7,7 +7,7 @@ import { PerfilesSeccion } from './PerfilesSeccion'
 import { UsuariosSeccion } from './UsuariosSeccion'
 import { SedesAreasSeccion } from './SedesAreasSeccion'
 import { ZonasSeccion } from './ZonasSeccion'
-import { ZonasAccesoSeccion } from './ZonasAccesoSeccion'
+import { PuntosAccesoSeccion } from './PuntosAccesoSeccion'
 import { SECCIONES, type Seccion } from './secciones'
 import './administracion.css'
 
@@ -26,7 +26,7 @@ export function AdministracionPage({ seccion }: { seccion: Seccion }) {
       ))}
     </nav>
   )
-  const Componente = { usuarios: UsuariosSeccion, perfiles: PerfilesSeccion, organizaciones: OrganizacionesSeccion, 'zonas-empresariales': ZonasSeccion, sedes: SedesAreasSeccion, 'zonas-acceso': ZonasAccesoSeccion }[seccion]
+  const Componente = { usuarios: UsuariosSeccion, perfiles: PerfilesSeccion, organizaciones: OrganizacionesSeccion, 'zonas-empresariales': ZonasSeccion, sedes: SedesAreasSeccion, 'puntos-acceso': PuntosAccesoSeccion }[seccion]
   return <Componente pestanas={pestanas} />
 }
 

@@ -604,3 +604,40 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Pie con «Elaborado por DataGlobal» junto al copyright; `Marca` reutilizada con «IA» resaltada.
 - Ajuste: prueba de Servicios alineada con la retirada (por el usuario) de la nota ilustrativa; se elimina `.lp-sv-nota`.
 - Verificado: capturas 1280/375 px, 11 pruebas, tsc, oxlint, prettier. Página: [[Página pública de presentación]].
+
+## [2026-10-31] implementacion | Zona empresarial por sede y retiro de zonas de acceso
+- Decisiones del usuario: restricción solo por sede; áreas/puntos comunes los administra la dueña de la sede; punto siempre en la sede con marca «común de la zona». Nuevo [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] (reemplaza ADR-027); D-44/D-45 obsoletas; nueva D-48.
+- Backend, migración `20261031145759_ZonasEmpresarialesPorSedeYRetiroZonasAcceso` (bitácora `migracion_zonas_adr028`, no reversible, no aplicada a bases reales) y frontend (Administración › Puntos de acceso).
+- Contradicciones registradas en [[Zona empresarial]], [[Zona y punto de acceso]], [[Zonas y puntos de acceso]] y ADR-027; notas en [[Sede]], [[Autorización]], [[Criterios de aceptación]]. Nueva página [[Puntos de acceso]]; actualizados [[Estado de implementación]], [[Decisiones pendientes]], [[Registro de ADR]], `index.md`, `PRD.md` (enmienda) y `db.md`.
+- Verificado: backend 104/104, frontend 53/53 (en serie), tsc. Sin navegador. Pendiente: D-48.
+
+## [2026-10-31] revision | Estabilidad de MigracionZonasTests
+- Tiempo de espera de 300 s para migrar y borrar la base temporal (fallaba por tiempo en paralelo); suite backend 104/104.
+- Páginas tocadas: [[Estado de implementación]] (nota del fallo de limpieza conocido en ContactoTests). Sin páginas nuevas; index sin cambios.
+
+## [2026-10-31] implementacion | Migración ADR-028 aplicada a conecsia_verificacion
+- Respaldo `conecsia_verificacion_respaldo_20261031`; migraciones `SolicitudesContacto` y `ZonasEmpresarialesPorSedeYRetiroZonasAcceso` aplicadas. Bitácora sin pendientes (4 zonas retiradas, 3 puntos migrados).
+- Verificado en navegador: puntos migrados, zona en sede, punto común. `conecsia` sigue sin migrar.
+- Páginas: [[Estado de implementación]]. Observación: etiqueta «Sedes y zonas · Pronto» del módulo `sedes` en `app_modulos`.
+
+## [2026-10-31] implementacion | Dockerización del layout actual (HU-003)
+- Integración previa (commits 7bb572b, 4c7ee69, 5731b34) adaptada a `backend/ApiConecsia`: `docker-compose.yml`, `.env.example`, `backend/ApiConecsia/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/.dockerignore`, `frontend/nginx.conf`, `DOCKER.md`.
+- Servicios: postgres 18 (volumen `postgres-data`), `migraciones` (bundle EF Core, solo aplica pendientes), mailpit, api (volumen `api-archivos`), web (nginx con proxy `/api/`). Un solo usuario de BD: los roles migrador/app del esquema anterior ya no existen en el código.
+- Verificado: `docker compose config`, `dotnet publish` Release, `npm run build`. **No verificado**: build de imágenes y arranque; el motor de Docker Desktop no respondió en esta máquina.
+- Páginas: [[Estado de implementación]].
+
+## [2026-10-31] revision | Docker Desktop sigue sin responder
+- Nueva comprobación de `docker info`: el motor (`dockerDesktopLinuxEngine`) no existe; build y arranque de Compose siguen **no verificados**.
+- Sin otros cambios en la wiki; no se crearon páginas (index.md sin cambios).
+
+## [2026-11-03] implementacion | Docker Compose verificado en ejecución
+- Docker Desktop se reparó: se renombró `%LOCALAPPDATA%\Docker\run`, que tenía sockets obsoletos imposibles de borrar.
+- `migraciones` ahora recibe `CONECSIA_CONNECTION_STRING` (antes fallaba en la fábrica de diseño). El volumen nuevo `postgres-datos` deja intacto el antiguo `conecsia_postgres-data`.
+- Verificado: build de imágenes, 16 migraciones, API/SPA/proxy/Mailpit respondiendo, persistencia tras `down`/`up` e idempotencia de las migraciones.
+- Páginas: [[Estado de implementación]]. Pendiente: probar inicio de sesión con usuario real y subida de archivos.
+
+## [2026-11-03] implementacion | Datos locales copiados a la base de Docker
+- La base de Docker nacía vacía; los usuarios estaban en el PostgreSQL 17 local (`conecsia`, 15 migraciones).
+- Se copió con `pg_dump`/`pg_restore` (la base local solo se leyó): 2 usuarios, 2 organizaciones, 1 persona. `migraciones` aplicó a la copia la migración de ADR-028.
+- Verificado: login por nginx con usuario real y clave errónea → 401, sin errores en la API. No verificado: login correcto (no se conocen las contraseñas).
+- Procedimiento documentado en `DOCKER.md`. Páginas: [[Estado de implementación]].

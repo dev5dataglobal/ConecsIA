@@ -46,10 +46,10 @@ Se propone usar **Sede** para la ubicación física y **Área/destino** para la 
 | Concepto | Definición |
 |---|---|
 | Organización | Cliente y frontera de aislamiento de datos |
-| Sede | Instalación física perteneciente a una organización |
+| Sede | Instalación física perteneciente a una organización; puede pertenecer a cero o una zona empresarial |
 | Área/destino | Unidad organizacional o destino de la visita dentro de una sede |
-| Zona | Sector físico sujeto a permisos; puede representar un punto de acceso |
-| Punto de acceso | Zona habilitada para registrar entradas o salidas |
+| Zona empresarial | Agrupación de sedes (parque, zona franca…); se resuelve desde la sede, no desde la organización |
+| Punto de acceso | Lugar de una sede habilitado para registrar entradas o salidas; puede ser común de la zona empresarial de su sede |
 | Persona | Individuo identificado en el ámbito de una organización |
 | Usuario | Identidad autenticada con membresías, roles y permisos |
 | Responsable | Persona receptora de la visita |
@@ -59,7 +59,7 @@ Se propone usar **Sede** para la ubicación física y **Área/destino** para la 
 | Permanencia | Intervalo abierto por una entrada y cerrado por su salida |
 | Movimiento | Evento de entrada o salida de persona, vehículo o dispositivo |
 
-**Propuesta de modelado:** una sola entidad Zona con `esPuntoAcceso`; cuando sea verdadero podrá configurar entrada, salida o ambas. El destino organizacional y la zona física seguirán siendo conceptos distintos.
+**Enmienda 2026-10-31 (ADR-028, decisión del usuario):** se retira el concepto de zona de acceso. El punto de acceso pertenece directamente a la sede y configura entrada, salida o ambas. La zona empresarial no se vincula con organizaciones: cada sede tiene cero o una; las áreas y puntos comunes de la zona los administra la organización dueña de la sede. El destino organizacional y el punto de acceso siguen siendo conceptos distintos. *(Versión anterior: una sola entidad Zona con `esPuntoAcceso`.)*
 
 ## 3. Problema y oportunidad
 
@@ -124,7 +124,7 @@ Estos perfiles serán plantillas iniciales. Cada organización podrá crear role
 
 ### 5.3 Configuración organizacional
 
-RF-01 a RF-06 y RF-26 incluyen alta e inactivación de organizaciones, tipo, información general, plan, módulos, parámetros, sedes, áreas, responsables, zonas, usuarios y permisos.
+RF-01 a RF-06 y RF-26 incluyen alta e inactivación de organizaciones, tipo, información general, plan, módulos, parámetros, sedes, áreas, responsables, puntos de acceso, usuarios y permisos.
 
 El tipo de organización precargará catálogos y vocabulario, que el cliente podrá ajustar. Deshabilitar un módulo impedirá nuevas operaciones de ese módulo; se propone conservar consulta histórica a usuarios autorizados. Cambiar una plantilla no deberá sobrescribir configuraciones ya personalizadas.
 
@@ -144,7 +144,7 @@ Los tipos serán configurables e inactivables sin borrar históricos: visitante,
 
 ### 6.2 Creación de autorizaciones — RF-09, RF-10 y RF-20
 
-Cada autorización definirá persona, organización, sede, área/destino, zonas permitidas si aplica, fechas, horario, días, motivo, responsable, autorizador y estado. Conservará creador, decisión, fecha/hora, observaciones y revocación posterior.
+Cada autorización definirá persona, organización, sede, área/destino, fechas, horario, días, motivo, responsable, autorizador y estado. Conservará creador, decisión, fecha/hora, observaciones y revocación posterior.
 
 | Modalidad | Regla base | Complemento propuesto o pendiente |
 |---|---|---|
@@ -177,7 +177,7 @@ Al llegar se reutilizará la visita esperada cuando coincida con la autorizació
 
 ### 6.5 Entrada — RF-13
 
-El servidor comprobará identidad, estado de persona, política de autorización, vigencia, fecha, horario, sede, destino/zonas y estado de autorización. También verificará el permiso y el punto asignado al operador.
+El servidor comprobará identidad, estado de persona, política de autorización, vigencia, fecha, horario, sede, destino y estado de autorización. También verificará el permiso y el punto asignado al operador.
 
 Al confirmar almacenará persona, instante, sede, punto de acceso, autorización cuando corresponda y operador. Se propone registrar visita y permanencia como parte de la misma transacción. La respuesta indicará éxito confirmado o un motivo concreto de denegación.
 
@@ -236,7 +236,7 @@ Cada movimiento vehicular se vinculará a una visita y a su responsable. Se debe
 
 Permitirá propietario/responsable, tipo parametrizable, código/serial/identificador, marca, modelo, color, descripción/observaciones y estado. Una persona y una autorización admitirán múltiples dispositivos.
 
-Cada movimiento conservará dispositivo, instante, entrada/salida, sede, zona como punto de acceso, responsable, visita y usuario operador. El historial permitirá identificar qué equipos siguen dentro. La salida de la persona no cerrará automáticamente los equipos sin verificación.
+Cada movimiento conservará dispositivo, instante, entrada/salida, sede, punto de acceso, responsable, visita y usuario operador. El historial permitirá identificar qué equipos siguen dentro. La salida de la persona no cerrará automáticamente los equipos sin verificación.
 
 **Propuesta:** advertir al operador cuando una persona salga con equipos pendientes y permitir registrar la novedad con permiso y motivo. Si la organización desea bloqueo, salida con otro responsable o transferencia de custodia, deberá definir y aprobar la política; no se impone ese comportamiento desde este PRD.
 
@@ -257,9 +257,9 @@ Proveedor, tipos permitidos, tamaños, controles de contenido, conservación y e
 | Organización | Nombre, tipo, estado, plan, módulos, parámetros y datos generales |
 | Sede | Nombre, dirección, ciudad, contacto, horarios, responsable y estado; zona horaria propuesta |
 | Área/destino | Sede, nombre, responsables/autorizadores, estado y jerarquía opcional por definir |
-| Zona/punto | Sede, nombre, estado y condición de punto de acceso |
+| Punto de acceso | Sede, nombre, modo (entrada, salida o ambos), común de la zona empresarial y estado |
 | Persona | Documento, nombres, apellidos, contacto, procedencia, tipo, foto opcional y estado |
-| Autorización | Persona, sede, destino, zonas opcionales, modalidad, fechas, días, horarios, motivo, responsable y decisión |
+| Autorización | Persona, sede, destino, modalidad, fechas, días, horarios, motivo, responsable y decisión |
 | Visita ocasional | Persona, sede, destino, responsable, motivo y solicitud |
 | Entrada/salida | Documento o QR, visita/permanencia, punto, operador derivado y resultado |
 | Vehículo/dispositivo | Campos de RF-16/RF-17 y vínculo a responsable/autorización/visita |
@@ -319,7 +319,7 @@ La fuente exige Excel y PDF, con filtros por fecha, sede, persona, tipo, estado 
 
 ### 11.1 Alertas — RF-21
 
-Cubrirán autorización próxima a vencer/vencida, intento sin autorización, fuera de horario, sede o zona no autorizada, permanencia prolongada, persona sin salida, visita pendiente, autorización revocada y reutilización no permitida de QR.
+Cubrirán autorización próxima a vencer/vencida, intento sin autorización, fuera de horario, sede no autorizada, permanencia prolongada, persona sin salida, visita pendiente, autorización revocada y reutilización no permitida de QR.
 
 Cada alerta tendrá organización, sede, tipo, entidad vinculada, instante, estado y seguimiento. La transición Nueva → Revisada → Cerrada conservará usuario y fecha. Se propone deduplicar por evento y política para evitar alertas repetidas por cada actualización de pantalla.
 
@@ -375,9 +375,9 @@ La seguridad por filas de PostgreSQL es una defensa adicional propuesta que debe
 |---|---|
 | SaaS | TipoOrganizacion, Organizacion, Plan, Modulo, OrganizacionModulo y Configuracion |
 | Identidad | Usuario, MembresiaOrganizacion, Rol, Permiso, RolPermiso, UsuarioRol y AlcanceSede |
-| Estructura | Organizacion → Sede → AreaDestino; Sede → Zona; vínculos de responsables/autorizadores |
+| Estructura | Organizacion → Sede → AreaDestino; Sede → PuntoAcceso; Sede → ZonaEmpresarial (0..1); vínculos de responsables/autorizadores |
 | Personas | Persona, TipoDocumento, TipoPersona; vínculo opcional PersonaUsuario |
-| Autorización | Autorizacion, Decision, Horario/DiaPermitido, AutorizacionZona y TokenQR |
+| Autorización | Autorizacion, Decision, Horario/DiaPermitido y TokenQR |
 | Operación | Visita → Permanencia → MovimientoAcceso; Visita vincula autorización opcional por política |
 | Vehículos | Vehiculo, PersonaVehiculo, AutorizacionVehiculo y MovimientoVehiculo |
 | Equipos | Dispositivo, TipoDispositivo, AutorizacionDispositivo y MovimientoDispositivo |
@@ -427,7 +427,7 @@ Cubrirá creación, modificación, inactivación, decisión, rechazo, revocació
 | Fase | Resultado verificable | Alcance |
 |---|---|---|
 | 0. Definiciones y base técnica | Decisiones críticas, proyectos, migraciones, autenticación, aislamiento y auditoría base | Fundamento |
-| 1. Administración y personas | Organizaciones, tipo, sedes, destinos, zonas, roles, usuarios, tipos y personas | RF-01 a RF-08; plantilla básica RF-26 |
+| 1. Administración y personas | Organizaciones, tipo, sedes, destinos, puntos de acceso, roles, usuarios, tipos y personas | RF-01 a RF-08; plantilla básica RF-26 |
 | 2. Autorizaciones y visitas | Modalidades, solicitudes, decisiones, revocación, invitación y QR | RF-09 a RF-12, RF-15 y RF-20 |
 | 3. Operación de accesos | Validación, entrada/salida, concurrencia, historial y presencia actualizada | RF-13, RF-14, RF-18 y RF-19 |
 | 4. Operación medible | Alertas, correo, dashboard y reportes núcleo Excel/PDF | RF-21 a RF-24; RF-25 transversal |
@@ -451,13 +451,13 @@ La arquitectura deberá permitir incorporar integraciones futuras sin convertirl
 |---|---|---|
 | CA-01 | Un usuario de A no puede listar, leer, modificar, exportar, descargar archivos ni recibir eventos de B aunque conozca sus IDs | RF-01, RF-06; RN-01 |
 | CA-02 | Una organización administra varias sedes y limita un operador a las asignadas; el backend rechaza el acceso a otra sede | RF-03, RF-06 |
-| CA-03 | Tipos, destinos, responsables y zonas pueden configurarse e inactivarse conservando referencias históricas | RF-02, RF-04, RF-05, RF-08, RF-26 |
+| CA-03 | Tipos, destinos, responsables y puntos de acceso pueden configurarse e inactivarse conservando referencias históricas | RF-02, RF-04, RF-05, RF-08, RF-26 |
 | CA-04 | Buscar un documento existente recupera la persona; dos altas concurrentes no duplican la clave de identificación definida | RF-07 |
 | CA-05 | Persona visitante y usuario autenticado se administran de forma independiente | RF-06, RF-07 |
 | CA-06 | Crear una autorización conserva persona, destino, modalidad, condiciones, creador y decisión atribuible | RF-09, RF-10, RF-20 |
 | CA-07 | Una visita ocasional pendiente no ingresa cuando la política exige aprobación; un usuario sin permiso no puede aprobarla por API | RF-11, RF-13 |
 | CA-08 | Una invitación permite recuperar la autorización por QR sin exponer datos personales directamente en el código | RF-12, RF-15 |
-| CA-09 | Entradas con persona inactiva, autorización no vigente, sede/zona incorrecta o fuera de horario se deniegan con causa y sin abrir permanencia | RF-13, RF-15, RF-21 |
+| CA-09 | Entradas con persona inactiva, autorización no vigente, sede o punto incorrecto o fuera de horario se deniegan con causa y sin abrir permanencia | RF-13, RF-15, RF-21 |
 | CA-10 | Dos intentos simultáneos de consumir una autorización única producen una sola entrada confirmada | RF-10, RF-13 |
 | CA-11 | Una autorización recurrente permite visitas distintas en sus ventanas válidas sin cerrarse tras la primera salida | RF-10; RN-09 |
 | CA-12 | Reenviar la misma solicitud de entrada o salida no crea movimientos duplicados | RF-13, RF-14 |
@@ -478,7 +478,7 @@ La arquitectura deberá permitir incorporar integraciones futuras sin convertirl
 |---|---|---|
 | CA-23 | Con vehículos habilitados se registra placa, responsable, autorización y movimientos vinculados; al deshabilitar no se crean nuevos movimientos del módulo | RF-16 |
 | CA-24 | Una persona/autorización admite varios dispositivos y se conoce qué equipos tienen entrada sin salida | RF-17 |
-| CA-25 | Cada movimiento de equipo identifica sede, zona/punto, responsable, visita y operador; el histórico sigue accesible con permiso | RF-17 |
+| CA-25 | Cada movimiento de equipo identifica sede, punto de acceso, responsable, visita y operador; el histórico sigue accesible con permiso | RF-17 |
 | CA-26 | Cambiar la plantilla sectorial no modifica permisos existentes ni elimina personalizaciones o históricos; los catálogos quedan ajustables | RF-26 |
 
 ### 14.3 Trazabilidad de reglas originales

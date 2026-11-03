@@ -398,5 +398,5 @@
 .ad-vista button[aria-selected="true"] { background: #fff; color: var(--ui-texto); box-shadow: 0 1px 3px rgb(20 16 40 / 12%); }
 .ad-vista button span { min-width: 1.4rem; padding: 0 0.35rem; border-radius: 999px; background: #efedf6; color: var(--ui-texto-3); font-size: 0.72rem; text-align: center; }
 
-/* Zonas y puntos de acceso: quién creó y modificó el registro. */
+/* Puntos de acceso: quién creó y modificó el registro. */
 .ad-traza { color: var(--ui-texto-3); font-size: 0.78rem; line-height: 1.4; }

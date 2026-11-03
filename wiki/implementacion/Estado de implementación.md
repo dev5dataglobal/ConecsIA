@@ -1,9 +1,20 @@
 ---
 tipo: implementacion
 estado: implementado
-actualizado: 2026-10-29
+actualizado: 2026-10-31
 tags: [conecsia]
 ---
+
+## Zona empresarial por sede y retiro de zonas de acceso (ADR-028) — 2026-10-31
+- Rama `feature/organizaciones`, sin commit. Decisión: [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]]; módulo [[Puntos de acceso]].
+- **Backend.** Retirados: entidades `Zona`, `AutorizacionZona`, `ZonaEmpresarialOrganizacion` (configuraciones, repositorios, interfaces, registro en `IUnitOfWork`/`UnitOfWork`, `DbSet`, mapeos), `AutorizacionZonaController`, `ZonasPuntosAccesoController` → `PuntosAccesoController` (solo `/api/puntos-acceso`), `PUT /api/autorizaciones-acceso/{id}/zonas`, parámetro `autorizaciones.exige_zonas`, `ReglasOrganizacion.AsignarZonaAsync/ZonaDeEmpresaAsync/EsSuperiorAsync`, `empresas-disponibles`.
+  Cambiados: `PuntoAcceso` (sin `IdZona`, `+EsComunZonaEmpresarial`, FK a sede), `MovimientoAcceso` (sin `IdZona`, `+ZonaHistorica`), `RestriccionAcceso` (sin `IdZona`), `SedeController` (zona activa, bloqueo si hay elementos comunes, `GET /api/sedes/zonas-empresariales`), `AutorizacionController.ValidateScope` (sin organización administradora), `ZonaEmpresarialController` (catálogo de plataforma con sedes derivadas), `OrganizacionesAdministracionController` y DTO de organización (`ZonasEmpresariales` derivadas de sedes), `VisitasController`/`ReglasVisita.MotivosAutorizacion` (sin zonas). Nuevo `IPuntoAccesoRepository`.
+- **Migración** `20261031145759_ZonasEmpresarialesPorSedeYRetiroZonasAcceso` con bitácora `public.migracion_zonas_adr028`; **no reversible**. **No aplicada** a `conecsia` ni a `conecsia_verificacion` (solo a bases temporales de prueba).
+- **Frontend.** `PuntosAccesoSeccion` + `apiPuntosAcceso` (reemplazan `ZonasAccesoSeccion`/`apiZonasAcceso`), ruta `/administracion/puntos-acceso`; `ZonasSeccion` sin organización superior ni empresas; `OrganizacionesSeccion` sin selector de zona (columna «Zonas empresariales» según sedes); selector de zona empresarial en el formulario de sede; Control de accesos sin selector ni edición de zonas; Visitas sin zonas (muestra `zonaHistorica`).
+- **Pruebas.** Backend 104/104 (`PuntosAccesoTests` 8 reemplaza `ZonasPuntosAccesoTests`; `MigracionZonasTests` 1 nueva con datos del esquema anterior; ajustadas `AdministracionTests`, `VisitasTests`, `AutorizacionesAccesoTests`). Queda el fallo de limpieza de clase ya conocido (`ContactoTests`, borrado de la base temporal), sin pruebas fallidas. Frontend 53/53 en serie; en paralelo hay fallos intermitentes por tiempo en módulos no tocados. `tsc -b` correcto. `oxlint --deny-warnings` reporta advertencias previas en archivos ajenos al cambio.
+- **CA verificados por integración:** punto en sede de otra organización rechazado (API y FK); `/api/zonas` 404; autorización sin zonas válida en cualquier punto de su sede; movimiento con sede y punto; punto común solo con zona; sede con elementos comunes no cambia de zona; organización con sedes en dos zonas; otra organización no ve sedes ajenas de la zona; migración traslada lo inequívoco y deja pendientes.
+- **Aplicada 2026-10-31 a `conecsia_verificacion`** (con `SolicitudesContacto`, que faltaba) tras respaldo `conecsia_verificacion_respaldo_20261031` (copia por TEMPLATE). Bitácora: 4 zonas retiradas, 3 puntos conservados en su sede, sin vínculos zona-organización ni pendientes. **No aplicada a `conecsia`.**
+- **Verificado en navegador 2026-10-31** (admin.alfa, API 5192 + frontend 5174): Puntos de acceso lista los 3 puntos migrados; formulario de sede asigna «Zona Franca Verificación» (zona de prueba creada por SQL) y la tarjeta la muestra; el interruptor «Punto común» aparece solo con sede en zona; se creó «Portería del parque» común con trazabilidad. Sin errores de consola salvo 502/401 mientras la API arrancaba. Observación: el menú lateral muestra el módulo `sedes` como «Sedes y zonas · Pronto» (etiqueta y ruta de `app_modulos`, no tocadas).
 
 ## Tipo de permiso de acceso derivado y visitas extemporáneas — 2026-10-29
 - Rama `feature/organizaciones`, sin commit. Backend: `Services/ReglasPermisoAcceso.cs` (nuevo), `PersonasController` (filtro `tipoPermiso`, `CompletarPermisoAsync`), `VisitasController.Registrar` (409 + auditoría), DTO `AccesoRecurrenteDto`. Sin migración.
@@ -330,3 +341,14 @@ Inventario para reemplazar [[ADR-022 Autenticación de desarrollo provisional]] 
 - **Implementado:** en [[Control de accesos]] el detalle lista vehículos y dispositivos activos de la persona; cada uno se aprueba o rechaza sobre su propia autorización de objeto ([[Autorizaciones de vehículos y dispositivos]]), con estados explícitos (Pendiente/Aprobado/Rechazado/Sin solicitud) y «Ver decisiones» con las transiciones. «Solicitar» crea la autorización de objeto asociada (`idAutorizacion`) con sede, área, fechas y horario del ingreso; si el ingreso no tiene fecha de fin no se solicita aquí.
 - **Implementado:** modal de [[Personas]] por secciones (franja de identidad, datos personales, acceso y registro, información asociada) con botón «Dispositivos» en `--color-acento` (#D5F379). Franja de cabecera de los detalles en gris (`--color-superficie`); el verde queda como acento.
 - **Verificado:** `tsc -b` ok; `vitest` 42/42; `dotnet test` Visitas + objetos 27/27. **No verificado** en navegador; la API en ejecución debe reiniciarse para servir `historial`.
+
+## Docker Compose sobre el layout actual (2026-10-31, verificado 2026-11-03)
+
+- **Implementado** (sin commit): `docker-compose.yml` con `postgres`, `migraciones`, `mailpit`, `api` y `web`; instrucciones en `DOCKER.md`. Las migraciones se aplican con un bundle EF Core en un servicio de un solo uso (la API no migra al iniciar); la cadena llega por `CONECSIA_CONNECTION_STRING`, porque `DesignTimeDbContextFactory` la exige antes de `--connection`.
+- **Verificado 2026-11-03** (`docker compose build` + `up -d`): 3 imágenes construidas; 16 migraciones aplicadas; swagger 200; SPA `/` y `/login` 200; `/api/auth/login` por nginx 401 con cuenta inexistente; endpoint protegido sin token 401; Mailpit 200; una tabla marcador sobrevivió a `down`/`up` (luego borrada); segunda ejecución de migraciones: "No migrations were applied".
+- Volumen nuevo `postgres-datos`: el antiguo `conecsia_postgres-data` (2026-10-17, esquema y roles de la integración anterior) se dejó intacto.
+- **No verificado:** inicio de sesión real con usuario (no hay semillas automáticas), subida de archivos ni envío de correo.
+
+> [!note] Docker Desktop en esta máquina
+> El backend fallaba con `remove ...\Docker\run\dockerInference: El sistema no tiene acceso al archivo` (sockets obsoletos, ya visto antes). No se podían borrar; se renombró `%LOCALAPPDATA%\Docker\run` a `run.obsoleto-20261103` y Docker arrancó.
+- **Datos 2026-11-03:** la base de Docker se pobló copiando la base local (2 usuarios, 2 organizaciones); procedimiento en `DOCKER.md`.

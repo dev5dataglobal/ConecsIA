@@ -12,7 +12,7 @@ namespace ApiConecsia.Controllers;
 
 /// <summary>
 /// Organizaciones. El administrador de plataforma consulta y gestiona todas (catálogo de clientes, crea, inactiva,
-/// cambia plan y organización superior). Cualquier otro usuario solo ve y edita los datos de su organización activa.
+/// cambia plan). Cualquier otro usuario solo ve y edita los datos de su organización activa.
 /// Inactivar no borra usuarios, sedes, autorizaciones ni historia: solo bloquea el ingreso a la organización.
 /// </summary>
 [Route("api/administracion/organizaciones")]
@@ -45,7 +45,7 @@ public sealed class OrganizacionesAdministracionController(
         return dto is null ? NoEncontrado("La organización no existe o no está en tu alcance.") : Ok(dto);
     }
 
-    /// <summary>Catálogos del formulario (tipos, planes y zonas empresariales activas). Requiere Añadir o Editar.</summary>
+    /// <summary>Catálogos del formulario (tipos y planes). Requiere Añadir o Editar. La zona empresarial se asigna en cada sede (ADR-028).</summary>
     [HttpGet("catalogos")]
     public async Task<ActionResult<object>> Catalogos(CancellationToken ct)
     {
@@ -53,19 +53,10 @@ public sealed class OrganizacionesAdministracionController(
         var propios = await AccesosPropiosAsync(ct);
         if (!propios.TryGetValue(CodigosModulo.Organizaciones, out var acciones) || !(acciones.Anadir || acciones.Editar))
             return Prohibido("Necesitas permiso para añadir o editar organizaciones.");
-        var links = Db.ZonasEmpresarialesOrganizaciones.IgnoreQueryFilters();
         return Ok(new
         {
             tipos = await Db.TiposOrganizacion.Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionCatalogoDto { Id = x.IdTipoOrganizacion, Nombre = x.Nombre }).ToListAsync(ct),
             planes = await Db.Planes.Where(x => x.Activo).OrderBy(x => x.Nombre).Select(x => new OpcionCatalogoDto { Id = x.IdPlan, Nombre = x.Nombre }).ToListAsync(ct),
-            zonas = await (from zona in Db.ZonasEmpresariales
-                           where zona.Activa
-                           let superior = (from l in links
-                                           join org in Db.Organizaciones on l.IdOrganizacion equals org.IdOrganizacion
-                                           where l.IdZonaEmpresarial == zona.IdZonaEmpresarial && l.EsAdministradora && l.Activa
-                                           select org.Nombre).FirstOrDefault()
-                           orderby zona.Nombre
-                           select new OpcionCatalogoDto { Id = zona.IdZonaEmpresarial, Nombre = superior == null ? zona.Nombre : zona.Nombre + " · " + superior }).ToListAsync(ct),
         });
     }
 
@@ -84,10 +75,9 @@ public sealed class OrganizacionesAdministracionController(
         await Db.SaveChangesAsync(ct);
         using (Db.PermitirEscrituraEn([entity.IdOrganizacion]))
         {
-            if (await ReglasOrganizacion.AsignarZonaAsync(Db, entity.IdOrganizacion, request.IdZonaEmpresarial, ct) is { } error) return Invalido(error);
             await ReglasPersona.SembrarTiposPersonaAsync(Db, entity.IdOrganizacion, ct);
             Auditar(entity.IdOrganizacion, "Crear", "Organizacion", entity.IdOrganizacion.ToString(), null, request);
-            if (!await GuardarAsync(ct)) return Conflicto("La empresa ya pertenece a otra zona empresarial.");
+            await Db.SaveChangesAsync(ct);
         }
         await transaccion.CommitAsync(ct);
         return CreatedAtAction(nameof(Obtener), new { idOrganizacion = entity.IdOrganizacion }, await ProyectarUnaAsync(entity.IdOrganizacion, ct));
@@ -99,9 +89,8 @@ public sealed class OrganizacionesAdministracionController(
     {
         var entity = await Visibles().SingleOrDefaultAsync(x => x.IdOrganizacion == idOrganizacion, ct);
         if (entity is null) return NoEncontrado("La organización no existe o no está en tu alcance.");
-        var zonaActual = (await ReglasOrganizacion.ZonaDeEmpresaAsync(Db, idOrganizacion, ct))?.IdZonaEmpresarial;
-        if (!EsPlataforma && (request.Estado != entity.Estado || request.IdPlan != entity.IdPlan || request.IdZonaEmpresarial != zonaActual))
-            return Prohibido("Solo el administrador de plataforma puede cambiar el estado, el plan o la organización superior.");
+        if (!EsPlataforma && (request.Estado != entity.Estado || request.IdPlan != entity.IdPlan))
+            return Prohibido("Solo el administrador de plataforma puede cambiar el estado o el plan.");
         if (await ReglasOrganizacion.ValidarDatosAsync(Db, request, ct) is { } invalido) return Invalido(invalido);
         if (await ReglasOrganizacion.DuplicadoAsync(Db, request, idOrganizacion, ct) is { } duplicado) return Conflicto(duplicado);
 
@@ -109,9 +98,8 @@ public sealed class OrganizacionesAdministracionController(
         ReglasOrganizacion.Aplicar(entity, request);
         using (Db.PermitirEscrituraEn([idOrganizacion]))
         {
-            if (await ReglasOrganizacion.AsignarZonaAsync(Db, idOrganizacion, request.IdZonaEmpresarial, ct) is { } error) return Invalido(error);
             Auditar(idOrganizacion, "Modificar", "Organizacion", idOrganizacion.ToString(), anterior, request);
-            if (!await GuardarAsync(ct)) return Conflicto("La empresa ya pertenece a otra zona empresarial.");
+            await Db.SaveChangesAsync(ct);
         }
         return Ok(await ProyectarUnaAsync(idOrganizacion, ct));
     }

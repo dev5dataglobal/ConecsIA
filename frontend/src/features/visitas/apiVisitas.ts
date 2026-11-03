@@ -42,8 +42,8 @@ export interface MovimientoVisita {
   tipoMovimiento: 'Entrada' | 'Salida'
   resultado: string
   puntoAcceso: string
-  /** Zona del punto al momento del movimiento. */
-  zona: string
+  /** Zona de acceso retirada en la que se registró (solo movimientos anteriores a ADR-028). */
+  zonaHistorica: string | null
   operador: string | null
   ocurridoEn: string
   observacion: string | null
@@ -73,7 +73,6 @@ export interface VisitaDetalle {
     cupoIngresos: number | null
     ingresosConsumidos: number
     horarios: { diaSemana: number; horaInicio: string; horaFin: string }[]
-    zonas: string[]
   } | null
   permanencia: { idPermanencia: number; estado: 'Abierta' | 'Cerrada'; abiertaEn: string; cerradaEn: string | null; duracionSegundos: number | null } | null
   movimientos: MovimientoVisita[]
@@ -94,7 +93,7 @@ export interface OpcionesVisita {
   sedes: { id: number; nombre: string }[]
   areas: { id: number; idSede: number; nombre: string }[]
   responsables: { idMembresia: number; nombre: string; areas: number[] }[]
-  puntosAcceso: { id: number; idSede: number; idZona: number; zona: string; nombre: string; modoAcceso: 'Entrada' | 'Salida' | 'Ambos' }[]
+  puntosAcceso: { id: number; idSede: number; nombre: string; modoAcceso: 'Entrada' | 'Salida' | 'Ambos' }[]
   permiteSinAutorizacion: boolean
 }
 

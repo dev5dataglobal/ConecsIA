@@ -95,7 +95,7 @@ export function OrganizacionesSeccion({ pestanas }: SeccionProps) {
               <tr>
                 <th scope="col">Organización</th>
                 <th scope="col">Identificación</th>
-                <th scope="col">Organización superior</th>
+                <th scope="col">Zonas empresariales</th>
                 <th scope="col">Estado</th>
                 {acciones.editar && <th scope="col"><span className="sr-only">Acciones</span></th>}
               </tr>
@@ -114,8 +114,7 @@ export function OrganizacionesSeccion({ pestanas }: SeccionProps) {
                   </td>
                   <td>{org.identificacion ?? '—'}</td>
                   <td>
-                    {org.esOrganizacionSuperior ? <span className="ad-etiqueta">Organización superior</span>
-                      : org.organizacionSuperior ? <span>{org.organizacionSuperior}<small className="ad-sub">{org.zonaEmpresarial}</small></span>
+                    {org.zonasEmpresariales.length ? <span>{org.zonasEmpresariales.join(', ')}<small className="ad-sub">Según sus sedes</small></span>
                       : <span className="ad-tenue">—</span>}
                   </td>
                   <td><Estatus activo={org.estado === 'Activa'} texto={org.estado} /></td>
@@ -174,13 +173,12 @@ export function Logo({ organizacion }: { organizacion: OrganizacionAdmin }) {
     : <span className="ad-avatar" data-tipo="org" aria-hidden="true"><Icono nombre="sede" /></span>
 }
 
-/** Campos del modelo de organización. `superior`: muestra el selector de organización superior. */
-export function CamposOrganizacion({ datos, cambiar, errores, plataforma, superior }: {
+/** Campos del modelo de organización. La zona empresarial no es de la organización: se asigna en cada sede. */
+export function CamposOrganizacion({ datos, cambiar, errores, plataforma }: {
   datos: OrganizacionEntrada
   cambiar: (parcial: Partial<OrganizacionEntrada>) => void
   errores: Partial<Record<keyof OrganizacionEntrada, string>>
   plataforma: boolean
-  superior: boolean
 }) {
   const catalogos = useQuery({ queryKey: ['catalogos-organizacion'], queryFn: consultarCatalogosOrganizacion, staleTime: 60_000 })
   const soloPlataforma = plataforma ? undefined : 'Solo el administrador de plataforma puede cambiarlo.'
@@ -212,13 +210,6 @@ export function CamposOrganizacion({ datos, cambiar, errores, plataforma, superi
       <Campo etiqueta="Dirección (opcional)">
         <input value={datos.direccion ?? ''} maxLength={500} onChange={(e) => cambiar({ direccion: e.target.value })} />
       </Campo>
-      {superior && (
-        <Campo etiqueta="Organización superior (opcional)" ancho="completo" error={soloPlataforma}>
-          <Selector className="sel-campo" etiqueta="Organización superior" valor={String(datos.idZonaEmpresarial ?? '')} deshabilitado={!plataforma}
-            onChange={(v) => cambiar({ idZonaEmpresarial: v ? Number(v) : null })}
-            opciones={[{ valor: '', texto: 'Ninguna' }, ...(catalogos.data?.zonas ?? []).map((z) => ({ valor: String(z.id), texto: z.nombre }))]} />
-        </Campo>
-      )}
     </div>
   )
 }
@@ -298,7 +289,7 @@ function OrganizacionFormulario({ organizacion, onClose, onGuardado }: { organiz
           {errorLogo && <small className="ad-campo-error" role="alert">{errorLogo}</small>}
         </div>
       </div>
-      <CamposOrganizacion datos={datos} cambiar={cambiar} errores={errores} plataforma={plataforma} superior={!organizacion?.esOrganizacionSuperior} />
+      <CamposOrganizacion datos={datos} cambiar={cambiar} errores={errores} plataforma={plataforma} />
       <Interruptor
         etiqueta="Organización activa"
         ayuda={plataforma ? (datos.estado === 'Activa' ? 'Sus usuarios pueden ingresar.' : 'Sus usuarios no podrán ingresar; los registros se conservan.') : 'Solo el administrador de plataforma puede cambiarlo.'}

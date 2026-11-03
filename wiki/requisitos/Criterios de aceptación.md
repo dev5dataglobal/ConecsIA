@@ -3,11 +3,13 @@ tipo: requisito
 estado: base
 fuentes: [PRD v0.1]
 relacionados: [CA-01..CA-26]
-actualizado: 2026-10-17
+actualizado: 2026-10-31
 tags: [conecsia]
 ---
 
 # Criterios de aceptación
+
+> [!note] 2026-10-31 — [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]]: en CA-03, CA-09 y CA-25 «zona» ya no es una zona de acceso. CA-09 se verifica por sede y punto (`PuntosAccesoTests`); la restricción por zona de la autorización se retiró por decisión del usuario.
 
 Copia de trabajo de PRD §14. La verificación se lleva en [[Estado de implementación]].
 

@@ -16,7 +16,6 @@ const OPCIONES = {
   sedes: [{ id: 1, nombre: 'Sede Norte' }],
   areas: [{ id: 3, idSede: 1, nombre: 'Gerencia' }],
   responsables: [{ idMembresia: 5, nombre: 'gerente@ejemplo.test', areas: [] }],
-  zonas: [],
   permitePermanente: false,
   idMembresiaPropia: 5,
 }
@@ -42,7 +41,7 @@ describe('Control de accesos', () => {
   afterEach(() => vi.restoreAllMocks())
 
   it('valida solo las condiciones del tipo de autorización elegido', () => {
-    const base = { idSede: 1, idArea: 3, idMembresiaResponsable: 5, fechaInicio: '2026-11-02', fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [], zonas: [], motivo: 'Obra', observacion: null }
+    const base = { idSede: 1, idArea: 3, idMembresiaResponsable: 5, fechaInicio: '2026-11-02', fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [], motivo: 'Obra', observacion: null }
     const hoy = '2026-10-28'
     expect(validarSolicitudAcceso(11, { ...base, modalidad: 'Unica' }, false, hoy)).toEqual({})
     expect(validarSolicitudAcceso(11, { ...base, modalidad: 'Diaria', fechaInicio: '2026-10-27' }, false, hoy).fechaInicio).toMatch(/anterior a hoy/)

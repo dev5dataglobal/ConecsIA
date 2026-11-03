@@ -15,7 +15,7 @@ const OPCIONES = {
   sedes: [{ id: 1, nombre: 'Sede Norte' }],
   areas: [{ id: 3, idSede: 1, nombre: 'Gerencia' }],
   responsables: [{ idMembresia: 5, nombre: 'gerente@ejemplo.test', areas: [3] }],
-  puntosAcceso: [{ id: 8, idSede: 1, idZona: 3, zona: 'Recepción', nombre: 'Portería principal', modoAcceso: 'Ambos' }],
+  puntosAcceso: [{ id: 8, idSede: 1, nombre: 'Portería principal', modoAcceso: 'Ambos' }],
   permiteSinAutorizacion: false,
 }
 const VISITA = {
@@ -26,7 +26,7 @@ const VISITA = {
 const PAGINA = { registros: [VISITA], total: 1, pagina: 1, tamano: 20, indicadores: { pendientes: 2, autorizadas: 1, dentro: 4, finalizadas: 9 } }
 const DETALLE = {
   visita: VISITA, registradaPor: 'recepcion@ejemplo.test', observacion: null, motivoCierre: null, actualizadaPor: null, actualizadaEn: null,
-  autorizacion: { idAutorizacion: 4, estado: 'Aprobada', modalidad: 'Unica', fechaInicio: '2026-10-26', fechaFin: '2026-10-26', cupoIngresos: null, ingresosConsumidos: 0, horarios: [], zonas: [] },
+  autorizacion: { idAutorizacion: 4, estado: 'Aprobada', modalidad: 'Unica', fechaInicio: '2026-10-26', fechaFin: '2026-10-26', cupoIngresos: null, ingresosConsumidos: 0, horarios: [] },
   permanencia: null, movimientos: [], historial: [], evaluacion: { puedeIngresar: true, puedeSalir: false, motivos: [] },
 }
 

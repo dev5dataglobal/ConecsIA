@@ -148,7 +148,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return cliente;
     }
 
-    private static string LeerConexionLocal([System.Runtime.CompilerServices.CallerFilePath] string archivo = "")
+    internal static string LeerConexionLocal([System.Runtime.CompilerServices.CallerFilePath] string archivo = "")
     {
         // Se parte de la ubicación del código fuente porque los binarios pueden compilarse fuera del repositorio.
         var raiz = Path.GetDirectoryName(archivo);

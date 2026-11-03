@@ -40,9 +40,6 @@ public sealed class AutorizacionAccesoEntrada
     /// <summary>Días ISO (1 = lunes … 7 = domingo). Solo Recurrente.</summary>
     public List<int>? DiasSemana { get; set; }
 
-    /// <summary>Zonas de la sede a las que se restringe el ingreso (vacío = sin restricción por zona).</summary>
-    public List<int>? Zonas { get; set; }
-
     [Required(ErrorMessage = "Indique el motivo de la solicitud.")]
     [StringLength(500, ErrorMessage = "El motivo admite máximo 500 caracteres.")]
     public string? Motivo { get; set; }
@@ -85,16 +82,8 @@ public sealed class AutorizacionAccesoDto
     public DateTime? DecididoEn { get; set; }
     public string? MotivoDecision { get; set; }
     public List<HorarioAutorizacionDto> Horarios { get; set; } = [];
-    public List<OpcionCatalogoDto> Zonas { get; set; } = [];
     public List<TransicionAutorizacionObjetoDto> Historial { get; set; } = [];
     public string ZonaHoraria { get; set; } = "UTC";
-}
-
-public sealed class ZonaAutorizacionDto
-{
-    public int Id { get; set; }
-    public int IdSede { get; set; }
-    public string Nombre { get; set; } = "";
 }
 
 public sealed class OpcionesAutorizacionAccesoDto
@@ -102,11 +91,8 @@ public sealed class OpcionesAutorizacionAccesoDto
     public List<OpcionCatalogoDto> Sedes { get; set; } = [];
     public List<OpcionAreaDto> Areas { get; set; } = [];
     public List<ResponsableVisitaDto> Responsables { get; set; } = [];
-    public List<ZonaAutorizacionDto> Zonas { get; set; } = [];
     /// <summary>Política de la organización: si admite solicitar la modalidad Permanente (D-18).</summary>
     public bool PermitePermanente { get; set; }
-    /// <summary>Política de la organización: toda autorización debe restringirse a una o más zonas.</summary>
-    public bool ExigeZonas { get; set; }
     /// <summary>Membresía del usuario autenticado (responsable sugerido).</summary>
     public int? IdMembresiaPropia { get; set; }
 }

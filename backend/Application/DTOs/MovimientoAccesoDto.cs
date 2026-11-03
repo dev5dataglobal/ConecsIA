@@ -6,7 +6,6 @@ public sealed class MovimientoAccesoDto
     public int IdPersona { get; set; }
     public int IdSede { get; set; }
     public int IdPuntoAcceso { get; set; }
-    public int IdZona { get; set; }
     public int? IdVisita { get; set; }
     public int? IdAutorizacion { get; set; }
     public int? IdPermanencia { get; set; }

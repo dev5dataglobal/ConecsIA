@@ -1,14 +1,14 @@
 import type { OrganizacionAdmin, OrganizacionEntrada } from './apiAdministracion'
 
-/** Valores vacíos para el formulario de organización (también lo usa el de zonas empresariales). */
+/** Valores vacíos para el formulario de organización. */
 export function organizacionVacia(): OrganizacionEntrada {
-  return { nombre: '', idTipoOrganizacion: 0, idPlan: 0, identificacion: '', direccion: '', telefono: '', correo: '', idZonaEmpresarial: null, estado: 'Activa' }
+  return { nombre: '', idTipoOrganizacion: 0, idPlan: 0, identificacion: '', direccion: '', telefono: '', correo: '', estado: 'Activa' }
 }
 
 export function organizacionAEntrada(o: OrganizacionAdmin): OrganizacionEntrada {
   return {
     nombre: o.nombre, idTipoOrganizacion: o.idTipoOrganizacion, idPlan: o.idPlan, identificacion: o.identificacion ?? '', direccion: o.direccion ?? '',
-    telefono: o.telefono ?? '', correo: o.correo ?? '', idZonaEmpresarial: o.idZonaEmpresarial, estado: o.estado === 'Inactiva' ? 'Inactiva' : 'Activa',
+    telefono: o.telefono ?? '', correo: o.correo ?? '', estado: o.estado === 'Inactiva' ? 'Inactiva' : 'Activa',
   }
 }
 

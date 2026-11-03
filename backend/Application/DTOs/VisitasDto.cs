@@ -116,7 +116,6 @@ public sealed class AutorizacionVisitaDto
     public int IdSede { get; set; }
     public int IdArea { get; set; }
     public List<HorarioAutorizacionDto> Horarios { get; set; } = [];
-    public List<string> Zonas { get; set; } = [];
 }
 
 public sealed class HorarioAutorizacionDto
@@ -141,8 +140,8 @@ public sealed class MovimientoVisitaDto
     public string TipoMovimiento { get; set; } = "";
     public string Resultado { get; set; } = "";
     public string PuntoAcceso { get; set; } = "";
-    /// <summary>Zona del punto al momento del movimiento (no cambia si el punto se mueve o inactiva después).</summary>
-    public string Zona { get; set; } = "";
+    /// <summary>Zona de acceso retirada en la que se registró (solo movimientos anteriores a ADR-028).</summary>
+    public string? ZonaHistorica { get; set; }
     public string? Operador { get; set; }
     public DateTime OcurridoEn { get; set; }
     public string? Observacion { get; set; }
@@ -221,8 +220,6 @@ public sealed class PuntoAccesoVisitaDto
 {
     public int Id { get; set; }
     public int IdSede { get; set; }
-    public int IdZona { get; set; }
-    public string Zona { get; set; } = "";
     public string Nombre { get; set; } = "";
     public string ModoAcceso { get; set; } = "Ambos";
 }

@@ -1,15 +1,19 @@
 ---
 tipo: adr
-estado: implementado
+estado: obsoleto
 area: persistencia
 origen: Solicitud del usuario 2026-10-28 (RF-05)
 fuentes: [PRD v0.1]
 relacionados: [RF-05, ADR-019, D-01, D-43, D-44, D-45, HU-015]
-actualizado: 2026-10-28
+actualizado: 2026-10-31
 tags: [conecsia, adr, persistencia]
 ---
 
 # ADR-027 Punto de acceso como entidad dentro de la zona
+
+> [!warning] Contradicción / cambio 2026-10-31 — [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]]
+> Antes (ADR-027, 2026-10-28): Sede → Zona → Punto de acceso; autorizaciones restringibles por zona (`autorizacion_zona`, `autorizaciones.exige_zonas`).
+> Ahora (solicitud del usuario 2026-10-31, **Implementado**): se retiran las zonas de acceso. El punto de acceso pertenece directamente a la sede y puede marcarse común de la zona empresarial; la autorización vale en toda su sede. El contenido siguiente se conserva como historia.
 
 > [!note] Estado: **Implementado 2026-10-28** por solicitud explícita del usuario (estructura Organización → Ubicación → Zona → Punto de acceso). Reemplaza la propuesta [[ADR-019 Zona única con atributo de punto de acceso]]. Detalles de diseño del agente por revisar.
 

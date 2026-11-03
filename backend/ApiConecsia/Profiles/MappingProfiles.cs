@@ -8,7 +8,6 @@ public sealed class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        CreateMap<Zona, ZonaDto>().ReverseMap();
         CreateMap<Visita, VisitaDto>().ReverseMap();
         CreateMap<Vehiculo, VehiculoDto>().ReverseMap();
         CreateMap<Usuario, UsuarioDto>().ReverseMap();
@@ -47,7 +46,6 @@ public sealed class MappingProfiles : Profile
         CreateMap<MembresiaOrganizacion, MembresiaOrganizacionDto>().ReverseMap();
         CreateMap<InvitacionEnvio, InvitacionEnvioDto>().ReverseMap();
         CreateMap<Ciudad, CiudadDto>().ReverseMap();
-        CreateMap<AutorizacionZona, AutorizacionZonaDto>().ReverseMap();
         CreateMap<AutorizacionVehiculo, AutorizacionVehiculoDto>().ReverseMap();
         CreateMap<AutorizacionTransicion, AutorizacionTransicionDto>().ReverseMap();
         CreateMap<AutorizacionHorario, AutorizacionHorarioDto>().ReverseMap();

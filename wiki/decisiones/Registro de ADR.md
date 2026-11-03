@@ -2,7 +2,7 @@
 tipo: indice
 estado: vigente
 fuentes: [PRD v0.1]
-actualizado: 2026-10-17
+actualizado: 2026-10-31
 tags: [conecsia, adr]
 ---
 
@@ -38,7 +38,8 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-024 Acciones por módulo y contexto de organización]] | seguridad | **Implementado 2026-10-24** (solicitud del usuario; detalles de diseño del agente por revisar) | D-24..D-28 |
 | [[ADR-025 Sesión renovable y recuperación de contraseña]] | seguridad | **Implementado 2026-10-26** (solicitud del usuario; detalles de diseño del agente por revisar) | D-29, D-30 |
 | [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] | dominio | **Implementado 2026-10-26** (solicitud del usuario; modelo separado del PRD por validar) | D-31, D-32, D-33 |
-| [[ADR-027 Punto de acceso como entidad dentro de la zona]] | persistencia | **Implementado 2026-10-28** (solicitud del usuario; detalles de diseño del agente por revisar) | D-43, D-44, D-45 |
+| [[ADR-027 Punto de acceso como entidad dentro de la zona]] | persistencia | **Obsoleta 2026-10-31** (reemplazada por ADR-028) | — |
+| [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] | persistencia | **Implementado 2026-10-31** (solicitud del usuario) | D-43, D-48 |
 
 ## Origen de cada propuesta
 - **Propuesta explícita del PRD:** ADR-001, 002, 003, 004, 007, 008, 009, 010, 011, 012, 013, 014, 019 (el PRD ya las enuncia; aquí se concretan).

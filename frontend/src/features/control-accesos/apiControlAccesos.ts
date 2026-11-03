@@ -56,7 +56,6 @@ export interface AutorizacionAcceso {
   decididoEn: string | null
   motivoDecision: string | null
   horarios: HorarioAcceso[]
-  zonas: { id: number; nombre: string }[]
   historial: TransicionAcceso[]
   zonaHoraria: string
 }
@@ -72,7 +71,6 @@ export interface AutorizacionAccesoEntrada {
   horaInicio: string | null
   horaFin: string | null
   diasSemana: number[]
-  zonas: number[]
   motivo: string
   observacion: string | null
 }
@@ -81,10 +79,7 @@ export interface OpcionesAutorizacionAcceso {
   sedes: { id: number; nombre: string }[]
   areas: { id: number; idSede: number; nombre: string }[]
   responsables: { idMembresia: number; nombre: string; areas: number[] }[]
-  zonas: { id: number; idSede: number; nombre: string }[]
   permitePermanente: boolean
-  /** Política de la organización: toda autorización debe restringirse a una o más zonas. */
-  exigeZonas: boolean
   idMembresiaPropia: number | null
 }
 
@@ -108,6 +103,3 @@ export const solicitarAutorizacionAcceso = (data: AutorizacionAccesoEntrada) =>
   apiFetch<AutorizacionAcceso>('/api/autorizaciones-acceso', json('POST', data))
 export const decidirAutorizacionAcceso = (id: number, accion: 'aprobar' | 'rechazar', motivo: string | null) =>
   apiFetch<AutorizacionAcceso>(`/api/autorizaciones-acceso/${id}/${accion}`, json('POST', { motivo }))
-/** Reemplaza las zonas permitidas de una solicitud pendiente. */
-export const editarZonasAutorizacionAcceso = (id: number, zonas: number[]) =>
-  apiFetch<AutorizacionAcceso>(`/api/autorizaciones-acceso/${id}/zonas`, json('PUT', { zonas }))

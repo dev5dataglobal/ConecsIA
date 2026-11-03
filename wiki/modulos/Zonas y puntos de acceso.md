@@ -1,13 +1,18 @@
 ---
 tipo: modulo
-estado: implementado
+estado: obsoleto
 fuentes: [PRD v0.1]
 relacionados: [RF-05, HU-015, ADR-027, D-34, D-43, D-44, D-45]
-actualizado: 2026-10-28
+actualizado: 2026-10-31
 tags: [conecsia]
 ---
 
 # Zonas y puntos de acceso
+
+> [!warning] Contradicción / cambio 2026-10-31 — [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]]
+> Antes (ADR-027, 2026-10-28): Sede → Zona → Punto de acceso; autorizaciones restringibles por zona (`autorizacion_zona`, `autorizaciones.exige_zonas`).
+> Ahora (solicitud del usuario 2026-10-31, **Implementado**): se retiran las zonas de acceso. El punto de acceso pertenece directamente a la sede y puede marcarse común de la zona empresarial; la autorización vale en toda su sede. El contenido siguiente se conserva como historia.
+> Página vigente: [[Puntos de acceso]].
 
 Estructura: Organización → [[Sede]] (ubicación) → [[Zona y punto de acceso|Zona]] → Punto de acceso. Modelo en [[ADR-027 Punto de acceso como entidad dentro de la zona]].
 
