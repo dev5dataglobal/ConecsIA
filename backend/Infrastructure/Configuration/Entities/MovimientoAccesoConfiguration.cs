@@ -31,6 +31,9 @@ public sealed class MovimientoAccesoConfiguration : EntityConfigurationBase<Movi
         builder.HasOne<PuntoAcceso>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede, x.IdPuntoAcceso }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede, x.IdPuntoAcceso }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Sede>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdSede }).HasForeignKey(x => new { x.IdOrganizacion, x.IdSede }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Visita>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdVisita }).HasForeignKey(x => new { x.IdOrganizacion, x.IdVisita }).OnDelete(DeleteBehavior.Restrict);
+        // ADR-029: el movimiento (incluidos los intentos denegados) se vincula al registro de acceso.
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdAutorizacion });
+        builder.HasOne<Autorizacion>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).HasForeignKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Usuario>().WithMany().HasForeignKey(x => x.IdUsuarioRegistra).OnDelete(DeleteBehavior.Restrict);
     }
 }

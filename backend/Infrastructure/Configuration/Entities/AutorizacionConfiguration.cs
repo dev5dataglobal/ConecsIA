@@ -34,6 +34,13 @@ public sealed class AutorizacionConfiguration : EntityConfigurationBase<Autoriza
         builder.HasOne<Usuario>().WithMany().HasForeignKey(x => x.IdUsuarioDecide).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Usuario>().WithMany().HasForeignKey(x => x.IdUsuarioCrea).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(x => new { x.IdOrganizacion, x.Estado });
+        // ADR-029: categoría configurable y origen del registro. id_categoria_acceso es nulo solo mientras el código anterior siga creando autorizaciones (Fase 3 lo exige).
+        builder.Property(x => x.Origen).HasMaxLength(20).HasDefaultValue("Manual");
+        builder.ToTable(t => t.HasCheckConstraint("ck_autorizacion_origen", "origen IN ('Manual','Politica','Migracion')"));
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdCategoriaAcceso });
+        builder.HasIndex(x => new { x.IdOrganizacion, x.IdPersona, x.FechaInicio });
+        builder.HasOne<CategoriaAcceso>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdCategoriaAcceso }).HasForeignKey(x => new { x.IdOrganizacion, x.IdCategoriaAcceso }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Visita>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdVisita }).HasForeignKey(x => new { x.IdOrganizacion, x.IdVisitaOrigen }).OnDelete(DeleteBehavior.Restrict);
         builder.ToTable(t => t.HasCheckConstraint("ck_autorizacion_emisor_alcance", "(tipo_emisor = 'Empresa' AND id_zona_empresarial_emisora IS NULL AND alcance = 'Privado') OR (tipo_emisor = 'ZonaEmpresarial' AND id_zona_empresarial_emisora IS NOT NULL AND alcance = 'Comun')"));
         builder.HasOne<ZonaEmpresarial>().WithMany().HasForeignKey(x => x.IdZonaEmpresarialEmisora).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Persona>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdPersona }).HasForeignKey(x => new { x.IdOrganizacion, x.IdPersona }).OnDelete(DeleteBehavior.Restrict);

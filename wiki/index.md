@@ -41,6 +41,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-027 Punto de acceso como entidad dentro de la zona]] — Obsoleta 2026-10-31 (reemplazada por ADR-028)
 - [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] — Implementado 2026-10-31: zona empresarial desde la sede, sin vínculo con organizaciones; puntos de acceso directos en la sede; migración con bitácora de pendientes
 - [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] — Implementado 2026-10-26: ciclo propio Pendiente/Aprobada/Rechazada/Revocada, separado de la autorización de la persona, historial inmutable
+- [[ADR-029 Registro de acceso unificado]] — Propuesta 2026-11-03: `autorizacion` como registro de acceso, `visita` como episodio
 - [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
@@ -69,6 +70,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 ## Arquitectura
 - [[Stack y arquitectura]] — confirmado vs propuesto
 - [[Seguridad y auditoría]] — controles transversales
+- [[Modelo unificado de control de accesos]] — Propuesta 2026-11-03: registro de acceso, categorías, horarios, ER
 - [[Sistema visual]] — paleta oficial, tokens Tailwind y patrones del mockup de Figma
 
 ## Módulos
@@ -93,6 +95,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[PRD v0.1]] — PRD funcional y técnico (original en `fuentes/raw/`)
 
 ## Consultas
+- [[Unificación de Visitas y Control de accesos - análisis inicial]] — estado actual, supuestos y D-49..D-55 (2026-11-03)
 - [[Revisión del backlog v1]] — inconsistencias y bloqueos detectados al crear el backlog
 - [[Revisión del modelo ER db.md]] — 35 adaptaciones propuestas al diagrama ER frente a PRD y ADR
 - [[Opciones para decidir D-03]] — opciones de identidad y sesión (D-03a–f) con la recomendación del agente

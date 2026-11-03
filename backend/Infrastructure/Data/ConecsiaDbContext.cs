@@ -46,6 +46,9 @@ public sealed class ConecsiaDbContext(
     public DbSet<TipoDispositivo> TiposDispositivo => Set<TipoDispositivo>();
     public DbSet<Dispositivo> Dispositivos => Set<Dispositivo>();
     public DbSet<Autorizacion> Autorizaciones => Set<Autorizacion>();
+    public DbSet<PlantillaCategoriaAcceso> PlantillasCategoriaAcceso => Set<PlantillaCategoriaAcceso>();
+    public DbSet<CategoriaAcceso> CategoriasAcceso => Set<CategoriaAcceso>();
+    public DbSet<HorarioBase> HorariosBase => Set<HorarioBase>();
     public DbSet<AutorizacionTransicion> AutorizacionesTransiciones => Set<AutorizacionTransicion>();
     public DbSet<AutorizacionHorario> AutorizacionesHorarios => Set<AutorizacionHorario>();
     public DbSet<AutorizacionVehiculo> AutorizacionesVehiculos => Set<AutorizacionVehiculo>();

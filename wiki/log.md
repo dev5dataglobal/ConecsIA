@@ -641,3 +641,21 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Se copió con `pg_dump`/`pg_restore` (la base local solo se leyó): 2 usuarios, 2 organizaciones, 1 persona. `migraciones` aplicó a la copia la migración de ADR-028.
 - Verificado: login por nginx con usuario real y clave errónea → 401, sin errores en la API. No verificado: login correcto (no se conocen las contraseñas).
 - Procedimiento documentado en `DOCKER.md`. Páginas: [[Estado de implementación]].
+
+## [2026-11-03] consulta | Unificación de Visitas y Control de accesos: análisis inicial
+- Revisado el estado actual: `autorizacion` ya es el núcleo del permiso; la duplicidad está en UI/endpoints y en que la entrada depende de `visita`.
+- Nueva página [[Unificación de Visitas y Control de accesos - análisis inicial]] con supuestos (Propuesta).
+- Nuevas decisiones D-49..D-55 en [[Decisiones pendientes]]; `index.md` actualizado.
+- Sin código; se espera confirmación del usuario antes del entregable 1.
+
+## [2026-11-03] decision | Entregable 1: modelo unificado de control de accesos
+- D-49 aprobada por el usuario: `visita` se conserva como episodio.
+- Nuevas páginas [[Modelo unificado de control de accesos]] (cambios por tabla, ER Mermaid, estados, plantillas por tipo, migración) y [[ADR-029 Registro de acceso unificado]] (Propuesta).
+- D-50..D-55 siguen pendientes; el modelo aplica supuestos marcados como Propuesta.
+- Sin código; se espera confirmación antes de la Fase 2 (migraciones).
+
+## [2026-11-03] implementacion | Fase 2: migración RegistroAccesoUnificado (ADR-029)
+- Entidades `CategoriaAcceso`, `PlantillaCategoriaAcceso`, `HorarioBase`; campos nuevos en `Autorizacion`, `Organizacion`, `Auditoria`; FK movimiento → autorización.
+- Migración `20261103163234_RegistroAccesoUnificado` con traslado de visitas sin autorización y bitácora `migracion_accesos_adr029`.
+- Verificado en copia desechable (Up/Down/Up) y `dotnet test` 104/104; no aplicada a `conecsia`.
+- Páginas: [[Modelo unificado de control de accesos]]. Restricciones obligatorias diferidas a Fase 3.

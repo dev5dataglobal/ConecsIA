@@ -10,6 +10,7 @@ public sealed class OrganizacionConfiguration : EntityConfigurationBase<Organiza
     {
         ConfigureDefaults(builder);
         builder.HasKey(x => x.IdOrganizacion);
+        builder.Property(x => x.ZonaHoraria).HasMaxLength(64).HasDefaultValue("America/Bogota");
         builder.HasOne<TipoOrganizacion>().WithMany().HasForeignKey(x => x.IdTipoOrganizacion).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Plan>().WithMany().HasForeignKey(x => x.IdPlan).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Archivo>().WithMany().HasForeignKey(x => x.IdArchivoLogo).OnDelete(DeleteBehavior.Restrict);

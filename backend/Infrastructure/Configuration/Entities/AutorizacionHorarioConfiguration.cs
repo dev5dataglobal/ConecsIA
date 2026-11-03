@@ -17,6 +17,7 @@ public sealed class AutorizacionHorarioConfiguration : EntityConfigurationBase<A
             table.HasCheckConstraint("ck_autorizacion_horario_horas", "hora_fin > hora_inicio");
         });
         builder.HasOne<Autorizacion>().WithMany().HasPrincipalKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).HasForeignKey(x => new { x.IdOrganizacion, x.IdAutorizacion }).OnDelete(DeleteBehavior.Restrict);
-        builder.HasIndex(x => new { x.IdAutorizacion, x.DiaSemana }).IsUnique();
+        // ADR-029: varias franjas por día; el solapamiento lo valida el servicio.
+        builder.HasIndex(x => new { x.IdAutorizacion, x.DiaSemana });
     }
 }
