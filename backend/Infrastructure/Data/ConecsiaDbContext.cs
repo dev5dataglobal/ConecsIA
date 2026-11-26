@@ -60,8 +60,7 @@ public sealed class ConecsiaDbContext(
     public DbSet<Visita> Visitas => Set<Visita>();
     public DbSet<Permanencia> Permanencias => Set<Permanencia>();
     public DbSet<MovimientoAcceso> MovimientosAcceso => Set<MovimientoAcceso>();
-    public DbSet<MovimientoVehiculo> MovimientosVehiculo => Set<MovimientoVehiculo>();
-    public DbSet<MovimientoDispositivo> MovimientosDispositivo => Set<MovimientoDispositivo>();
+    public DbSet<MovimientoObjeto> MovimientosObjeto => Set<MovimientoObjeto>();
     public DbSet<SolicitudIdempotente> SolicitudesIdempotentes => Set<SolicitudIdempotente>();
     public DbSet<Alerta> Alertas => Set<Alerta>();
     public DbSet<AlertaTransicion> AlertasTransiciones => Set<AlertaTransicion>();

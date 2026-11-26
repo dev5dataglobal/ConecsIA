@@ -3,7 +3,7 @@ tipo: modulo
 estado: verificado
 fuentes: [PRD v0.1]
 relacionados: [HU-013, HU-005, HU-007, HU-008, RF-03, RN-01, RN-08, RN-10, CA-01, CA-02, CA-03, ADR-004, ADR-005, ADR-014, ADR-020, ADR-022, D-03, D-06, D-20]
-actualizado: 2026-10-26
+actualizado: 2026-11-11
 tags: [conecsia, modulo, f1, vertical]
 ---
 
@@ -85,3 +85,10 @@ Ver [[Estado de implementación#Verificación de la primera vertical (2026-10-17
 - **Verificado:** migración aplicada a la base local; prueba `El_catalogo_DIVIPOLA_queda_cargado_sin_codigos_repetidos`; 61/61 pruebas.
 - **Implementado 2026-10-26:** el selector de ciudad tiene búsqueda (`Selector` con `buscable`).
 - **Pendiente:** Las ciudades que se crearon a mano antes (sin `codigo_dane`) no se fusionan con las del catálogo.
+
+## Responsables y autorizadores por destino (RF-04, HU-014) — 2026-11-11 (Implementado y Verificado)
+- En Sedes y áreas › Áreas, cada tarjeta tiene **Responsables y autorizadores**: designar un usuario activo (opcionalmente como autorizador), quitar o poner la marca de autorizador, **retirar sin borrar** y volver a designar. Cada fila muestra quién y cuándo la asignó o cambió.
+- **Efecto (Implementado, D-36):** con responsables activos, solo ellos pueden ser anfitriones de los accesos del destino. Sin responsables, cualquier usuario activo. Retirar no modifica los registros ni las visitas existentes.
+- **Marca de autorizador:** se registra y se muestra, pero **no concede decidir** (D-04, D-56).
+- API: `GET/POST /api/areas/{id}/responsables`, `PUT .../{idMembresia}`, `POST .../{idMembresia}/retirar`, `GET /api/areas/miembros`. Permisos: Sedes·Consultar para ver; Sedes·Editar para cambiar; alcance por sede de la membresía. Cada cambio queda auditado (`AsignarResponsable`, `CambiarResponsable`, `RetirarResponsable`, `ReactivarResponsable`).
+- BD: `area_responsable` con FK compuestas a `area` y `membresia_organizacion` y la trazabilidad de la asignación (migración `20261111201544`).

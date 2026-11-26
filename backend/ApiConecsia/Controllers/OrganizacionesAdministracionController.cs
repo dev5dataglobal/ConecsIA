@@ -76,6 +76,7 @@ public sealed class OrganizacionesAdministracionController(
         using (Db.PermitirEscrituraEn([entity.IdOrganizacion]))
         {
             await ReglasPersona.SembrarTiposPersonaAsync(Db, entity.IdOrganizacion, ct);
+            await ReglasAcceso.SembrarCategoriasAsync(Db, entity.IdOrganizacion, entity.IdTipoOrganizacion, ct);
             Auditar(entity.IdOrganizacion, "Crear", "Organizacion", entity.IdOrganizacion.ToString(), null, request);
             await Db.SaveChangesAsync(ct);
         }

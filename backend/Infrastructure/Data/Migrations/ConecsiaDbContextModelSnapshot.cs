@@ -315,11 +315,35 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("activo");
 
+                    b.Property<DateTime?>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTime>("AsignadoEn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("asignado_en")
+                        .HasDefaultValueSql("now()");
+
                     b.Property<bool>("EsAutorizador")
                         .HasColumnType("boolean")
                         .HasColumnName("es_autorizador");
 
+                    b.Property<int?>("IdUsuarioActualiza")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_actualiza");
+
+                    b.Property<int?>("IdUsuarioAsigna")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_usuario_asigna");
+
                     b.HasKey("IdOrganizacion", "IdArea", "IdMembresia");
+
+                    b.HasIndex("IdUsuarioActualiza");
+
+                    b.HasIndex("IdUsuarioAsigna");
+
+                    b.HasIndex("IdOrganizacion", "IdMembresia");
 
                     b.ToTable("area_responsable", "public");
                 });
@@ -1498,18 +1522,34 @@ namespace Infrastructure.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoDispositivo", b =>
+            modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoObjeto", b =>
                 {
-                    b.Property<long>("IdMovimientoDispositivo")
+                    b.Property<long>("IdMovimientoObjeto")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id_movimiento_dispositivo");
+                        .HasColumnName("id_movimiento_objeto");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdMovimientoDispositivo"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdMovimientoObjeto"));
 
-                    b.Property<int>("IdDispositivo")
+                    b.Property<int>("IdAutorizacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_autorizacion");
+
+                    b.Property<int>("IdAutorizacionObjeto")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_autorizacion_objeto");
+
+                    b.Property<int?>("IdDispositivo")
                         .HasColumnType("integer")
                         .HasColumnName("id_dispositivo");
+
+                    b.Property<long?>("IdMovimientoAcceso")
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_movimiento_acceso");
+
+                    b.Property<long?>("IdMovimientoEntrada")
+                        .HasColumnType("bigint")
+                        .HasColumnName("id_movimiento_entrada");
 
                     b.Property<int>("IdOrganizacion")
                         .HasColumnType("integer")
@@ -1519,6 +1559,10 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_persona_responsable");
 
+                    b.Property<int>("IdPuntoAcceso")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_punto_acceso");
+
                     b.Property<int>("IdSede")
                         .HasColumnType("integer")
                         .HasColumnName("id_sede");
@@ -1527,17 +1571,17 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id_usuario_registra");
 
+                    b.Property<int?>("IdVehiculo")
+                        .HasColumnType("integer")
+                        .HasColumnName("id_vehiculo");
+
                     b.Property<int>("IdVisita")
                         .HasColumnType("integer")
                         .HasColumnName("id_visita");
 
-                    b.Property<int>("IdZonaPuntoAcceso")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_zona_punto_acceso");
-
                     b.Property<string>("Observacion")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("observacion");
 
                     b.Property<DateTime>("OcurridoEn")
@@ -1546,53 +1590,50 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("TipoMovimiento")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("tipo_movimiento");
 
-                    b.HasKey("IdMovimientoDispositivo");
-
-                    b.ToTable("movimiento_dispositivo", "public");
-                });
-
-            modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoVehiculo", b =>
-                {
-                    b.Property<long>("IdMovimientoVehiculo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id_movimiento_vehiculo");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("IdMovimientoVehiculo"));
-
-                    b.Property<long>("IdMovimiento")
-                        .HasColumnType("bigint")
-                        .HasColumnName("id_movimiento");
-
-                    b.Property<int>("IdOrganizacion")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_organizacion");
-
-                    b.Property<int>("IdVehiculo")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_vehiculo");
-
-                    b.Property<int>("IdVisita")
-                        .HasColumnType("integer")
-                        .HasColumnName("id_visita");
-
-                    b.Property<DateTime>("OcurridoEn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ocurrido_en");
-
-                    b.Property<string>("TipoMovimiento")
+                    b.Property<string>("TipoObjeto")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("tipo_movimiento");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("tipo_objeto");
 
-                    b.HasKey("IdMovimientoVehiculo");
+                    b.HasKey("IdMovimientoObjeto");
 
-                    b.ToTable("movimiento_vehiculo", "public");
+                    b.HasIndex("IdUsuarioRegistra");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacion");
+
+                    b.HasIndex("IdOrganizacion", "IdAutorizacionObjeto");
+
+                    b.HasIndex("IdOrganizacion", "IdMovimientoAcceso");
+
+                    b.HasIndex("IdOrganizacion", "IdMovimientoEntrada")
+                        .IsUnique()
+                        .HasFilter("id_movimiento_entrada IS NOT NULL");
+
+                    b.HasIndex("IdOrganizacion", "IdPersonaResponsable");
+
+                    b.HasIndex("IdOrganizacion", "IdVisita");
+
+                    b.HasIndex("IdOrganizacion", "IdDispositivo", "OcurridoEn");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "IdPuntoAcceso");
+
+                    b.HasIndex("IdOrganizacion", "IdSede", "OcurridoEn");
+
+                    b.HasIndex("IdOrganizacion", "IdVehiculo", "OcurridoEn");
+
+                    b.ToTable("movimiento_objeto", "public", t =>
+                        {
+                            t.HasCheckConstraint("ck_movimiento_objeto_objeto", "(tipo_objeto = 'Vehiculo' AND id_vehiculo IS NOT NULL AND id_dispositivo IS NULL) OR (tipo_objeto = 'Dispositivo' AND id_dispositivo IS NOT NULL AND id_vehiculo IS NULL)");
+
+                            t.HasCheckConstraint("ck_movimiento_objeto_salida", "(tipo_movimiento = 'Salida') = (id_movimiento_entrada IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_movimiento_objeto_tipo", "tipo_movimiento IN ('Entrada','Salida')");
+                        });
                 });
 
             modelBuilder.Entity("ConecsIA.Domain.Entities.Notificacion", b =>
@@ -3352,6 +3393,39 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ConecsIA.Domain.Entities.AreaResponsable", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioActualiza")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioAsigna")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Area", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdArea")
+                        .HasPrincipalKey("IdOrganizacion", "IdArea")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.MembresiaOrganizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMembresia")
+                        .HasPrincipalKey("IdOrganizacion", "IdMembresia")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ConecsIA.Domain.Entities.Autorizacion", b =>
                 {
                     b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
@@ -3627,6 +3701,80 @@ namespace Infrastructure.Data.Migrations
                         .HasForeignKey("IdOrganizacion", "IdVisita")
                         .HasPrincipalKey("IdOrganizacion", "IdVisita")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.PuntoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdSede", "IdPuntoAcceso")
+                        .HasPrincipalKey("IdOrganizacion", "IdSede", "IdPuntoAcceso")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ConecsIA.Domain.Entities.MovimientoObjeto", b =>
+                {
+                    b.HasOne("ConecsIA.Domain.Entities.Organizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuarioRegistra")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Autorizacion", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacion")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacion")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.AutorizacionObjeto", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdAutorizacionObjeto")
+                        .HasPrincipalKey("IdOrganizacion", "IdAutorizacionObjeto")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Dispositivo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdDispositivo")
+                        .HasPrincipalKey("IdOrganizacion", "IdDispositivo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.MovimientoAcceso", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMovimientoAcceso")
+                        .HasPrincipalKey("IdOrganizacion", "IdMovimiento")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.MovimientoObjeto", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdMovimientoEntrada")
+                        .HasPrincipalKey("IdOrganizacion", "IdMovimientoObjeto")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Persona", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdPersonaResponsable")
+                        .HasPrincipalKey("IdOrganizacion", "IdPersona")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ConecsIA.Domain.Entities.Vehiculo", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVehiculo")
+                        .HasPrincipalKey("IdOrganizacion", "IdVehiculo")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ConecsIA.Domain.Entities.Visita", null)
+                        .WithMany()
+                        .HasForeignKey("IdOrganizacion", "IdVisita")
+                        .HasPrincipalKey("IdOrganizacion", "IdVisita")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ConecsIA.Domain.Entities.PuntoAcceso", null)
                         .WithMany()

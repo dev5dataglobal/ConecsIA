@@ -40,6 +40,8 @@ Decisiones técnicas extraídas de las decisiones implícitas del [[PRD v0.1]] (
 | [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] | dominio | **Implementado 2026-10-26** (solicitud del usuario; modelo separado del PRD por validar) | D-31, D-32, D-33 |
 | [[ADR-027 Punto de acceso como entidad dentro de la zona]] | persistencia | **Obsoleta 2026-10-31** (reemplazada por ADR-028) | — |
 | [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] | persistencia | **Implementado 2026-10-31** (solicitud del usuario) | D-43, D-48 |
+| [[ADR-029 Registro de acceso unificado]] | dominio | **Implementado 2026-11-04** (solicitud del usuario; D-49 aprobada) | D-50..D-55 |
+| [[ADR-030 Movimientos de vehículos y dispositivos]] | dominio | **Implementado 2026-11-11** (solicitud del usuario; diseño del agente por revisar) | D-10, D-54, D-57 |
 
 ## Origen de cada propuesta
 - **Propuesta explícita del PRD:** ADR-001, 002, 003, 004, 007, 008, 009, 010, 011, 012, 013, 014, 019 (el PRD ya las enuncia; aquí se concretan).

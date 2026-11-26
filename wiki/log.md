@@ -665,3 +665,80 @@ Solo se agregan entradas al final. Formato: `## [AAAA-MM-DD] tipo | título`.
 - Se dejan de versionar los artefactos generados (`**/bin`, `**/obj`, `frontend/dist`, `frontend/node_modules`); ya estaban en `.gitignore`. El fast-forward de `develop` los borró del disco: se regeneran con `dotnet build` y `npm run build`.
 - Pendiente (decisión del usuario): `appsettings.Development.json` conserva la contraseña de PostgreSQL en texto plano y ya figura en el historial desde `43ced64`; conviene rotarla y moverla a `appsettings.Local.json` o a user-secrets.
 - Sin cambios funcionales en esta entrada; no se volvieron a ejecutar pruebas.
+
+## [2026-11-03] consulta | Levantar Docker en otro PC
+- `DOCKER.md`: nueva sección "Levantar en otro PC" (clonar, `.env`, `up --build`, mover datos con `pg_dump`/`pg_restore`).
+- Recordatorio: los archivos de Docker aún no están commiteados; otro PC no los tendrá hasta subirlos.
+
+## [2026-11-04] consulta | Resumen de la implementación Docker
+- Resumen para el usuario de servicios, archivos y flujo; sin cambios en la wiki.
+
+## [2026-11-04] implementacion | Fase 3: backend del registro de acceso unificado
+- `/api/accesos` (registro, decisiones, horario, objetos, entrada/salida idempotentes, presencia, historial CSV, bitácora) y `/api/accesos/configuracion` (categorías, horario base, parámetros).
+- FluentValidation incorporado (ADR-003) con filtro global; OpenAPI con comentarios XML; `agente_usuario` en auditoría; siembra de categorías al crear organizaciones.
+- `AccesosTests` (9) nuevas; detalle y permisos en [[Control de accesos]].
+- Endpoints antiguos activos hasta la Fase 4; D-50..D-55 siguen pendientes.
+
+## [2026-11-04] implementacion | Fase 4: frontend del control de accesos unificado
+- Nueva pantalla única en `features/control-accesos` (registros, personas dentro, historial con CSV, detalle con bitácora); retiradas las pantallas de Visitas y Autorizaciones y sus entradas de menú.
+- Verificado en navegador sobre `conecsia_verificacion` (crear → aprobar → entrada → salida → historial); vitest 42/44 (2 fallos de tiempos ya conocidos en Administración).
+- Nueva semilla `backend/scripts/seed-verificacion-accesos.sql`. Páginas: [[Control de accesos]].
+- Pendiente: interfaz de configuración y retiro de endpoints antiguos en la Fase 5.
+
+## [2026-11-04] implementacion | Fase 5: pruebas críticas y retiro de endpoints antiguos
+- Retirados los controladores de Visitas, Autorizaciones de acceso y de objetos con sus pruebas; nueva migración `RestriccionesRegistroAccesoUnificado` (restricciones NOT VALID y menú).
+- Nuevas pruebas de concurrencia, alcance, permisos, restricciones y reglas puras en `AccesosTests`; nueva `MigracionAccesosTests` (verde).
+- Página actualizada: [[Control de accesos]]. Suites completas backend/frontend en ejecución al registrar esta entrada.
+
+## [2026-11-04] revision | Fase 5: resultado de las suites
+- Backend: 89/91 en la corrida completa; las 2 fallas eran `PuntosAccesoTests` usando endpoints retirados: portadas a `/api/accesos`, 7/7.
+- Frontend: 42/44 (las 2 de Administración sensibles a tiempos, sin cambio).
+- [[Control de accesos]] actualizado.
+
+## [2026-11-05] decision | Fase 6: documentación de la unificación
+- [[ADR-029 Registro de acceso unificado]] pasa a Implementado con tabla de decisiones de diseño.
+- Nuevas: [[Configuración del control de accesos por tipo de organización]], [[Guía de migración al control de accesos unificado]].
+- Actualizadas: [[Estado de implementación]], [[Visitas]] (obsoleto), [[Autorizaciones de vehículos y dispositivos]], [[Visita]], [[Decisiones pendientes]] (estado de D-50..D-55), `index.md`.
+- Pendiente: aplicar migraciones a `conecsia`, commit, pantalla de configuración y D-50..D-55.
+
+## [2026-11-10] consulta | Brechas de requisitos frente al PRD y el plan de trabajo
+- Contraste de PRD v0.1, PLAN-DE-TRABAJO, tablero y código de `develop`. Nueva página [[Brechas de requisitos frente al PRD 2026-11-10]].
+- No implementados: QR (RF-15), invitación (RF-12), alertas (RF-21), correo de negocio y outbox (RF-22), Excel/PDF (RF-24). Parciales: tiempo real sin SignalR, dashboard incompleto (posible defecto con el filtro `"Activa"`), movimientos de vehículos y equipos, responsables por área, alcance por sede en la UI, consulta de auditoría y configuración sectorial.
+- Riesgo: unos 30 controladores scaffold con CRUD/DELETE; `AutorizacionController` se salta las reglas de ADR-029 y `AuditoriaController` expone DELETE.
+- Tablero y plan desactualizados (2026-10-26): se añadió un aviso en [[tablero-scrum]]. Sigue abierta la D-02 (alcance del MVP).
+
+## [2026-11-10] implementacion | Retiro de controladores CRUD genéricos (scaffold)
+- Se retiraron 35 controladores `api/[controller]`. `UsuarioController` queda solo con `/me`, porque su CRUD devolvía `PasswordHash`. Cubre el hallazgo de [[Brechas de requisitos frente al PRD 2026-11-10]].
+- Nueva prueba `ControladoresGenericosRetiradosTests` (falla antes del cambio y pasa después). `SedesAreasTests` se ajustó para `/api/Ciudad` 404.
+- Páginas: [[Estado de implementación]] y la consulta de brechas (hallazgo marcado como resuelto).
+- Sin commit. Suite backend 93/93 en verde; persiste el fallo de limpieza de clase conocido en `ContactoTests`.
+
+## [2026-11-11] implementacion | Portería de vehículos y dispositivos (ADR-030) y responsables por destino (HU-014)
+- Nuevos endpoints de entrada y salida de objetos y de objetos dentro, y CRUD sin borrado de responsables y autorizadores por destino. Migración `20261111201544_MovimientosObjetoYResponsablesArea` (`movimiento_objeto` de solo inserción; FK y trazabilidad en `area_responsable`).
+- Pruebas: backend 107/107 (14 nuevas); frontend: 5 nuevas, y las 2 previas sensibles a tiempos pasan aisladas. Verificado en navegador sobre una copia desechable.
+- Páginas: [[ADR-030 Movimientos de vehículos y dispositivos]] (nueva), [[Registro de ADR]] (también se añadió ADR-029, que faltaba), [[Decisiones pendientes]] (D-56, D-57; punto 5 de D-48 resuelto), [[Estado de implementación]], [[Control de accesos]], [[Sedes]], [[Autorizaciones de vehículos y dispositivos]], [[Guía de migración al control de accesos unificado]], [[tablero-scrum]] (HU-014, HU-048 y HU-050 en revisión), [[Brechas de requisitos frente al PRD 2026-11-10]], [[index]].
+- Pendientes: D-10, D-54, D-56, D-57; historial y reporte por vehículo o dispositivo; sin commit.
+
+## [2026-11-11] revision | Incidente: migraciones aplicadas a `conecsia` sin autorización
+- `dotnet ef database update` aplicó ADR-028 (no reversible), ADR-029, sus restricciones y ADR-030 a `conecsia`, porque la fábrica de diseño prioriza `appsettings.Local.json` sobre `CONECSIA_CONNECTION_STRING`. No había respaldo previo.
+- Comprobaciones de la guía en verde (0 visitas sin registro, 0 registros sin categoría, bitácoras sin pendientes). Se dejó un aviso de contradicción en la [[Guía de migración al control de accesos unificado]].
+- Pendiente la decisión del usuario: conservar o revertir. Regla: usar siempre `--connection`.
+
+## [2026-11-13] revision | Reversión de las migraciones aplicadas por error a `conecsia`
+- A pedido del usuario, `conecsia` volvió a `20261030132009_SolicitudesContacto`. Primero se respaldó la base (copia y `pg_dump`) y se ensayó todo sobre copias.
+- `Down` por EF de ADR-030, de las restricciones y de ADR-029. ADR-028 no tiene `Down`: se reconstruyó desde su bitácora y la auditoría sobre una base nueva con el esquema exacto de `20261030132009`, y luego se hizo el intercambio de bases.
+- Verificación: 49 tablas idénticas fila por fila y 9 con diferencias esperadas. La auditoría inmutable conserva `Migrar` y ahora registra `RevertirMigraciones`.
+- Bases que quedan: `conecsia_respaldo_20261113_postincidente` y `conecsia_reemplazada_20261113` (estado posincidente); se pueden borrar cuando el usuario lo indique. La copia de ensayo ya se eliminó.
+- Páginas: [[Estado de implementación]], [[Guía de migración al control de accesos unificado]]. Pendiente: aplicar las migraciones a `conecsia` de forma controlada cuando se publique el código de ADR-029/030.
+
+## [2026-11-13] consulta | Evaluación de la auditoría del Director Técnico (análisis funcional del 2026-11-03)
+- Se contrastó la auditoría del documento de Notion (28-oct) con [[PRD v0.1]], la wiki y el código de `develop`. Su modelo ER equivale a `db.md` v1, ya revisado en [[Revisión del modelo ER db.md]].
+- Resultado: de 34 hallazgos, 16 ya están corregidos, 5 están solo modelados (QR, correo a personas sin cuenta, plantillas, alertas, tiempo real), 9 son válidos y abiertos, y 4 no aplican porque el PRD los excluye (IA/OCR/lenguaje natural, SAML/intranet, SMS/WhatsApp, SQL Server).
+- Válidos y abiertos: Ley 1581 (D-14/D-47/D-55), CI inexistente pese a ADR-017, RLS (D-22), requisitos no funcionales sin cifras (D-15), `restriccion_acceso` sin RF y sin uso en la validación de entrada (sin D-xx), superadministrador provisional (D-23), configuración por vertical y `organizacion_modulo` sin aplicar (por confirmar), contingencia en portería, capacidad del equipo.
+- Por instrucción del usuario («evaluar, no cambiar nada») solo se agrega esta entrada: no se modificaron páginas, código ni base de datos. Queda pendiente archivar la evaluación en `consultas/` si el usuario lo aprueba.
+
+## [2026-11-24] revision | Auditoría de la solicitud «Unificar Visitas y Control de accesos» contra ADR-029
+- La unificación ya está implementada (ADR-029, 2026-11-04): un solo registro (`autorizacion`), un formulario, `/api/accesos`, filtro por categoría (= Tipo de Acceso), `visita` conservada como episodio, migración aditiva sin pérdida, pantallas y endpoints de Visitas retirados. No se rehízo.
+- Brecha cerrada: la lista de registros muestra la categoría como etiqueta (`ca-categoria`) para distinguir visitas de otros accesos (`ControlAccesosPage.tsx`, `controlAccesos.css`).
+- Brecha abierta (sin tocar): `categoria_acceso.exige_anfitrion` se guarda pero el anfitrión es siempre obligatorio (columna `id_membresia_responsable` NOT NULL, validado en frontend y backend). Hacerlo opcional por categoría cambia el modelo y es política; queda como pendiente a decidir.
+- Verificado: backend 107/107, vitest control-accesos + dashboard 10/10, `tsc` limpio. Páginas: [[Control de accesos]] sin cambios de fondo; sin commit.

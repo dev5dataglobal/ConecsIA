@@ -51,7 +51,8 @@ public sealed class SedesAreasTests(ApiFactory api) : IClassFixture<ApiFactory>,
     {
         var admin = await api.ClienteAutenticadoAsync(Correo("admin"));
 
-        Assert.Equal(HttpStatusCode.Forbidden, (await admin.GetAsync("/api/Ciudad")).StatusCode);
+        // El CRUD genérico /api/Ciudad se retiró (2026-11-10); el catálogo se lee desde Sedes.
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync("/api/Ciudad")).StatusCode);
         var ciudades = await admin.GetFromJsonAsync<JsonElement>("/api/sedes/ciudades");
         Assert.Contains(ciudades.EnumerateArray(), c => c.GetProperty("idCiudad").GetInt32() == _ciudad
             && c.GetProperty("zonaHoraria").GetString() == "America/Bogota");

@@ -24,3 +24,33 @@
 .au-vigencia[data-vigencia='Consumida'] { color: var(--ui-texto-3); }
 
 @media (max-width: 560px) { .ca-modalidades-opciones { grid-template-columns: minmax(0, 1fr); } }
+
+/* Módulo unificado (ADR-029): franjas por día y objetos del registro. */
+.ca-franjas, .ca-objetos { display: grid; gap: 0.6rem; border: 1px solid var(--ui-borde, rgb(0 0 0 / 0.12)); border-radius: var(--ui-radio); padding: 0.8rem; margin: 0; }
+.ca-franjas[data-ancho='completo'] { grid-column: 1 / -1; }
+.ca-franjas legend, .ca-objetos legend { font-weight: 600; padding: 0 0.3rem; }
+.ca-franjas-lista { display: grid; gap: 0.45rem; list-style: none; margin: 0; padding: 0; }
+.ca-franjas-lista li { display: grid; grid-template-columns: minmax(7rem, 1fr) auto auto auto; gap: 0.45rem; align-items: center; }
+.ca-objeto { display: flex; gap: 0.55rem; align-items: center; }
+.ca-objeto small { color: var(--ui-texto-tenue, inherit); }
+.vi-presencia li { display: flex; gap: 0.6rem; align-items: center; }
+.vi-presencia li > button:first-child { flex: 1; }
+@media (max-width: 600px) {
+  .ca-franjas-lista li { grid-template-columns: 1fr 1fr; }
+  .vi-presencia li { flex-direction: column; align-items: stretch; }
+}
+
+/* Vehículos y dispositivos dentro (ADR-030): su salida se registra aparte de la persona (D-10). */
+.vi-presencia .ca-objetos-presentes { color: var(--ui-violeta); font-weight: 600; }
+.ca-objetos-dentro { display: grid; gap: 0.75rem; margin-top: 1.5rem; }
+.ca-objetos-dentro h2 { margin: 0; font-size: 1rem; }
+.ca-objetos-dentro .vi-presencia li > button:first-child { border-left-color: var(--ui-violeta); }
+.ca-objetos-dentro .vi-presencia li[data-alerta] > button:first-child { border-left-color: var(--ui-rojo, #d23c55); }
+.vi-presencia li:has(.pe-subformulario) { flex-direction: column; align-items: stretch; }
+/* La acción de cada tarjeta (salida) va debajo y conserva el estilo de botón secundario, no el de la tarjeta. */
+.vi-presencia li { flex-direction: column; align-items: stretch; }
+.vi-presencia li > button.ad-boton-sec { display: inline-flex; justify-content: center; width: auto; height: auto; padding: 0.5rem 0.9rem; border: 1px solid #d7d0fa; background: #f5f3ff; color: var(--ui-violeta-2); text-align: center; }
+
+/* Categoría de acceso como etiqueta: distingue visitas, contratistas, etc. en la lista única (ADR-029). */
+.ca-categoria { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--ui-borde, currentColor); font-size: 0.78rem; font-weight: 600; }
+.ca-categoria[data-flujo="Anfitrion"] { background: color-mix(in srgb, var(--ui-primario, #2563eb) 12%, transparent); }

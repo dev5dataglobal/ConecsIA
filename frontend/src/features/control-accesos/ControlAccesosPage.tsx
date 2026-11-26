@@ -1,666 +1,391 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
+import { apiBlob } from '../../shared/api/http'
+import { Icono } from '../../shared/ui/Icono'
 import { Selector } from '../../shared/ui/Selector'
-import { useAcciones } from '../modulos/apiModulos'
-import { consultarDispositivos, consultarPersona, consultarPersonas } from '../personas/apiPersonas'
-import { consultarAutorizacionesObjeto, decidirAutorizacionObjeto, solicitarAutorizacionObjeto, type AutorizacionObjeto, type TipoObjeto } from '../autorizaciones/apiAutorizacionesObjeto'
-import { leerOrganizacionActiva } from '../sesion/sesion'
-import { BotonIcono, BotonNuevo, BotonesFormulario, Buscador, Campo, Dialogo, Estado, EstadoConsulta, Filtro, Marco } from '../administracion/componentes'
+import { BotonIcono, BotonNuevo, Buscador, Campo, Estado, EstadoConsulta, Filtro, Marco } from '../administracion/componentes'
 import { mensajeError, useAviso, useDiferido } from '../administracion/utilidades'
+import { useAcciones } from '../modulos/apiModulos'
+import { leerOrganizacionActiva } from '../sesion/sesion'
 import '../administracion/administracion.css'
 import '../personas/personas.css'
-import '../autorizaciones/autorizaciones.css'
+import './autorizaciones.css'
+import './visitas.css'
 import './controlAccesos.css'
 import {
-  DIAS, MODALIDADES, consultarAutorizacionAcceso, consultarAutorizacionesAcceso, consultarOpcionesAcceso, decidirAutorizacionAcceso,
-  solicitarAutorizacionAcceso, textoModalidad,
-  type AutorizacionAcceso, type AutorizacionAccesoEntrada, type EstadoAutorizacionAcceso, type Modalidad, type OpcionesAutorizacionAcceso, type VigenciaAcceso,
+  MODALIDADES, consultarAccesos, consultarHistorial, consultarObjetosDentro, consultarOpcionesAcceso, consultarPresencia, nuevaClave, registrarMovimientoObjeto,
+  registrarSalida, rutaExportarHistorial, textoModalidad,
+  type FiltrosHistorial, type ObjetoDentro, type OpcionesAcceso, type Presencia,
 } from './apiControlAccesos'
+import { DetalleAcceso, EstadoAccesoEtiqueta } from './DetalleAcceso'
+import { NuevoAcceso } from './NuevoAcceso'
+import { condiciones, duracion, enSede, motivosError } from './formato'
 
 /*
- * Control de accesos: solicitudes de autorización de ingreso de personas ya registradas. Se llega desde «Gestionar
- * acceso» en Personas (?persona=ID). Toda solicitud nace pendiente; aprobar o rechazar exige Autorizaciones · Editar.
- * Estados, vigencia, cupo y permisos los decide el servidor.
+ * Control de accesos unificado (ADR-029): un solo módulo y un solo punto de creación del registro de acceso. Las
+ * «visitas» son una categoría configurable; el episodio de cada ingreso lo crea el servidor al registrar la entrada.
+ * Pestañas: registros (listado, aprobación y detalle), personas dentro (salidas) e historial (filtros y CSV).
  */
 
-const CLAVE = 'autorizaciones-acceso'
-const ESTADOS: { valor: string; texto: string }[] = [
-  { valor: '', texto: 'Todos los estados' },
-  { valor: 'Pendiente', texto: 'Pendientes de aprobación' },
-  { valor: 'Aprobada', texto: 'Aprobadas' },
-  { valor: 'Rechazada', texto: 'Rechazadas' },
+type Pestana = 'registros' | 'presencia' | 'historial'
+const ESTADOS = [
+  { valor: '', texto: 'Todos los estados' }, { valor: 'Pendiente', texto: 'Pendientes de aprobación' }, { valor: 'Aprobada', texto: 'Aprobados' },
+  { valor: 'Rechazada', texto: 'Rechazados' }, { valor: 'Revocada', texto: 'Revocados' }, { valor: 'Cancelada', texto: 'Cancelados' },
 ]
-const TEXTO_ESTADO: Record<EstadoAutorizacionAcceso, string> = {
-  Pendiente: 'Pendiente de aprobación', Aprobada: 'Aprobada', Rechazada: 'Rechazada', Cancelada: 'Cancelada', Revocada: 'Revocada', Vencida: 'Vencida', Agotada: 'Agotada',
-}
-const TEXTO_VIGENCIA: Record<VigenciaAcceso, string> = { Vigente: 'Vigente', Programada: 'Programada', Vencida: 'Vencida', Consumida: 'Consumida', NoAplica: '' }
+const TAMANO = 20
 
-const fecha = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
-const instante = (iso: string) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })
-const hora = (valor: string | null) => valor?.slice(0, 5) ?? ''
-const hoyIso = () => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-/** Resumen legible de las condiciones según la modalidad. */
-export function condiciones(a: Pick<AutorizacionAcceso, 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horaInicio' | 'horaFin' | 'horarios'>) {
-  const franja = a.horaInicio ? ` · ${hora(a.horaInicio)} a ${hora(a.horaFin)}` : ''
-  switch (a.modalidad) {
-    case 'Unica':
-    case 'Diaria':
-      return `${fecha(a.fechaInicio)}${franja || ' · todo el día'}`
-    case 'Temporal':
-      return `${fecha(a.fechaInicio)} ${hora(a.horaInicio)} → ${a.fechaFin ? fecha(a.fechaFin) : ''} ${hora(a.horaFin)}`
-    case 'Recurrente': {
-      const dias = a.horarios.map((h) => DIAS.find((d) => d.valor === h.diaSemana)?.corto ?? '').join(' ')
-      const primero = a.horarios[0]
-      return `${dias}${primero ? ` · ${hora(primero.horaInicio)} a ${hora(primero.horaFin)}` : ''} · desde ${fecha(a.fechaInicio)}${a.fechaFin ? ` hasta ${fecha(a.fechaFin)}` : ''}`
-    }
-    default:
-      return `Desde ${fecha(a.fechaInicio)}, sin fecha final`
-  }
-}
-
-export function EstadoAccesoEtiqueta({ estado, vigencia }: { estado: EstadoAutorizacionAcceso; vigencia?: VigenciaAcceso }) {
-  const extra = vigencia ? TEXTO_VIGENCIA[vigencia] : ''
-  return (
-    <span className="au-estado-grupo">
-      <span className="ad-estatus au-estado" data-estado={estado}>{TEXTO_ESTADO[estado] ?? estado}</span>
-      {extra && <span className="au-vigencia" data-vigencia={vigencia}>{extra}</span>}
-    </span>
-  )
+function useOpciones(habilitado: boolean) {
+  return useQuery({ queryKey: ['accesos', 'opciones', leerOrganizacionActiva()], queryFn: consultarOpcionesAcceso, enabled: habilitado, staleTime: 60_000 })
 }
 
 export function ControlAccesosPage() {
   const acciones = useAcciones('control_accesos')
-  const decisiones = useAcciones('autorizaciones')
-  const [parametros, setParametros] = useSearchParams()
-  const [buscar, setBuscar] = useState('')
-  const [estado, setEstado] = useState('')
-  const [modalidad, setModalidad] = useState('')
-  const [nueva, setNueva] = useState<{ idPersona: number | null } | null>(null)
-  const [detalle, setDetalle] = useState<number | null>(null)
+  const [pestana, setPestana] = useState<Pestana>('registros')
+  const opciones = useOpciones(acciones.consultar)
   const { avisar, aviso } = useAviso()
+  const pestanas = (
+    <div className="ad-tabs" role="tablist" aria-label="Secciones de control de accesos">
+      <button type="button" role="tab" aria-selected={pestana === 'registros'} onClick={() => setPestana('registros')}><Icono nombre="accesos" /> Registros</button>
+      <button type="button" role="tab" aria-selected={pestana === 'presencia'} onClick={() => setPestana('presencia')}><Icono nombre="personas" /> Personas dentro</button>
+      <button type="button" role="tab" aria-selected={pestana === 'historial'} onClick={() => setPestana('historial')}><Icono nombre="reportes" /> Historial</button>
+    </div>
+  )
+  if (!acciones.consultar)
+    return <Marco titulo="Control de accesos" migas="Operación" pestanas={null} descripcion=""><Estado tipo="permiso" texto="Tu perfil no tiene permiso para consultar el control de accesos." /></Marco>
+  return (
+    <>
+      {pestana === 'registros' && <Registros pestanas={pestanas} opciones={opciones.data} avisar={avisar} />}
+      {pestana === 'presencia' && <PersonasDentro pestanas={pestanas} opciones={opciones.data} avisar={avisar} />}
+      {pestana === 'historial' && <Historial pestanas={pestanas} opciones={opciones.data} />}
+      {aviso}
+    </>
+  )
+}
+
+// ---------- Registros ----------
+
+function useFiltro(setPagina: (p: number) => void) {
+  const [valor, asignar] = useState('')
+  return [valor, (v: string) => { asignar(v); setPagina(1) }] as const
+}
+
+function Registros({ pestanas, opciones, avisar }: { pestanas: ReactNode; opciones: OpcionesAcceso | undefined; avisar: (m: string) => void }) {
+  const acciones = useAcciones('control_accesos')
+  const [parametros, setParametros] = useSearchParams()
+  const [pagina, setPagina] = useState(1)
+  // Cambiar un filtro vuelve a la primera página.
+  const [buscar, setBuscar] = useFiltro(setPagina)
+  const [estado, setEstado] = useFiltro(setPagina)
+  const [idCategoria, setIdCategoria] = useFiltro(setPagina)
+  const [modalidad, setModalidad] = useFiltro(setPagina)
+  const [nueva, setNueva] = useState(false)
+  const [detalle, setDetalle] = useState<number | null>(null)
   const texto = useDiferido(buscar)
-  const opciones = useQuery({ queryKey: [CLAVE, 'opciones', leerOrganizacionActiva()], queryFn: consultarOpcionesAcceso, enabled: acciones.consultar, staleTime: 60_000 })
   const lista = useQuery({
-    queryKey: [CLAVE, leerOrganizacionActiva(), texto, estado, modalidad],
-    queryFn: () => consultarAutorizacionesAcceso({ buscar: texto, estado, modalidad }),
-    enabled: acciones.consultar,
+    queryKey: ['accesos', 'lista', leerOrganizacionActiva(), texto, estado, idCategoria, modalidad, pagina],
+    queryFn: () => consultarAccesos({ buscar: texto, estado, idCategoria, modalidad, pagina, tamano: TAMANO }),
     placeholderData: keepPreviousData,
   })
 
-  // «Gestionar acceso» desde Personas (?persona=ID): la solicitud se abre con la persona identificada mientras el
-  // parámetro esté en la URL; al cerrarla o enviarla se quita, así recargar no vuelve a abrirla.
+  // «Gestionar acceso» desde Personas (?persona=ID): el formulario se abre con la persona identificada; al cerrarlo se
+  // quita el parámetro para que recargar no lo vuelva a abrir.
   const personaSolicitada = Number(parametros.get('persona')) || null
-  const solicitud = nueva ?? (personaSolicitada && acciones.anadir ? { idPersona: personaSolicitada } : null)
-  function cerrarSolicitud() {
-    setNueva(null)
+  const formulario = nueva || (personaSolicitada !== null && acciones.anadir)
+  function cerrar() {
+    setNueva(false)
     if (personaSolicitada) setParametros((p) => { p.delete('persona'); return p }, { replace: true })
   }
-
-  const filtrando = Boolean(buscar || estado || modalidad)
+  const datos = lista.data
+  const paginas = datos ? Math.max(1, Math.ceil(datos.total / TAMANO)) : 1
+  const filtrando = Boolean(buscar || estado || idCategoria || modalidad)
 
   return (
-    <Marco titulo="Control de accesos" migas="Operación" pestanas={null}
-      descripcion="Solicitudes de autorización de ingreso de personas registradas. Toda solicitud queda pendiente hasta que un administrador la apruebe; una pendiente o rechazada no habilita el ingreso."
-      accion={acciones.anadir && <BotonNuevo texto="Solicitar acceso" onClick={() => setNueva({ idPersona: null })} />}>
+    <Marco titulo="Control de accesos" migas="Operación" pestanas={pestanas}
+      descripcion="Registro único de accesos de personas, con su categoría, tipo de permanencia, horario, vehículos y dispositivos. Aprobado no es vigente: cada entrada valida fecha, horario y cupo."
+      accion={acciones.anadir && <BotonNuevo texto="Nuevo acceso" onClick={() => setNueva(true)} disabled={!opciones} />}>
       <div className="ad-herramientas au-filtros">
-        <Buscador valor={buscar} onChange={setBuscar} etiqueta="Buscar solicitudes" placeholder="Persona o documento" />
+        <Buscador valor={buscar} onChange={setBuscar} etiqueta="Buscar registros" placeholder="Persona o documento" />
         <Filtro etiqueta="Filtrar por estado" valor={estado} onChange={setEstado} opciones={ESTADOS} />
-        <Filtro etiqueta="Filtrar por tipo de autorización" valor={modalidad} onChange={setModalidad}
+        <Filtro etiqueta="Filtrar por categoría" valor={idCategoria} onChange={setIdCategoria}
+          opciones={[{ valor: '', texto: 'Todas las categorías' }, ...(opciones?.categorias ?? []).map((c) => ({ valor: String(c.idCategoriaAcceso), texto: c.nombre }))]} />
+        <Filtro etiqueta="Filtrar por tipo de permanencia" valor={modalidad} onChange={setModalidad}
           opciones={[{ valor: '', texto: 'Todos los tipos' }, ...MODALIDADES.map((m) => ({ valor: m.valor, texto: m.texto }))]} />
       </div>
-      {!acciones.consultar ? (
-        <Estado tipo="permiso" texto="Tu perfil no tiene permiso para consultar el control de accesos." />
-      ) : (
-        <EstadoConsulta loading={lista.isLoading} error={lista.error} empty={!lista.data?.length}
-          vacio={filtrando ? 'Ninguna solicitud coincide con los filtros.' : 'Aún no hay solicitudes de acceso. Usa «Gestionar acceso» desde Personas o «Solicitar acceso».'} />
-      )}
-      {lista.data && lista.data.length > 0 && (
-        <div className="ad-tabla-wrap">
-          <table className="ad-tabla">
-            <thead>
-              <tr>
-                <th scope="col">Persona</th>
-                <th scope="col">Tipo</th>
-                <th scope="col">Condiciones</th>
-                <th scope="col">Sede / destino</th>
-                <th scope="col">Estado</th>
-                <th scope="col"><span className="sr-only">Acciones</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {lista.data.map((a) => (
-                <tr key={a.idAutorizacion}>
-                  <td><strong>{a.persona}</strong><small className="au-sub">{a.documentoPersona}{a.personaActiva ? '' : ' · inactiva'}</small></td>
-                  <td>{textoModalidad(a.modalidad)}</td>
-                  <td>{condiciones(a)}</td>
-                  <td>{a.sede}<small className="au-sub">{a.area}</small></td>
-                  <td><EstadoAccesoEtiqueta estado={a.estado} vigencia={a.vigencia} /></td>
-                  <td className="ad-acciones">
-                    <BotonIcono etiqueta={`Ver solicitud de ${a.persona}`} icono="flecha" onClick={() => setDetalle(a.idAutorizacion)} />
-                  </td>
+      <EstadoConsulta loading={lista.isLoading} error={lista.error} empty={!datos?.registros.length}
+        vacio={filtrando ? 'Ningún registro coincide con los filtros.' : 'Aún no hay registros de acceso. Usa «Nuevo acceso».'} />
+      {datos && datos.registros.length > 0 && (
+        <>
+          <div className="ad-tabla-wrap">
+            <table className="ad-tabla">
+              <thead>
+                <tr>
+                  <th scope="col">Persona</th>
+                  <th scope="col">Categoría</th>
+                  <th scope="col">Condiciones</th>
+                  <th scope="col">Sede / destino</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col"><span className="sr-only">Acciones</span></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {datos.registros.map((a) => (
+                  <tr key={a.idAutorizacion}>
+                    <td><strong>{a.persona}</strong><small className="au-sub">{a.documentoPersona}{a.personaActiva ? '' : ' · inactiva'}</small></td>
+                    <td>{a.categoria ? <span className="ca-categoria" data-flujo={a.flujoAprobacion ?? ''}>{a.categoria}</span> : '—'}<small className="au-sub">{textoModalidad(a.modalidad)}</small></td>
+                    <td>{condiciones(a)}{a.objetos.length > 0 && <small className="au-sub">{a.objetos.length} vehículo(s)/dispositivo(s)</small>}</td>
+                    <td>{a.sede}<small className="au-sub">{a.area}{a.anfitrion ? ` · ${a.anfitrion}` : ''}</small></td>
+                    <td><EstadoAccesoEtiqueta estado={a.estado} vigencia={a.vigencia} />{a.dentro && <small className="au-sub">Dentro</small>}</td>
+                    <td className="ad-acciones"><BotonIcono etiqueta={`Ver acceso de ${a.persona}`} icono="flecha" onClick={() => setDetalle(a.idAutorizacion)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <nav className="vi-paginacion" aria-label="Paginación de registros">
+            <span>{datos.total} registro{datos.total === 1 ? '' : 's'} · página {datos.pagina} de {paginas}</span>
+            <button type="button" className="ad-boton-sec" disabled={pagina <= 1} onClick={() => setPagina((p) => p - 1)}>Anterior</button>
+            <button type="button" className="ad-boton-sec" disabled={pagina >= paginas} onClick={() => setPagina((p) => p + 1)}>Siguiente</button>
+          </nav>
+        </>
       )}
-      {solicitud && opciones.data && (
-        <SolicitudAcceso key={solicitud.idPersona ?? 'nueva'} opciones={opciones.data} idPersonaInicial={solicitud.idPersona}
-          onClose={cerrarSolicitud}
-          onCreada={(a) => { cerrarSolicitud(); avisar('Solicitud registrada. Queda pendiente de aprobación.'); setDetalle(a.idAutorizacion) }} />
+      {formulario && opciones && (
+        <NuevoAcceso key={personaSolicitada ?? 'nuevo'} opciones={opciones} idPersonaInicial={personaSolicitada} onClose={cerrar}
+          onCreado={(a) => { cerrar(); avisar(a.estado === 'Aprobada' ? 'Acceso registrado y aprobado por la política de la categoría.' : 'Acceso registrado. Queda pendiente de aprobación.'); setDetalle(a.idAutorizacion) }} />
       )}
-      {detalle !== null && <DetalleSolicitud id={detalle} puedeDecidir={decisiones.editar} onClose={() => setDetalle(null)} onDecidida={avisar} />}
-      {aviso}
+      {detalle !== null && <DetalleAcceso id={detalle} opciones={opciones} onClose={() => setDetalle(null)} onAviso={avisar} />}
     </Marco>
   )
 }
 
-// ---------- Detalle y decisión ----------
+// ---------- Personas dentro ----------
 
-type Accion = 'aprobar' | 'rechazar'
-const ACCIONES: Record<Accion, { titulo: string; boton: string; exitoso: string; requiereMotivo: boolean }> = {
-  aprobar: { titulo: 'Aprobar solicitud', boton: 'Aprobar', exitoso: 'Solicitud aprobada. La autorización rige según sus fechas y horarios.', requiereMotivo: false },
-  rechazar: { titulo: 'Rechazar solicitud', boton: 'Rechazar', exitoso: 'Solicitud rechazada. Se conserva en el historial.', requiereMotivo: true },
+function useAhora(ms = 30_000) {
+  const [ahora, setAhora] = useState(() => Date.now())
+  useEffect(() => {
+    const id = window.setInterval(() => setAhora(Date.now()), ms)
+    return () => window.clearInterval(id)
+  }, [ms])
+  return ahora
 }
 
-function DetalleSolicitud({ id, puedeDecidir, onClose, onDecidida }: {
-  id: number
-  puedeDecidir: boolean
-  onClose: () => void
-  onDecidida: (mensaje: string) => void
-}) {
-  const queryClient = useQueryClient()
-  const detalle = useQuery({ queryKey: [CLAVE, 'detalle', id], queryFn: () => consultarAutorizacionAcceso(id) })
-  const [accion, setAccion] = useState<Accion | null>(null)
-  const [motivo, setMotivo] = useState('')
-  const [errorMotivo, setErrorMotivo] = useState<string | null>(null)
-  const decidir = useMutation({
-    mutationFn: (a: Accion) => decidirAutorizacionAcceso(id, a, motivo.trim() || null),
-    onSuccess: (resultado, a) => {
-      queryClient.setQueryData([CLAVE, 'detalle', id], resultado)
-      void queryClient.invalidateQueries({ queryKey: [CLAVE], predicate: (q) => q.queryKey[1] !== 'detalle' })
-      setAccion(null)
-      setMotivo('')
-      onDecidida(ACCIONES[a].exitoso)
-    },
-    // Un 409 (otro usuario decidió antes) deja el detalle desactualizado: se recarga.
-    onError: () => void queryClient.invalidateQueries({ queryKey: [CLAVE, 'detalle', id] }),
+function PersonasDentro({ pestanas, opciones, avisar }: { pestanas: ReactNode; opciones: OpcionesAcceso | undefined; avisar: (m: string) => void }) {
+  const acciones = useAcciones('control_accesos')
+  const vehiculos = useAcciones('vehiculos')
+  const dispositivos = useAcciones('dispositivos')
+  const veObjetos = [vehiculos, dispositivos].some((m) => m.consultar || m.anadir || m.editar)
+  const [idSede, setIdSede] = useState('')
+  const [detalle, setDetalle] = useState<number | null>(null)
+  const [saliendo, setSaliendo] = useState<Presencia | null>(null)
+  const ahora = useAhora()
+  // Sin SignalR: la API es la fuente persistida; se vuelve a consultar cada 30 s, al enfocar y al reconectar.
+  const presencia = useQuery({
+    queryKey: ['accesos', 'presencia', leerOrganizacionActiva(), idSede],
+    queryFn: () => consultarPresencia(idSede),
+    refetchInterval: 30_000, refetchOnWindowFocus: true, refetchOnReconnect: true,
   })
-  const a = detalle.data
-
-  function confirmar() {
-    if (!accion) return
-    if (ACCIONES[accion].requiereMotivo && !motivo.trim()) { setErrorMotivo('Indica el motivo del rechazo.'); return }
-    setErrorMotivo(null)
-    if (!decidir.isPending) decidir.mutate(accion)
-  }
-
-  const disponibles: Accion[] = a && puedeDecidir && a.estado === 'Pendiente' ? ['aprobar', 'rechazar'] : []
-
+  const objetos = useQuery({
+    queryKey: ['accesos', 'objetos-dentro', leerOrganizacionActiva(), idSede],
+    queryFn: () => consultarObjetosDentro(idSede),
+    enabled: veObjetos, refetchInterval: 30_000, refetchOnWindowFocus: true, refetchOnReconnect: true,
+  })
   return (
-    <Dialogo titulo={a ? a.persona : 'Solicitud de acceso'} eyebrow={a ? `Autorización ${textoModalidad(a.modalidad).toLowerCase()} #${a.idAutorizacion}` : 'Solicitud de acceso'}
-      icono="accesos" ancho="matriz" onClose={onClose} onSubmit={(e) => e.preventDefault()}
-      pie={(
-        <>
-          <button type="button" className="ad-boton-sec" onClick={onClose}>Cerrar</button>
-          {accion === null && disponibles.map((x) => (
-            <button key={x} type="button" className={x === 'aprobar' ? 'ad-boton' : 'ad-boton-sec au-peligro'} onClick={() => { decidir.reset(); setAccion(x) }}>{ACCIONES[x].boton}</button>
+    <Marco titulo="Personas dentro" migas="Operación" pestanas={pestanas}
+      descripcion="Personas con una permanencia abierta en cada sede. Se actualiza cada 30 segundos y al volver a la pantalla.">
+      <div className="ad-herramientas au-filtros">
+        <Filtro etiqueta="Filtrar por sede" valor={idSede} onChange={setIdSede}
+          opciones={[{ valor: '', texto: 'Todas las sedes' }, ...(opciones?.sedes ?? []).map((s) => ({ valor: String(s.id), texto: s.nombre }))]} />
+        <span className="vi-contador" role="status">{presencia.data ? `${presencia.data.length} persona${presencia.data.length === 1 ? '' : 's'} dentro` : ''}</span>
+      </div>
+      <EstadoConsulta loading={presencia.isLoading} error={presencia.error} empty={!presencia.data?.length} vacio="No hay personas dentro en este momento." />
+      {presencia.data && presencia.data.length > 0 && (
+        <ul className="vi-presencia">
+          {presencia.data.map((p) => (
+            <li key={p.idPermanencia}>
+              <button type="button" onClick={() => setDetalle(p.idAutorizacion)} aria-label={`Ver acceso de ${p.persona}`}>
+                <strong>{p.persona}</strong>
+                <small>{p.documentoPersona}{p.categoria ? ` · ${p.categoria}` : ''}</small>
+                <span>{p.sede} · {p.area}{p.anfitrion ? ` · recibe ${p.anfitrion}` : ''}</span>
+                <span className="vi-tiempo">Entró {enSede(p.entradaEn, p.zonaHoraria, { timeStyle: 'short' })} por {p.puntoEntrada} · {duracion((ahora - new Date(p.entradaEn).getTime()) / 1000)}</span>
+                {p.objetosDentro.length > 0 && <span className="ca-objetos-presentes">Con {p.objetosDentro.join(' · ')}</span>}
+              </button>
+              {acciones.editar && <button type="button" className="ad-boton-sec" onClick={() => setSaliendo(p)}>Registrar salida</button>}
+            </li>
           ))}
-        </>
-      )}>
-      <EstadoConsulta loading={detalle.isLoading} error={detalle.error} empty={false} vacio="" />
-      {a && (
-        <>
-          <dl className="dt-franja">
-            <div><dt>Estado</dt><dd><EstadoAccesoEtiqueta estado={a.estado} vigencia={a.vigencia} /></dd></div>
-            <div><dt>Persona</dt><dd>{a.persona} <small>· {a.documentoPersona}</small></dd></div>
-            <div><dt>Tipo</dt><dd>{textoModalidad(a.modalidad)}{a.cupoIngresos ? <small> · {a.ingresosConsumidos}/{a.cupoIngresos} ingreso{a.cupoIngresos === 1 ? '' : 's'}</small> : null}</dd></div>
-          </dl>
-          <div className="dt-bloques">
-            <section className="dt-bloque" aria-label="Acceso autorizado">
-              <h3>Acceso autorizado</h3>
-              <dl>
-                <div><dt>Sede y destino</dt><dd>{a.sede}<small>{a.area}</small></dd></div>
-                <div><dt>Condiciones</dt><dd>{condiciones(a)}</dd></div>
-              </dl>
-            </section>
-            <section className="dt-bloque" aria-label="Trazabilidad">
-              <h3>Trazabilidad</h3>
-              <dl>
-                <div><dt>Responsable</dt><dd>{a.responsable ?? '—'}</dd></div>
-                <div><dt>Solicitada por</dt><dd>{a.solicitadoPor ?? '—'}<small>{instante(a.solicitadoEn)}</small></dd></div>
-                {a.decididoPor && <div><dt>{a.estado === 'Rechazada' ? 'Rechazada por' : 'Decidida por'}</dt><dd>{a.decididoPor}<small>{a.decididoEn && instante(a.decididoEn)}</small></dd></div>}
-              </dl>
-            </section>
-          </div>
-          {(a.motivo || a.observacion || a.motivoDecision) && (
-            <section className="dt-bloque" aria-label="Motivos y observaciones">
-              <h3>Motivos y observaciones</h3>
-              <dl>
-                {a.motivo && <div><dt>Motivo de la solicitud</dt><dd><p className="dt-nota">{a.motivo}</p></dd></div>}
-                {a.observacion && <div><dt>Observación</dt><dd><p className="dt-nota">{a.observacion}</p></dd></div>}
-                {a.motivoDecision && <div><dt>{a.estado === 'Rechazada' ? 'Motivo del rechazo' : 'Observación de la decisión'}</dt><dd><p className="dt-nota" data-tono={a.estado === 'Rechazada' ? 'rechazo' : undefined}>{a.motivoDecision}</p></dd></div>}
-              </dl>
-            </section>
-          )}
-          {a.estado === 'Pendiente' && (
-            <p className="ad-tenue pe-nota">
-              Pendiente de aprobación: no habilita el ingreso.{!puedeDecidir && ' La decide un administrador de la organización.'}
-            </p>
-          )}
-          {accion && (
-            <div className="pe-subformulario" role="group" aria-label={ACCIONES[accion].titulo}>
-              <strong>{ACCIONES[accion].titulo}</strong>
-              <Campo etiqueta={ACCIONES[accion].requiereMotivo ? 'Motivo del rechazo' : 'Observación (opcional)'} error={errorMotivo ?? undefined}>
-                <textarea value={motivo} maxLength={500} autoFocus aria-invalid={Boolean(errorMotivo)} onChange={(e) => setMotivo(e.target.value)} />
-              </Campo>
-              {decidir.error && <p className="ad-mensaje" role="alert">{mensajeError(decidir.error)}</p>}
-              <div className="pe-subacciones">
-                <button type="button" className="ad-boton-sec" onClick={() => { setAccion(null); setErrorMotivo(null) }}>Cancelar</button>
-                <button type="button" className="ad-boton" onClick={confirmar} disabled={decidir.isPending}>{decidir.isPending ? 'Guardando…' : `Confirmar: ${ACCIONES[accion].boton.toLowerCase()}`}</button>
-              </div>
-            </div>
-          )}
-          <ObjetosAcceso acceso={a} puedeDecidir={puedeDecidir} onAviso={onDecidida} />
-          <section className="dt-bloque" aria-label="Historial de la solicitud">
-            <h3>Historial</h3>
-            <ol className="dt-linea">
-              {a.historial.map((t) => (
-                <li key={t.idTransicion}>
-                  <strong>{t.estadoAnterior ? `${TEXTO_ESTADO[t.estadoAnterior as EstadoAutorizacionAcceso] ?? t.estadoAnterior} → ${TEXTO_ESTADO[t.estadoNuevo as EstadoAutorizacionAcceso] ?? t.estadoNuevo}` : 'Solicitud creada (pendiente de aprobación)'}</strong>
-                  <small>{t.actor ?? 'Usuario desconocido'} · {instante(t.ocurridoEn)}</small>
-                  {t.motivo && <p className="dt-nota">{t.motivo}</p>}
-                </li>
-              ))}
-            </ol>
-          </section>
-        </>
-      )}
-    </Dialogo>
-  )
-}
-
-// ---------- Vehículos y dispositivos de la persona ----------
-
-const TEXTO_DECISION: Record<string, string> = { Pendiente: 'Pendiente', Aprobada: 'Aprobado', Rechazada: 'Rechazado', Revocada: 'Revocado' }
-
-/**
- * Cada vehículo o dispositivo se decide por separado sobre su propia autorización de objeto (con transiciones y
- * auditoría en el servidor). Aprobar el acceso de la persona no aprueba sus objetos.
- */
-function ObjetosAcceso({ acceso, puedeDecidir, onAviso }: { acceso: AutorizacionAcceso; puedeDecidir: boolean; onAviso: (m: string) => void }) {
-  const queryClient = useQueryClient()
-  const vehiculosMod = useAcciones('vehiculos')
-  const dispositivosMod = useAcciones('dispositivos')
-  const autorizacionesMod = useAcciones('autorizaciones')
-  const idPersona = acceso.idPersona
-  const persona = useQuery({ queryKey: ['persona', idPersona], queryFn: () => consultarPersona(idPersona), enabled: vehiculosMod.consultar })
-  const dispositivos = useQuery({ queryKey: ['dispositivos', idPersona], queryFn: () => consultarDispositivos(idPersona), enabled: dispositivosMod.consultar })
-  const autorizaciones = useQuery({
-    queryKey: ['autorizaciones-objeto', 'persona', idPersona],
-    queryFn: () => consultarAutorizacionesObjeto({ idPersona }),
-    enabled: autorizacionesMod.consultar,
-  })
-  const [abierto, setAbierto] = useState<string | null>(null)
-  const [decision, setDecision] = useState<{ id: number; accion: 'aprobar' | 'rechazar' } | null>(null)
-  const [motivo, setMotivo] = useState('')
-  const [errorMotivo, setErrorMotivo] = useState<string | null>(null)
-  const refrescar = () => void queryClient.invalidateQueries({ queryKey: ['autorizaciones-objeto'] })
-  const decidir = useMutation({
-    mutationFn: (d: { id: number; accion: 'aprobar' | 'rechazar' }) => decidirAutorizacionObjeto(d.id, d.accion, motivo.trim() || null),
-    onSuccess: (_, d) => { refrescar(); setDecision(null); setMotivo(''); onAviso(d.accion === 'aprobar' ? 'Elemento aprobado.' : 'Elemento rechazado.') },
-    onError: refrescar,
-  })
-  const solicitar = useMutation({
-    mutationFn: (o: { tipo: TipoObjeto; id: number }) => solicitarAutorizacionObjeto({
-      idPersona, tipoObjeto: o.tipo, idVehiculo: o.tipo === 'Vehiculo' ? o.id : null, idDispositivo: o.tipo === 'Dispositivo' ? o.id : null,
-      idSede: acceso.idSede, idArea: acceso.idArea, fechaInicio: acceso.fechaInicio, fechaFin: acceso.fechaFin ?? acceso.fechaInicio,
-      horaInicio: acceso.horaInicio, horaFin: acceso.horaFin, motivo: `Asociado a la autorización de ingreso #${acceso.idAutorizacion}`,
-      idAutorizacion: acceso.idAutorizacion,
-    }),
-    onSuccess: () => { refrescar(); onAviso('Solicitud del elemento registrada como pendiente.') },
-  })
-
-  if (!vehiculosMod.consultar && !dispositivosMod.consultar) return null
-  const objetos = [
-    ...(vehiculosMod.consultar ? (persona.data?.vehiculos ?? []).filter((x) => x.activo).map((x) => ({
-      tipo: 'Vehiculo' as TipoObjeto, id: x.idVehiculo, nombre: x.placa, detalle: ['Vehículo', x.tipo, x.marca, x.color].filter(Boolean).join(' · '),
-    })) : []),
-    ...(dispositivosMod.consultar ? (dispositivos.data ?? []).filter((x) => x.activo).map((x) => ({
-      tipo: 'Dispositivo' as TipoObjeto, id: x.idDispositivo, nombre: x.codigoIdentificador, detalle: ['Dispositivo', x.tipoDispositivo, x.marca, x.serial].filter(Boolean).join(' · '),
-    })) : []),
-  ]
-  // La autorización relevante: la asociada a este ingreso; si no hay, la más reciente del objeto en esta sede.
-  const autorizacionDe = (tipo: TipoObjeto, id: number): AutorizacionObjeto | undefined => {
-    const propias = (autorizaciones.data ?? []).filter((x) => x.tipoObjeto === tipo && (tipo === 'Vehiculo' ? x.idVehiculo : x.idDispositivo) === id && x.idSede === acceso.idSede)
-    return propias.find((x) => x.idAutorizacion === acceso.idAutorizacion) ?? propias[0]
-  }
-  // Sin fecha de fin (permanente) no se inventa un periodo: el elemento se solicita en Autorizaciones.
-  const puedeSolicitar = (tipo: TipoObjeto) => (tipo === 'Vehiculo' ? vehiculosMod.anadir : dispositivosMod.anadir) && autorizacionesMod.anadir
-    && acceso.fechaFin !== null && (acceso.estado === 'Pendiente' || acceso.estado === 'Aprobada')
-  const cargando = persona.isLoading || dispositivos.isLoading || autorizaciones.isLoading
-
-  return (
-    <section className="dt-bloque" aria-label="Vehículos y dispositivos">
-      <h3>Vehículos y dispositivos</h3>
-      <p className="ad-tenue pe-nota">Cada elemento se aprueba o rechaza por separado: aprobar el ingreso de la persona no los aprueba.</p>
-      {cargando ? <p className="ad-tenue">Cargando…</p> : objetos.length === 0 ? <p className="ad-tenue">La persona no tiene vehículos ni dispositivos activos.</p> : (
-        <ul className="dt-objetos">
-          {objetos.map((o) => {
-            const clave = `${o.tipo}-${o.id}`
-            const aut = autorizacionDe(o.tipo, o.id)
-            const decidiendo = aut && decision?.id === aut.idAutorizacionObjeto ? decision : null
-            return (
-              <li key={clave} className="dt-objeto">
-                <header>
-                  <div><strong>{o.nombre}</strong><small>{o.detalle}</small></div>
-                  <div className="dt-objeto-acciones">
-                    {aut ? <span className="dt-decision" data-estado={aut.estado}>{TEXTO_DECISION[aut.estado]}</span>
-                      : <span className="dt-decision">Sin solicitud</span>}
-                    {aut?.estado === 'Pendiente' && puedeDecidir && !decidiendo && (
-                      <>
-                        <button type="button" className="ad-boton-sec dt-boton-verde" onClick={() => { decidir.reset(); setErrorMotivo(null); setDecision({ id: aut.idAutorizacionObjeto, accion: 'aprobar' }) }}>Aprobar</button>
-                        <button type="button" className="ad-boton-sec au-peligro" onClick={() => { decidir.reset(); setErrorMotivo(null); setDecision({ id: aut.idAutorizacionObjeto, accion: 'rechazar' }) }}>Rechazar</button>
-                      </>
-                    )}
-                    {!aut && puedeSolicitar(o.tipo) && (
-                      <button type="button" className="ad-boton-sec" disabled={solicitar.isPending} onClick={() => solicitar.mutate({ tipo: o.tipo, id: o.id })}>Solicitar</button>
-                    )}
-                    {aut && aut.historial.length > 0 && (
-                      <button type="button" className="ad-enlace" aria-expanded={abierto === clave} onClick={() => setAbierto(abierto === clave ? null : clave)}>
-                        {abierto === clave ? 'Ocultar decisiones' : 'Ver decisiones'}
-                      </button>
-                    )}
-                  </div>
-                </header>
-                {decidiendo && aut && (
-                  <div className="pe-subformulario" role="group" aria-label={`${decidiendo.accion === 'aprobar' ? 'Aprobar' : 'Rechazar'} ${o.nombre}`}>
-                    <Campo etiqueta={decidiendo.accion === 'rechazar' ? 'Motivo del rechazo' : 'Observación (opcional)'} error={errorMotivo ?? undefined}>
-                      <textarea value={motivo} maxLength={500} autoFocus aria-invalid={Boolean(errorMotivo)} onChange={(e) => setMotivo(e.target.value)} />
-                    </Campo>
-                    {decidir.error && <p className="ad-mensaje" role="alert">{mensajeError(decidir.error)}</p>}
-                    <div className="pe-subacciones">
-                      <button type="button" className="ad-boton-sec" onClick={() => { setDecision(null); setMotivo(''); setErrorMotivo(null) }}>Cancelar</button>
-                      <button type="button" className="ad-boton" disabled={decidir.isPending} onClick={() => {
-                        if (decidiendo.accion === 'rechazar' && !motivo.trim()) { setErrorMotivo('Indica el motivo del rechazo.'); return }
-                        if (!decidir.isPending) decidir.mutate(decidiendo)
-                      }}>{decidir.isPending ? 'Guardando…' : decidiendo.accion === 'aprobar' ? 'Confirmar: aprobar' : 'Confirmar: rechazar'}</button>
-                    </div>
-                  </div>
-                )}
-                {abierto === clave && aut && (
-                  <ol className="dt-linea" aria-label={`Decisiones de ${o.nombre}`}>
-                    {aut.historial.map((t) => (
-                      <li key={t.idTransicion} data-tono={t.estadoNuevo === 'Rechazada' || t.estadoNuevo === 'Revocada' ? 'rechazo' : t.estadoNuevo === 'Pendiente' ? 'violeta' : undefined}>
-                        <strong>{t.estadoAnterior ? `${TEXTO_DECISION[t.estadoAnterior]} → ${TEXTO_DECISION[t.estadoNuevo]}` : 'Solicitud creada (pendiente)'}</strong>
-                        <small>{t.actor ?? 'Usuario desconocido'} · {instante(t.ocurridoEn)}</small>
-                        {t.motivo && <p className="dt-nota" data-tono={t.estadoNuevo === 'Rechazada' ? 'rechazo' : undefined}>{t.motivo}</p>}
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </li>
-            )
-          })}
         </ul>
       )}
-      {solicitar.error && <p className="ad-mensaje" role="alert">{mensajeError(solicitar.error)}</p>}
-      {acceso.fechaFin === null && <p className="ad-tenue pe-nota">La autorización de ingreso no tiene fecha de fin: solicita los elementos desde Autorizaciones indicando su periodo.</p>}
-    </section>
+      {saliendo && (
+        <Salida presencia={saliendo} opciones={opciones} onClose={() => setSaliendo(null)}
+          onRegistrada={(pendientes) => { setSaliendo(null); avisar(pendientes.length ? `Salida registrada. Siguen dentro: ${pendientes.join(' · ')}.` : 'Salida registrada.') }} />
+      )}
+      {veObjetos && (
+        <section className="ca-objetos-dentro" aria-label="Vehículos y dispositivos dentro">
+          <h2>Vehículos y dispositivos dentro</h2>
+          <EstadoConsulta loading={objetos.isLoading} error={objetos.error} empty={!objetos.data?.length} vacio="No hay vehículos ni dispositivos dentro." />
+          {objetos.data && objetos.data.length > 0 && (
+            <ul className="vi-presencia">
+              {objetos.data.map((o) => <ObjetoDentroItem key={o.idMovimientoEntrada} objeto={o} ahora={ahora} opciones={opciones} puedeSalir={acciones.editar}
+                onVer={() => setDetalle(o.idAutorizacion)} onRegistrada={avisar} />)}
+            </ul>
+          )}
+        </section>
+      )}
+      {detalle !== null && <DetalleAcceso id={detalle} opciones={opciones} onClose={() => setDetalle(null)} onAviso={avisar} />}
+    </Marco>
   )
 }
 
-// ---------- Nueva solicitud ----------
-
-type Datos = Omit<AutorizacionAccesoEntrada, 'idPersona'>
-type ErroresAcceso = Partial<Record<'persona' | 'sede' | 'area' | 'responsable' | 'modalidad' | 'fechaInicio' | 'fechaFin' | 'horas' | 'dias' | 'motivo', string>>
-
-/** Validación de cortesía por modalidad (el servidor vuelve a validar todo). Devuelve solo los campos que aplican. */
-export function validarSolicitudAcceso(idPersona: number, d: Datos, permitePermanente: boolean, hoy = hoyIso()): ErroresAcceso {
-  const e: ErroresAcceso = {}
-  if (!idPersona) e.persona = 'Selecciona la persona.'
-  if (!d.idSede) e.sede = 'Selecciona la sede.'
-  if (!d.idArea) e.area = 'Selecciona el área o destino.'
-  if (!d.idMembresiaResponsable) e.responsable = 'Selecciona el responsable.'
-  if (!d.motivo.trim()) e.motivo = 'Indica el motivo de la solicitud.'
-  if (d.modalidad === 'Permanente' && !permitePermanente) e.modalidad = 'La política de la organización no permite autorizaciones permanentes.'
-  if (!d.fechaInicio) e.fechaInicio = d.modalidad === 'Unica' || d.modalidad === 'Diaria' ? 'Indica el día.' : 'Indica la fecha de inicio.'
-  switch (d.modalidad) {
-    case 'Unica':
-    case 'Diaria':
-      if (d.fechaInicio && d.fechaInicio < hoy) e.fechaInicio = 'El día no puede ser anterior a hoy.'
-      if (Boolean(d.horaInicio) !== Boolean(d.horaFin)) e.horas = 'Indica ambas horas de la franja o ninguna.'
-      else if (d.horaInicio && d.horaFin && d.horaFin <= d.horaInicio) e.horas = 'La hora de fin debe ser posterior a la de inicio.'
-      break
-    case 'Temporal':
-      if (!d.horaInicio || !d.horaFin) e.horas = 'Indica la hora de inicio y la de finalización.'
-      if (!d.fechaFin) e.fechaFin = 'Indica la fecha de finalización.'
-      else if (d.fechaInicio && d.horaInicio && d.horaFin && `${d.fechaFin}T${d.horaFin}` <= `${d.fechaInicio}T${d.horaInicio}`)
-        e.fechaFin = 'La finalización debe ser posterior al inicio.'
-      break
-    case 'Recurrente':
-      if (d.diasSemana.length === 0) e.dias = 'Selecciona al menos un día.'
-      if (!d.horaInicio || !d.horaFin) e.horas = 'Indica el horario.'
-      else if (d.horaFin <= d.horaInicio) e.horas = 'La hora de fin debe ser posterior a la de inicio.'
-      if (d.fechaFin && d.fechaInicio && d.fechaFin < d.fechaInicio) e.fechaFin = 'El fin del periodo no puede ser anterior al inicio.'
-      else if (d.fechaFin && d.fechaFin < hoy) e.fechaFin = 'El periodo ya terminó.'
-      break
-  }
-  return e
-}
-
-/** Solo los campos de la modalidad elegida viajan al servidor. */
-function cuerpo(idPersona: number, d: Datos): AutorizacionAccesoEntrada {
-  const base = { ...d, idPersona, motivo: d.motivo.trim(), observacion: d.observacion?.trim() || null }
-  switch (d.modalidad) {
-    case 'Unica':
-    case 'Diaria': return { ...base, fechaFin: null, diasSemana: [] }
-    case 'Temporal': return { ...base, diasSemana: [] }
-    case 'Recurrente': return base
-    default: return { ...base, fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [] }
-  }
-}
-
-function SolicitudAcceso({ opciones, idPersonaInicial, onClose, onCreada }: {
-  opciones: OpcionesAutorizacionAcceso
-  idPersonaInicial: number | null
-  onClose: () => void
-  onCreada: (a: AutorizacionAcceso) => void
+/** Vehículo o dispositivo con entrada abierta; su salida se registra aparte de la persona (D-10). */
+function ObjetoDentroItem({ objeto, ahora, opciones, puedeSalir, onVer, onRegistrada }: {
+  objeto: ObjetoDentro; ahora: number; opciones: OpcionesAcceso | undefined; puedeSalir: boolean; onVer: () => void; onRegistrada: (m: string) => void
 }) {
-  const [idPersona, setIdPersona] = useState(idPersonaInicial ?? 0)
-  const [datos, setDatos] = useState<Datos>({
-    idSede: opciones.sedes.length === 1 ? opciones.sedes[0]!.id : 0, idArea: 0, idMembresiaResponsable: 0,
-    modalidad: 'Unica', fechaInicio: hoyIso(), fechaFin: null, horaInicio: null, horaFin: null, diasSemana: [], motivo: '', observacion: null,
-  })
-  const [buscar, setBuscar] = useState('')
-  const [errores, setErrores] = useState<ErroresAcceso>({})
-  const texto = useDiferido(buscar)
-  const personas = useQuery({
-    queryKey: ['personas', 'selector', texto],
-    queryFn: () => consultarPersonas({ buscar: texto, estado: 'Activo' }),
-    enabled: texto.trim().length >= 2 && !idPersona,
-  })
-  const persona = useQuery({ queryKey: ['persona', idPersona], queryFn: () => consultarPersona(idPersona), enabled: idPersona > 0 })
   const queryClient = useQueryClient()
-  const crear = useMutation({
-    mutationFn: () => solicitarAutorizacionAcceso(cuerpo(idPersona, datos)),
-    onSuccess: (creada) => {
-      void queryClient.invalidateQueries({ queryKey: [CLAVE], predicate: (q) => q.queryKey[1] !== 'detalle' && q.queryKey[1] !== 'opciones' })
-      onCreada(creada)
+  const puntos = (opciones?.puntosAcceso ?? []).filter((p) => p.idSede === objeto.idSede && p.modoAcceso !== 'Entrada')
+  const [abierto, setAbierto] = useState(false)
+  const [idPunto, setIdPunto] = useState(puntos.length === 1 ? puntos[0]!.id : 0)
+  const [clave, setClave] = useState(nuevaClave)
+  const salida = useMutation({
+    mutationFn: () => registrarMovimientoObjeto(objeto.idAutorizacion, objeto.idAutorizacionObjeto, 'salida', idPunto, null, clave),
+    onSuccess: () => { setAbierto(false); void queryClient.invalidateQueries({ queryKey: ['accesos'] }); onRegistrada(`Salida de ${objeto.objeto} registrada.`) },
+    onError: () => { setClave(nuevaClave()); void queryClient.invalidateQueries({ queryKey: ['accesos', 'objetos-dentro'] }) },
+  })
+  return (
+    <li data-alerta={!objeto.personaDentro || undefined}>
+      <button type="button" onClick={onVer} aria-label={`Ver acceso de ${objeto.persona}`}>
+        <strong>{objeto.objeto}</strong>
+        <small>{objeto.persona} · {objeto.documentoPersona}</small>
+        <span>{objeto.sede}{objeto.personaDentro ? '' : ' · el responsable ya salió'}</span>
+        <span className="vi-tiempo">Entró {enSede(objeto.entradaEn, objeto.zonaHoraria, { timeStyle: 'short' })} por {objeto.puntoEntrada} · {duracion((ahora - new Date(objeto.entradaEn).getTime()) / 1000)}</span>
+      </button>
+      {puedeSalir && !abierto && <button type="button" className="ad-boton-sec" onClick={() => { salida.reset(); setAbierto(true) }}>Registrar salida</button>}
+      {abierto && (
+        <div className="pe-subformulario" role="group" aria-label={`Registrar salida de ${objeto.objeto}`}>
+          <Campo etiqueta="Punto de salida">
+            <Selector className="sel-campo" etiqueta="Punto de salida" valor={String(idPunto || '')} onChange={(v) => setIdPunto(Number(v))}
+              opciones={[{ valor: '', texto: puntos.length ? 'Selecciona…' : 'La sede no tiene puntos de salida', deshabilitada: true }, ...puntos.map((p) => ({ valor: String(p.id), texto: p.nombre }))]} />
+          </Campo>
+          {salida.error && <ul className="ad-mensaje" role="alert">{motivosError(salida.error).map((m) => <li key={m}>{m}</li>)}</ul>}
+          <div className="pe-subacciones">
+            <button type="button" className="ad-boton-sec" onClick={() => setAbierto(false)}>Volver</button>
+            <button type="button" className="ad-boton" disabled={!idPunto || salida.isPending} onClick={() => salida.mutate()}>{salida.isPending ? 'Registrando…' : 'Confirmar salida'}</button>
+          </div>
+        </div>
+      )}
+    </li>
+  )
+}
+
+function Salida({ presencia, opciones, onClose, onRegistrada }: { presencia: Presencia; opciones: OpcionesAcceso | undefined; onClose: () => void; onRegistrada: (objetosDentro: string[]) => void }) {
+  const queryClient = useQueryClient()
+  const puntos = (opciones?.puntosAcceso ?? []).filter((p) => p.idSede === presencia.idSede && p.modoAcceso !== 'Entrada')
+  const [idPunto, setIdPunto] = useState(puntos.length === 1 ? puntos[0]!.id : 0)
+  const [clave, setClave] = useState(nuevaClave)
+  const salida = useMutation({
+    mutationFn: () => registrarSalida(presencia.idPermanencia, idPunto, null, clave),
+    onSuccess: (r) => { void queryClient.invalidateQueries({ queryKey: ['accesos'] }); onRegistrada(r.objetosDentro) },
+    onError: () => { setClave(nuevaClave()); void queryClient.invalidateQueries({ queryKey: ['accesos', 'presencia'] }) },
+  })
+  return (
+    <div className="pe-subformulario" role="group" aria-label={`Registrar salida de ${presencia.persona}`}>
+      <strong>Salida de {presencia.persona}</strong>
+      {presencia.objetosDentro.length > 0 && (
+        <p className="vi-alerta" role="note">Siguen dentro: {presencia.objetosDentro.join(' · ')}. La salida de la persona no registra la de sus vehículos o dispositivos: regístrala aparte.</p>
+      )}
+      <Campo etiqueta="Punto de acceso">
+        <Selector className="sel-campo" etiqueta="Punto de salida" valor={String(idPunto || '')} onChange={(v) => setIdPunto(Number(v))}
+          opciones={[{ valor: '', texto: puntos.length ? 'Selecciona…' : 'La sede no tiene puntos de salida', deshabilitada: true }, ...puntos.map((p) => ({ valor: String(p.id), texto: p.nombre }))]} />
+      </Campo>
+      {salida.error && <ul className="ad-mensaje" role="alert">{motivosError(salida.error).map((m) => <li key={m}>{m}</li>)}</ul>}
+      <div className="pe-subacciones">
+        <button type="button" className="ad-boton-sec" onClick={onClose}>Volver</button>
+        <button type="button" className="ad-boton" disabled={!idPunto || salida.isPending} onClick={() => salida.mutate()}>{salida.isPending ? 'Registrando…' : 'Confirmar salida'}</button>
+      </div>
+    </div>
+  )
+}
+
+// ---------- Historial ----------
+
+function Historial({ pestanas, opciones }: { pestanas: ReactNode; opciones: OpcionesAcceso | undefined }) {
+  const [filtros, setFiltros] = useState<FiltrosHistorial>({})
+  const [pagina, setPagina] = useState(1)
+  const buscar = useDiferido(filtros.buscar ?? '')
+  const placa = useDiferido(filtros.placa ?? '')
+  const efectivos = { ...filtros, buscar, placa }
+  const historial = useQuery({
+    queryKey: ['accesos', 'historial', leerOrganizacionActiva(), efectivos, pagina],
+    queryFn: () => consultarHistorial({ ...efectivos, pagina }),
+    placeholderData: keepPreviousData,
+  })
+  const exportar = useMutation({
+    mutationFn: () => apiBlob(rutaExportarHistorial(efectivos)),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = url
+      enlace.download = `historial-accesos-${new Date().toISOString().slice(0, 10)}.csv`
+      enlace.click()
+      URL.revokeObjectURL(url)
     },
   })
-  const cambiar = (parcial: Partial<Datos>) => setDatos((d) => ({ ...d, ...parcial }))
-  const areas = opciones.areas.filter((x) => x.idSede === datos.idSede)
-  // Si el destino tiene responsables designados, solo ellos; si no, cualquier usuario activo. Por defecto, quien solicita.
-  const designados = opciones.responsables.filter((r) => r.areas.includes(datos.idArea))
-  const responsables = designados.length ? designados : opciones.responsables
-  useEffect(() => {
-    if (datos.idMembresiaResponsable || !opciones.idMembresiaPropia) return
-    if (responsables.some((r) => r.idMembresia === opciones.idMembresiaPropia)) cambiar({ idMembresiaResponsable: opciones.idMembresiaPropia })
-  }, [datos.idMembresiaResponsable, opciones.idMembresiaPropia, responsables])
-
-  function elegirModalidad(m: Modalidad) {
-    setErrores({})
-    // Al cambiar de tipo se limpian los campos que no le aplican para no enviar condiciones ocultas.
-    cambiar({ modalidad: m, fechaFin: null, horaInicio: null, horaFin: null, diasSemana: m === 'Recurrente' ? [1, 2, 3, 4, 5] : [] })
-  }
-
-  function enviar(event: FormEvent) {
-    event.preventDefault()
-    const nuevos = validarSolicitudAcceso(idPersona, datos, opciones.permitePermanente)
-    setErrores(nuevos)
-    if (Object.keys(nuevos).length === 0 && !crear.isPending) crear.mutate()
-  }
-
-  const p = persona.data
-  const unDia = datos.modalidad === 'Unica' || datos.modalidad === 'Diaria'
+  const cambiar = (parcial: Partial<FiltrosHistorial>) => { setFiltros((f) => ({ ...f, ...parcial })); setPagina(1) }
+  const datos = historial.data
+  const paginas = datos ? Math.max(1, Math.ceil(datos.total / datos.tamano)) : 1
 
   return (
-    <Dialogo titulo="Solicitar acceso" eyebrow="Control de accesos" icono="accesos" ancho="amplio" onClose={onClose} onSubmit={enviar}
-      pie={<BotonesFormulario onCancelar={onClose} pendiente={crear.isPending} texto="Enviar solicitud" />}>
-      <Campo etiqueta="Persona" error={errores.persona} ancho="completo">
-        {idPersona && p ? (
-          <div className="pe-existente">
-            <strong>{p.nombres} {p.apellidos}</strong>
-            <span className="ad-tenue">{p.tipoDocumento} {p.numeroDocumento}{p.tipoPersona ? ` · ${p.tipoPersona}` : ''}</span>
-            {!p.activo && <span className="ad-mensaje" role="alert">Persona inactiva: no se puede solicitar su acceso.</span>}
-            <button type="button" className="ad-enlace" onClick={() => { setIdPersona(0); setBuscar('') }}>Cambiar</button>
-          </div>
-        ) : idPersona && persona.isLoading ? (
-          <span className="ad-tenue">Cargando persona…</span>
-        ) : (
-          <div className="au-buscador-persona">
-            {idPersona > 0 && persona.error && <p className="ad-mensaje" role="alert">{mensajeError(persona.error, 'No se encontró la persona.')}</p>}
-            <input value={buscar} onChange={(e) => { setBuscar(e.target.value); if (idPersona) setIdPersona(0) }} placeholder="Nombre o documento (mínimo 2 caracteres)" aria-label="Buscar persona" aria-invalid={Boolean(errores.persona)} />
-            {personas.data && (
-              <ul role="listbox" aria-label="Personas encontradas">
-                {personas.data.length === 0 && <li className="ad-tenue">Sin coincidencias entre personas activas. Regístrala primero en Personas.</li>}
-                {personas.data.slice(0, 8).map((x) => (
-                  <li key={x.idPersona}>
-                    <button type="button" role="option" aria-selected={false} onClick={() => setIdPersona(x.idPersona)}>
-                      {x.nombres} {x.apellidos} <small>{x.tipoDocumento} {x.numeroDocumento}</small>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </Campo>
-
-      <fieldset className="ca-modalidades">
-        <legend>Tipo de autorización</legend>
-        <div className="ca-modalidades-opciones">
-          {MODALIDADES.map((m) => {
-            const bloqueada = m.valor === 'Permanente' && !opciones.permitePermanente
-            return (
-              <label key={m.valor} className="ca-modalidad" data-bloqueada={bloqueada || undefined}>
-                <input type="radio" name="modalidad" value={m.valor} checked={datos.modalidad === m.valor} disabled={bloqueada} onChange={() => elegirModalidad(m.valor)} />
-                <strong>{m.texto}</strong>
-                <small>{bloqueada ? 'No disponible: la política de la organización no la permite.' : m.descripcion}</small>
-              </label>
-            )
-          })}
-        </div>
-        {errores.modalidad && <p className="ad-mensaje" role="alert">{errores.modalidad}</p>}
-      </fieldset>
-
-      <div className="ad-rejilla">
-        <Campo etiqueta="Sede" error={errores.sede}>
-          <Selector className="sel-campo" etiqueta="Sede" valor={String(datos.idSede || '')} invalido={Boolean(errores.sede)}
-            onChange={(v) => cambiar({ idSede: Number(v), idArea: 0 })}
-            opciones={[{ valor: '', texto: opciones.sedes.length ? 'Selecciona…' : 'No hay sedes en tu alcance', deshabilitada: true }, ...opciones.sedes.map((s) => ({ valor: String(s.id), texto: s.nombre }))]} />
-        </Campo>
-        <Campo etiqueta="Área o destino" error={errores.area}>
-          <Selector className="sel-campo" etiqueta="Área o destino" valor={String(datos.idArea || '')} invalido={Boolean(errores.area)}
-            onChange={(v) => cambiar({ idArea: Number(v) })}
-            opciones={[{ valor: '', texto: !datos.idSede ? 'Primero elige la sede' : areas.length ? 'Selecciona…' : 'La sede no tiene áreas activas', deshabilitada: true }, ...areas.map((x) => ({ valor: String(x.id), texto: x.nombre }))]} />
-        </Campo>
-        <Campo etiqueta="Responsable" error={errores.responsable} ancho="completo">
-          <Selector className="sel-campo" etiqueta="Responsable" valor={String(datos.idMembresiaResponsable || '')} invalido={Boolean(errores.responsable)} buscable
-            onChange={(v) => cambiar({ idMembresiaResponsable: Number(v) })}
-            opciones={[{ valor: '', texto: 'Selecciona…', deshabilitada: true }, ...responsables.map((r) => ({ valor: String(r.idMembresia), texto: r.nombre }))]} />
-        </Campo>
-
-        {unDia && (
-          <>
-            <Campo etiqueta="Día" error={errores.fechaInicio} ancho="completo">
-              <input type="date" value={datos.fechaInicio} min={hoyIso()} aria-invalid={Boolean(errores.fechaInicio)} onChange={(e) => cambiar({ fechaInicio: e.target.value })} />
-            </Campo>
-            <Campo etiqueta="Desde la hora (opcional)" error={errores.horas}>
-              <input type="time" value={datos.horaInicio ?? ''} aria-invalid={Boolean(errores.horas)} onChange={(e) => cambiar({ horaInicio: e.target.value || null })} />
-            </Campo>
-            <Campo etiqueta="Hasta la hora (opcional)">
-              <input type="time" value={datos.horaFin ?? ''} onChange={(e) => cambiar({ horaFin: e.target.value || null })} />
-            </Campo>
-          </>
-        )}
-        {datos.modalidad === 'Temporal' && (
-          <>
-            <Campo etiqueta="Fecha de inicio" error={errores.fechaInicio}>
-              <input type="date" value={datos.fechaInicio} min={hoyIso()} aria-invalid={Boolean(errores.fechaInicio)} onChange={(e) => cambiar({ fechaInicio: e.target.value })} />
-            </Campo>
-            <Campo etiqueta="Hora de inicio" error={errores.horas}>
-              <input type="time" value={datos.horaInicio ?? ''} aria-invalid={Boolean(errores.horas)} onChange={(e) => cambiar({ horaInicio: e.target.value || null })} />
-            </Campo>
-            <Campo etiqueta="Fecha de finalización" error={errores.fechaFin}>
-              <input type="date" value={datos.fechaFin ?? ''} min={datos.fechaInicio || hoyIso()} aria-invalid={Boolean(errores.fechaFin)} onChange={(e) => cambiar({ fechaFin: e.target.value || null })} />
-            </Campo>
-            <Campo etiqueta="Hora de finalización">
-              <input type="time" value={datos.horaFin ?? ''} onChange={(e) => cambiar({ horaFin: e.target.value || null })} />
-            </Campo>
-          </>
-        )}
-        {datos.modalidad === 'Recurrente' && (
-          <>
-            <fieldset className="ca-dias" data-ancho="completo" aria-invalid={Boolean(errores.dias)}>
-              <legend>Días de la semana</legend>
-              <div className="ca-dias-opciones">
-                {DIAS.map((d) => (
-                  <label key={d.valor} title={d.texto}>
-                    <input type="checkbox" checked={datos.diasSemana.includes(d.valor)} aria-label={d.texto}
-                      onChange={(e) => cambiar({ diasSemana: e.target.checked ? [...datos.diasSemana, d.valor].sort() : datos.diasSemana.filter((x) => x !== d.valor) })} />
-                    <span aria-hidden="true">{d.corto}</span>
-                  </label>
-                ))}
-              </div>
-              {errores.dias && <small className="ad-campo-error" role="alert">{errores.dias}</small>}
-            </fieldset>
-            <Campo etiqueta="Hora de inicio" error={errores.horas}>
-              <input type="time" value={datos.horaInicio ?? ''} aria-invalid={Boolean(errores.horas)} onChange={(e) => cambiar({ horaInicio: e.target.value || null })} />
-            </Campo>
-            <Campo etiqueta="Hora de fin">
-              <input type="time" value={datos.horaFin ?? ''} onChange={(e) => cambiar({ horaFin: e.target.value || null })} />
-            </Campo>
-            <Campo etiqueta="Se repite desde" error={errores.fechaInicio}>
-              <input type="date" value={datos.fechaInicio} aria-invalid={Boolean(errores.fechaInicio)} onChange={(e) => cambiar({ fechaInicio: e.target.value })} />
-            </Campo>
-            <Campo etiqueta="Hasta (opcional)" error={errores.fechaFin}>
-              <input type="date" value={datos.fechaFin ?? ''} min={datos.fechaInicio || hoyIso()} aria-invalid={Boolean(errores.fechaFin)} onChange={(e) => cambiar({ fechaFin: e.target.value || null })} />
-            </Campo>
-          </>
-        )}
-        {datos.modalidad === 'Permanente' && (
-          <Campo etiqueta="Vigente desde" error={errores.fechaInicio} ancho="completo">
-            <input type="date" value={datos.fechaInicio} aria-invalid={Boolean(errores.fechaInicio)} onChange={(e) => cambiar({ fechaInicio: e.target.value })} />
-          </Campo>
-        )}
-
-        <Campo etiqueta="Motivo" error={errores.motivo} ancho="completo">
-          <textarea value={datos.motivo} maxLength={500} aria-invalid={Boolean(errores.motivo)} onChange={(e) => cambiar({ motivo: e.target.value })} />
-        </Campo>
-        <Campo etiqueta="Observación (opcional)" ancho="completo">
-          <textarea value={datos.observacion ?? ''} maxLength={1000} onChange={(e) => cambiar({ observacion: e.target.value || null })} />
-        </Campo>
+    <Marco titulo="Historial de accesos" migas="Operación" pestanas={pestanas}
+      descripcion="Entradas, salidas e intentos denegados. Los movimientos no se modifican ni se borran; la exportación queda auditada."
+      accion={<button type="button" className="ad-boton-sec" disabled={exportar.isPending} onClick={() => exportar.mutate()}>{exportar.isPending ? 'Exportando…' : 'Exportar CSV'}</button>}>
+      <div className="ad-herramientas au-filtros">
+        <Buscador valor={filtros.buscar ?? ''} onChange={(v) => cambiar({ buscar: v })} etiqueta="Buscar persona" placeholder="Persona o documento" />
+        <Filtro etiqueta="Filtrar por sede" valor={filtros.idSede ?? ''} onChange={(v) => cambiar({ idSede: v })}
+          opciones={[{ valor: '', texto: 'Todas las sedes' }, ...(opciones?.sedes ?? []).map((s) => ({ valor: String(s.id), texto: s.nombre }))]} />
+        <Filtro etiqueta="Filtrar por anfitrión" valor={filtros.idAnfitrion ?? ''} onChange={(v) => cambiar({ idAnfitrion: v })}
+          opciones={[{ valor: '', texto: 'Todos los anfitriones' }, ...(opciones?.anfitriones ?? []).map((a) => ({ valor: String(a.id), texto: a.nombre }))]} />
+        <Filtro etiqueta="Filtrar por resultado" valor={filtros.resultado ?? ''} onChange={(v) => cambiar({ resultado: v })}
+          opciones={[{ valor: '', texto: 'Todos los resultados' }, { valor: 'Confirmado', texto: 'Confirmados' }, { valor: 'Denegado', texto: 'Intentos denegados' }]} />
+        <input className="ad-campo-corto" aria-label="Placa del vehículo" placeholder="Placa" value={filtros.placa ?? ''} onChange={(e) => cambiar({ placa: e.target.value })} />
+        <input type="date" aria-label="Desde" value={filtros.desde ?? ''} onChange={(e) => cambiar({ desde: e.target.value })} />
+        <input type="date" aria-label="Hasta" value={filtros.hasta ?? ''} onChange={(e) => cambiar({ hasta: e.target.value })} />
       </div>
-      <p className="ad-tenue pe-nota">La solicitud queda <strong>pendiente de aprobación</strong> y no habilita el ingreso hasta que un administrador de la organización la apruebe.</p>
-      {crear.error && <p className="ad-mensaje" role="alert">{mensajeError(crear.error, 'No se pudo registrar la solicitud.')}</p>}
-    </Dialogo>
+      {exportar.error && <p className="ad-mensaje" role="alert">{mensajeError(exportar.error, 'No se pudo exportar.')}</p>}
+      <EstadoConsulta loading={historial.isLoading} error={historial.error} empty={!datos?.registros.length} vacio="No hay movimientos con estos filtros." />
+      {datos && datos.registros.length > 0 && (
+        <>
+          <div className="ad-tabla-wrap">
+            <table className="ad-tabla">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Movimiento</th>
+                  <th scope="col">Persona</th>
+                  <th scope="col">Sede / destino</th>
+                  <th scope="col">Punto · operador</th>
+                </tr>
+              </thead>
+              <tbody>
+                {datos.registros.map((m) => (
+                  <tr key={m.idMovimiento} data-tono={m.resultado === 'Denegado' ? 'rechazo' : undefined}>
+                    <td>{new Date(m.ocurridoEn).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</td>
+                    <td>
+                      <span className="ad-estatus au-estado" data-estado={m.resultado === 'Denegado' ? 'Rechazada' : 'Aprobada'}>{m.tipoMovimiento}{m.resultado === 'Denegado' ? ' denegada' : ''}</span>
+                      {m.motivo && <small className="au-sub">{m.motivo}</small>}
+                    </td>
+                    <td><strong>{m.persona}</strong><small className="au-sub">{m.documentoPersona}</small></td>
+                    <td>{m.sede}<small className="au-sub">{m.area ?? ''}{m.anfitrion ? ` · ${m.anfitrion}` : ''}</small></td>
+                    <td>{m.puntoAcceso}<small className="au-sub">{m.operador ?? '—'}</small></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <nav className="vi-paginacion" aria-label="Paginación del historial">
+            <span>{datos.total} movimiento{datos.total === 1 ? '' : 's'} · página {datos.pagina} de {paginas}</span>
+            <button type="button" className="ad-boton-sec" disabled={pagina <= 1} onClick={() => setPagina((p) => p - 1)}>Anterior</button>
+            <button type="button" className="ad-boton-sec" disabled={pagina >= paginas} onClick={() => setPagina((p) => p + 1)}>Siguiente</button>
+          </nav>
+        </>
+      )}
+    </Marco>
   )
 }
-

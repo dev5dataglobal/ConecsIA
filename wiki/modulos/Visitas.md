@@ -1,6 +1,6 @@
 ---
 tipo: modulo
-estado: implementado
+estado: obsoleto
 fuentes: [PRD v0.1]
 relacionados: [HU-028, HU-029, HU-032, HU-033, HU-034, HU-035, HU-036, HU-037, RF-11, RF-12, RN-03, CA-01, CA-07, CA-09, CA-11, ADR-009, D-04, D-05, D-06, D-07, D-08, D-34, D-35, D-36, D-37]
 actualizado: 2026-10-29
@@ -8,6 +8,9 @@ tags: [conecsia, modulo, visitas, accesos]
 ---
 
 # Visitas
+
+> [!warning] Obsoleto desde 2026-11-04
+> Unificado en [[Control de accesos]] ([[ADR-029 Registro de acceso unificado]]). La pantalla `/visitas` y `/api/visitas` se retiraron; la visita sigue existiendo como **episodio** que el servidor crea en cada entrada. Esta página se conserva como historia.
 
 Registro y ciclo operativo de las visitas de personas externas: identificar a la [[Persona]], definir sede, destino y responsable, vincular la [[Autorización]] (o aplicar la política de la organización), y registrar entrada, [[Permanencia]] y salida ([[Movimiento|movimientos]]). Épicas: [[EP-08 Visitas]], [[EP-10 Entradas y salidas]], [[EP-11 Presencia e historial]]. Implementado y verificado (pruebas y navegador) el 2026-10-26.
 

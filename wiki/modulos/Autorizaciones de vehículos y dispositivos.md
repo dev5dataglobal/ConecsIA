@@ -3,11 +3,14 @@ tipo: modulo
 estado: implementado
 fuentes: [PRD v0.1]
 relacionados: [HU-047, HU-049, RF-16, RF-17, CA-01, CA-20, CA-23, CA-24, ADR-026, ADR-014, D-10, D-17, D-31, D-32, D-33]
-actualizado: 2026-10-26
+actualizado: 2026-11-11
 tags: [conecsia, modulo, vehiculos, equipos, autorizaciones]
 ---
 
 # Autorizaciones de vehículos y dispositivos
+
+> [!warning] Actualizado 2026-11-04
+> `/api/autorizaciones-objeto` y la pantalla `/autorizaciones` se retiraron: los vehículos y dispositivos se solicitan y deciden dentro del registro de acceso (`/api/accesos/{id}/objetos/...`) en [[Control de accesos]]. El ciclo y la inmutabilidad de ADR-026 se mantienen; la gestión de dispositivos de la persona no cambia.
 
 Gestión de dispositivos de las [[Persona|personas]] y de las autorizaciones de ingreso de vehículos y dispositivos. Diseño: [[ADR-026 Autorización de ingreso de vehículos y dispositivos]]. Épicas: [[EP-16 Vehículos]], [[EP-17 Equipos externos]]. Implementado y verificado por pruebas el 2026-10-26.
 
@@ -67,3 +70,6 @@ Reglas, estados, vigencia y concurrencia: ver [[ADR-026 Autorización de ingreso
 > - [[Decisiones pendientes|D-31]] modelo separado vs. PRD; [[Decisiones pendientes|D-32]] matriz de quién solicita/decide/cancela; [[Decisiones pendientes|D-33]] efecto de inactivar objeto/persona sobre aprobadas.
 > - Movimientos de vehículos y equipos (HU-048, HU-050) y validación conjunta persona + objeto en la entrada.
 > - Paginación (máx. 500 filas) y exportación.
+
+## Movimientos en portería — 2026-11-11
+La decisión del objeto ahora se usa en portería: solo un objeto **Aprobado** y vigente registra entrada, y una revocación posterior no impide su salida. Detalle en [[ADR-030 Movimientos de vehículos y dispositivos]] y [[Control de accesos]]. Las tablas sin uso `movimiento_vehiculo` y `movimiento_dispositivo` se reemplazaron por `movimiento_objeto`.

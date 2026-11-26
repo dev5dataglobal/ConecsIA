@@ -37,12 +37,16 @@ const ICONOS: Record<string, NombreIcono> = {
   sede: 'sede', reportes: 'reportes', configuracion: 'configuracion', administracion: 'administracion',
 }
 
+/**
+ * Módulos que solo conservan permisos (ADR-029): Visitas y Autorizaciones se unificaron en Control de accesos.
+ * «Autorizaciones · Editar» sigue habilitando aprobar y revocar, pero ya no tienen pantalla propia en el menú.
+ */
+const SOLO_PERMISO = new Set(['visitas', 'autorizaciones'])
+
 /** Rutas con pantalla en este frontend; un módulo con otra ruta se muestra como «Pronto». */
 const RUTAS_IMPLEMENTADAS = new Set([
   '/dashboard',
   '/personas',
-  '/autorizaciones',
-  '/visitas',
   '/control-accesos',
   '/administracion',
   '/administracion/usuarios',
@@ -54,7 +58,7 @@ const RUTAS_IMPLEMENTADAS = new Set([
 
 export function construirNavegacion(modulos: AppModulo[]): GrupoNavegacion[] {
   const grupos = new Map<string, ItemNavegacion[]>()
-  for (const modulo of [...modulos].sort((a, b) => a.orden - b.orden)) {
+  for (const modulo of [...modulos].filter((m) => !SOLO_PERMISO.has(m.codigo)).sort((a, b) => a.orden - b.orden)) {
     const titulo = GRUPO_POR_CODIGO[modulo.codigo] ?? 'Gestión'
     const lista = grupos.get(titulo) ?? []
     lista.push({

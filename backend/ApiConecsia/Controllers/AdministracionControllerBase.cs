@@ -59,6 +59,7 @@ public abstract class AdministracionControllerBase(ConecsiaDbContext db, IOrgani
             ValorNuevo = nuevo is null ? null : JsonSerializer.Serialize(nuevo),
             DireccionIp = HttpContext.Connection.RemoteIpAddress?.ToString(),
             IdCorrelacion = HttpContext.TraceIdentifier,
+            AgenteUsuario = HttpContext.Request.Headers.UserAgent.ToString() is { Length: > 0 } agente ? agente[..Math.Min(agente.Length, 300)] : null,
             OcurridoEn = DateTime.UtcNow,
         });
     }

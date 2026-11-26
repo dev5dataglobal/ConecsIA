@@ -1,7 +1,7 @@
 ---
 tipo: indice
 estado: vigente
-actualizado: 2026-10-26
+actualizado: 2026-11-11
 tags: [conecsia]
 ---
 
@@ -30,7 +30,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Fases y MVP]] — secuencia propuesta (MVP = fases 0–4)
 
 ## Decisiones
-- [[Decisiones pendientes]] — D-01..D-28
+- [[Decisiones pendientes]] — D-01..D-57
 - [[Registro de ADR]] — ADR-001..ADR-020: 9 aprobados, 11 en Propuesta
 - Aprobados 2026-10-17: ADR-001, 002, 003, 004, 005, 014, 017, 018, 020
 - [[ADR-006 Identidad y sesiones]] — Aprobada 2026-10-19: opción A (ASP.NET Core Identity + cookie); cierra D-03
@@ -41,7 +41,8 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[ADR-027 Punto de acceso como entidad dentro de la zona]] — Obsoleta 2026-10-31 (reemplazada por ADR-028)
 - [[ADR-028 Zona empresarial por sede y retiro de zonas de acceso]] — Implementado 2026-10-31: zona empresarial desde la sede, sin vínculo con organizaciones; puntos de acceso directos en la sede; migración con bitácora de pendientes
 - [[ADR-026 Autorización de ingreso de vehículos y dispositivos]] — Implementado 2026-10-26: ciclo propio Pendiente/Aprobada/Rechazada/Revocada, separado de la autorización de la persona, historial inmutable
-- [[ADR-029 Registro de acceso unificado]] — Propuesta 2026-11-03: `autorizacion` como registro de acceso, `visita` como episodio
+- [[ADR-029 Registro de acceso unificado]] — Implementado 2026-11-04: `autorizacion` como registro de acceso, `visita` como episodio; Visitas y Autorizaciones retirados como pantallas
+- [[ADR-030 Movimientos de vehículos y dispositivos]] — Implementado 2026-11-11: `movimiento_objeto` único, solo inserción, vinculado al episodio; la salida de la persona no cierra sus objetos
 - [[ADR-025 Sesión renovable y recuperación de contraseña]] — Implementado 2026-10-26: cookie HttpOnly de renovación («Recordarme», 8 h) y restablecimiento por correo de un solo uso
 
 ## Backlog Scrum
@@ -79,14 +80,16 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Administración]] — usuarios, perfiles (matriz de acciones), organizaciones (logo) y zonas empresariales
 - [[Personas]] — registro por organización, catálogos, foto privada, teléfonos 1:N, vehículos N:M y dispositivos 1:N
 - [[Autorizaciones de vehículos y dispositivos]] — dispositivos por persona y autorizaciones de ingreso de objetos con historial y auditoría inmutables
+- [[Configuración del control de accesos por tipo de organización]] — categorías, plantillas, horario base y parámetros
 - [[Puntos de acceso]] — puntos de acceso por sede (RF-05, ADR-028), marca común de la zona empresarial
 - [[Zonas y puntos de acceso]] — **obsoleto 2026-10-31** (reemplazado por [[Puntos de acceso]])
 - [[Visitas]] — registro de visitas, estados, entrada/salida idempotentes, permanencias y personas dentro
-- [[Control de accesos]] — solicitudes de autorización de ingreso de personas, aprobación y rechazo (2026-10-28)
+- [[Control de accesos]] — registro unificado, entradas y salidas de personas, vehículos y dispositivos (2026-11-11)
 - [[Página pública de presentación]] — landing pública `/presentacion` con formulario de contacto conectado a `POST /api/publico/contactos`
 
 ## Implementación
 - [[Estado de implementación]] — qué existe realmente en el código
+- [[Guía de migración al control de accesos unificado]] — migraciones ADR-029, verificación y procedimiento
 
 ## ImplementaciÃ³n reciente
 - [[Fase 1 backend hexagonal]] â€” reorganizaciÃ³n .NET, modelo EF Core y evidencia de migraciÃ³n
@@ -95,6 +98,7 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[PRD v0.1]] — PRD funcional y técnico (original en `fuentes/raw/`)
 
 ## Consultas
+- [[Brechas de requisitos frente al PRD 2026-11-10]] — estado RF-01..RF-26, CA del MVP sin evidencia, scaffolds riesgosos y orden sugerido
 - [[Unificación de Visitas y Control de accesos - análisis inicial]] — estado actual, supuestos y D-49..D-55 (2026-11-03)
 - [[Revisión del backlog v1]] — inconsistencias y bloqueos detectados al crear el backlog
 - [[Revisión del modelo ER db.md]] — 35 adaptaciones propuestas al diagrama ER frente a PRD y ADR
@@ -102,3 +106,4 @@ Inicio: [[overview]] · Bitácora: [[log]]
 - [[Opciones para decidir D-20]] — idioma de rutas y contratos; aprobada la opción A (español)
 - [[Opciones para decidir ADR-021]] — DbContext compartido y migraciones: impacto en Docker, CI, producción, rollback y pruebas
 - [[Integración en main antes de loop_core]] — qué integrar en main y decisiones previas al loop core
+

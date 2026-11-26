@@ -29,8 +29,6 @@ public class UnitOfWork : IUnitOfWork
     private IMembresiaSedeRepository? _membresiaSedeRepository;
     private IModuloRepository? _moduloRepository;
     private IMovimientoAccesoRepository? _movimientoAccesoRepository;
-    private IMovimientoDispositivoRepository? _movimientoDispositivoRepository;
-    private IMovimientoVehiculoRepository? _movimientoVehiculoRepository;
     private INotificacionRepository? _notificacionRepository;
     private INotificacionDestinatarioRepository? _notificacionDestinatarioRepository;
     private IOrganizacionRepository? _organizacionRepository;
@@ -336,32 +334,6 @@ public class UnitOfWork : IUnitOfWork
             }
 
             return _movimientoAccesoRepository;
-        }
-    }
-
-    public IMovimientoDispositivoRepository MovimientoDispositivoRepository
-    {
-        get
-        {
-            if (_movimientoDispositivoRepository == null)
-            {
-                _movimientoDispositivoRepository = new MovimientoDispositivoRepository(_context);
-            }
-
-            return _movimientoDispositivoRepository;
-        }
-    }
-
-    public IMovimientoVehiculoRepository MovimientoVehiculoRepository
-    {
-        get
-        {
-            if (_movimientoVehiculoRepository == null)
-            {
-                _movimientoVehiculoRepository = new MovimientoVehiculoRepository(_context);
-            }
-
-            return _movimientoVehiculoRepository;
         }
     }
 

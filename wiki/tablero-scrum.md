@@ -1,13 +1,16 @@
 | En revisión || En revisión || En curso || En curso |---
 tipo: tablero
 estado: vigente
-actualizado: 2026-10-26
+actualizado: 2026-11-11
 tags: [conecsia, backlog, scrum]
 ---
 
 # Tablero Scrum
 
 Plan y DoD: [[PLAN-DE-TRABAJO]]. El agente actualiza este tablero cada vez que cambia el estado de una historia.
+
+> [!warning] Desactualizado (detectado 2026-11-10)
+> No refleja ADR-028 ni ADR-029 (HU-023..027 y HU-015 cambiaron de alcance o de estado). Contraste completo y orden sugerido: [[Brechas de requisitos frente al PRD 2026-11-10]]. Pendiente de reconciliar con el PO.
 
 **Estados:** Backlog → Lista (cumple DoR) → En curso → En revisión → Terminada (cumple DoD) · Bloqueada (decisión D-xx o ADR pendiente).
 
@@ -57,7 +60,7 @@ _(vacío)_
 | HU-011 | Planes y habilitación de módulos por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | M | Backlog |
 | HU-012 | Vocabulario configurable por organización | [[EP-03 Organizaciones y plano SaaS]] | F1 | S | Backlog |
 | HU-013 | Gestionar sedes con zona horaria | [[EP-04 Estructura física]] | F1 | M | En revisión |
-| HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | Backlog |
+| HU-014 | Gestionar áreas/destinos y responsables/autorizadores | [[EP-04 Estructura física]] | F1 | M | En revisión (2026-11-11, [[Sedes]]; efecto de «autorizador» pendiente, D-56) |
 | HU-015 | Gestionar zonas y puntos de acceso | [[EP-04 Estructura física]] | F1 | M | En revisión |
 | HU-016 | Invitar y administrar usuarios | [[EP-05 Usuarios, roles y permisos]] | F1 | M | Backlog; aceptación de invitación depende de D-03 |
 | HU-017 | Roles configurables y catálogo de permisos | [[EP-05 Usuarios, roles y permisos]] | F1 | L | Backlog |
@@ -91,9 +94,9 @@ _(vacío)_
 | HU-045 | Reportes Excel y PDF del núcleo | [[EP-14 Dashboard y reportes]] | F4 | L | Backlog |
 | HU-046 | Consulta de auditoría para auditor | [[EP-15 Auditoría consultable]] | F4 | M | Backlog |
 | HU-047 | Registrar vehículos y asociarlos a personas y autorizaciones | [[EP-16 Vehículos]] | F5 | M | En revisión (2026-10-26: persona–vehículo y autorización de ingreso del vehículo con ciclo propio; modelo por validar, D-31) |
-| HU-048 | Movimientos vehiculares | [[EP-16 Vehículos]] | F5 | M | Backlog; reglas de D-10 y D-17 bloqueadas |
+| HU-048 | Movimientos vehiculares | [[EP-16 Vehículos]] | F5 | M | En revisión (2026-11-11, [[ADR-030 Movimientos de vehículos y dispositivos]]; reglas Propuesta D-57; custodia y parqueaderos D-10/D-54) |
 | HU-049 | Registrar dispositivos externos | [[EP-17 Equipos externos]] | F5 | M | En revisión (2026-10-26: CRUD por persona, tipos, autorización de ingreso; D-17, D-31, D-33) |
-| HU-050 | Movimientos de dispositivos y equipos dentro | [[EP-17 Equipos externos]] | F5 | M | Backlog; custodia bloqueada (D-10) |
+| HU-050 | Movimientos de dispositivos y equipos dentro | [[EP-17 Equipos externos]] | F5 | M | En revisión (2026-11-11, ADR-030; aviso sin cierre automático; custodia D-10) |
 | HU-051 | Plantillas sectoriales completas | [[EP-18 Adaptación sectorial]] | F6 | M | Backlog |
 | HU-052 | Documentación de contratistas y límites de invitados | [[EP-18 Adaptación sectorial]] | F6 | Spike | Bloqueada (D-11) |
 | HU-053 | Respaldo y restauración verificada | [[EP-19 Preparación productiva]] | F7 | M | Backlog |

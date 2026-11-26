@@ -32,12 +32,14 @@ describe('Shell y dashboard', () => {
   })
 
   it('construye el menú con los módulos que autoriza el servidor y marca la sección activa', async () => {
-    simularApi(modulosPermitidos('dashboard', 'visitas'))
+    simularApi(modulosPermitidos('dashboard', 'visitas', 'vehiculos'))
     renderApp('/dashboard')
 
     const nav = await screen.findByRole('navigation', { name: 'Navegación principal' })
     expect(await within(nav).findByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
-    expect(within(nav).getByText('Visitas')).toBeInTheDocument()
+    // Visitas solo conserva permisos (ADR-029): se unificó en Control de accesos y no aparece en el menú.
+    expect(within(nav).queryByText('Visitas')).not.toBeInTheDocument()
+    expect(within(nav).getByText('Vehículos')).toBeInTheDocument()
     expect(within(nav).getByText('Pronto')).toBeInTheDocument()
     expect(within(nav).queryByText('Administración')).not.toBeInTheDocument()
     expect(within(nav).queryByText('Personas')).not.toBeInTheDocument()

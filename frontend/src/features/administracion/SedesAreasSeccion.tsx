@@ -36,6 +36,7 @@ import {
 } from './componentes'
 import { mensajeError, useAviso } from './utilidades'
 import type { SeccionProps } from './secciones'
+import { ResponsablesArea } from './ResponsablesArea'
 
 type Vista = 'sedes' | 'areas'
 type Pendiente = { tipo: 'sede'; registro: SedeAdmin } | { tipo: 'area'; registro: AreaAdmin }
@@ -62,6 +63,7 @@ export function SedesAreasSeccion({ pestanas }: SeccionProps) {
   const [formSede, setFormSede] = useState<SedeAdmin | 'nueva' | null>(null)
   const [formArea, setFormArea] = useState<AreaAdmin | 'nueva' | null>(null)
   const [confirmar, setConfirmar] = useState<Pendiente | null>(null)
+  const [responsables, setResponsables] = useState<AreaAdmin | null>(null)
   const { avisar, aviso } = useAviso()
   const queryClient = useQueryClient()
   const organizacion = leerOrganizacionActiva()
@@ -197,16 +199,18 @@ export function SedesAreasSeccion({ pestanas }: SeccionProps) {
               {area.esComunZonaEmpresarial && (
                 <ul className="ad-etiquetas"><li className="ad-etiqueta">Área común de la zona empresarial</li></ul>
               )}
-              {acciones.editar && (
-                <footer>
-                  <span />
+              <footer>
+                <button type="button" className="ad-enlace" onClick={() => setResponsables(area)} aria-label={`Responsables de ${area.nombre}`}>
+                  Responsables y autorizadores
+                </button>
+                {acciones.editar && (
                   <span className="ad-perfil-acciones">
                     <BotonIcono etiqueta={`Editar ${area.nombre}`} icono="editar" onClick={() => setFormArea(area)} />
                     <BotonIcono etiqueta={`${area.activo ? 'Inactivar' : 'Activar'} ${area.nombre}`} icono={area.activo ? 'cerrar' : 'check'}
                       peligro={area.activo} onClick={() => { estadoMutation.reset(); setConfirmar({ tipo: 'area', registro: area }) }} />
                   </span>
-                </footer>
-              )}
+                )}
+              </footer>
             </article>
           ))}
         </div>
@@ -219,6 +223,9 @@ export function SedesAreasSeccion({ pestanas }: SeccionProps) {
       {formArea && (
         <AreaFormulario area={formArea === 'nueva' ? null : formArea} sedes={sedes.data ?? []}
           onClose={() => setFormArea(null)} onGuardado={(m) => { setFormArea(null); avisar(m) }} />
+      )}
+      {responsables && (
+        <ResponsablesArea area={responsables} puedeEditar={acciones.editar} onClose={() => setResponsables(null)} onAviso={avisar} />
       )}
       {confirmar && (
         <Confirmar

@@ -4,6 +4,8 @@ using ApiConecsia.Extensions;
 using ApiConecsia.Helpers;
 using ApiConecsia.Helpers.Errors;
 using ApiConecsia.Profiles;
+using ApiConecsia.Validators;
+using FluentValidation;
 using ConecsIA.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -54,7 +56,9 @@ builder.Services.AddAutoMapper(
 builder.Services.AddApplicationServices();
 builder.Services.AddGlobalRateLimiting();
 builder.Services.AddValidationErrors();
-builder.Services.AddControllers();
+// FluentValidation (ADR-003): validadores del ensamblado aplicados por filtro global a los argumentos que tengan uno.
+builder.Services.AddValidatorsFromAssemblyContaining<RegistroAccesoValidator>();
+builder.Services.AddControllers(options => options.Filters.Add<ValidacionFluentFilter>());
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -65,6 +69,9 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "API para la gestión de accesos y organizaciones."
     });
+    // Comentarios XML de controladores y DTOs en OpenAPI.
+    foreach (var xml in new[] { "ApiConecsia.xml", "Application.xml" }.Select(x => Path.Combine(AppContext.BaseDirectory, x)).Where(File.Exists))
+        options.IncludeXmlComments(xml);
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {

@@ -22,7 +22,7 @@ public sealed class PuntosAccesoTests(ApiFactory api) : IClassFixture<ApiFactory
         _orgA = await api.CrearOrganizacionAsync($"Org A {_sufijo}");
         _orgB = await api.CrearOrganizacionAsync($"Org B {_sufijo}");
         var rolAdmin = await api.CrearRolAsync(_orgA, "Administrador");
-        foreach (var m in new[] { "sedes", "personas", "visitas", "control_accesos", "autorizaciones" }) await api.AsignarModuloAsync(_orgA, rolAdmin, m);
+        foreach (var m in new[] { "sedes", "personas", "control_accesos", "autorizaciones" }) await api.AsignarModuloAsync(_orgA, rolAdmin, m);
         await api.CrearUsuarioAsync(Correo("admin"), _orgA, rolAdmin);
         var rolLector = await api.CrearRolAsync(_orgA, "Lector");
         await api.AsignarModuloAsync(_orgA, rolLector, "sedes", consultar: true, anadir: false, editar: false);
@@ -72,25 +72,25 @@ public sealed class PuntosAccesoTests(ApiFactory api) : IClassFixture<ApiFactory
         }), HttpStatusCode.Created)).GetProperty("idPersona").GetInt32();
     }
 
-    /// <summary>Autorización aprobada y visita vinculada lista para registrar la entrada.</summary>
-    private async Task<(int Autorizacion, int Visita)> VisitaAutorizadaAsync(HttpClient admin)
+    /// <summary>Registro de acceso Diaria aprobado, listo para registrar la entrada (ADR-029).</summary>
+    private async Task<int> AccesoAprobadoAsync(HttpClient admin)
     {
         var persona = await PersonaAsync(admin);
-        var autorizacion = (await Leer(await admin.PostAsJsonAsync("/api/autorizaciones-acceso", new
+        var categoria = await api.ScalarAsync<int>("""
+            INSERT INTO categoria_acceso (id_organizacion, codigo, nombre, flujo_aprobacion, modalidades_permitidas, exige_anfitrion, exige_motivo, permite_vehiculos, permite_dispositivos, orden, activo, creado_en)
+            VALUES (@p0, @p1, 'Visitante', 'Seguridad', '{Diaria}'::text[], true, true, true, true, 0, true, now()) RETURNING id_categoria_acceso
+            """, _orgA, $"V{Guid.NewGuid():N}"[..20]);
+        var acceso = (await Leer(await admin.PostAsJsonAsync("/api/accesos", new
         {
-            idPersona = persona, idSede = _sedeA, idArea = _areaA, idMembresiaResponsable = _membresiaAdmin, modalidad = "Diaria", fechaInicio = Hoy, motivo = "Reunión",
+            idPersona = persona, idCategoriaAcceso = categoria, idSede = _sedeA, idArea = _areaA, idMembresiaResponsable = _membresiaAdmin, modalidad = "Diaria", fechaInicio = Hoy, motivo = "Reunión",
         }), HttpStatusCode.Created)).GetProperty("idAutorizacion").GetInt32();
-        await Leer(await admin.PostAsJsonAsync($"/api/autorizaciones-acceso/{autorizacion}/aprobar", new { motivo = (string?)null }), HttpStatusCode.OK);
-        var visita = (await Leer(await admin.PostAsJsonAsync("/api/visitas", new
-        {
-            idPersona = persona, idSede = _sedeA, idArea = _areaA, idMembresiaResponsable = _membresiaAdmin, motivo = "Reunión", idAutorizacion = autorizacion,
-        }), HttpStatusCode.Created)).GetProperty("visita").GetProperty("idVisita").GetInt32();
-        return (autorizacion, visita);
+        await Leer(await admin.PostAsJsonAsync($"/api/accesos/{acceso}/aprobar", new { motivo = (string?)null }), HttpStatusCode.OK);
+        return acceso;
     }
 
-    private static Task<HttpResponseMessage> Movimiento(HttpClient cliente, int visita, string tipo, int punto)
+    private static Task<HttpResponseMessage> Movimiento(HttpClient cliente, string ruta, int punto)
     {
-        var mensaje = new HttpRequestMessage(HttpMethod.Post, $"/api/visitas/{visita}/{tipo}") { Content = JsonContent.Create(new { idPuntoAcceso = punto }) };
+        var mensaje = new HttpRequestMessage(HttpMethod.Post, ruta) { Content = JsonContent.Create(new { idPuntoAcceso = punto }) };
         mensaje.Headers.Add("Idempotency-Key", Guid.NewGuid().ToString());
         return cliente.SendAsync(mensaje);
     }
@@ -159,7 +159,7 @@ public sealed class PuntosAccesoTests(ApiFactory api) : IClassFixture<ApiFactory
     {
         var admin = await Cliente("admin");
         await Leer(await admin.GetAsync("/api/zonas"), HttpStatusCode.NotFound);
-        var opciones = await Leer(await admin.GetAsync("/api/autorizaciones-acceso/opciones"), HttpStatusCode.OK);
+        var opciones = await Leer(await admin.GetAsync("/api/accesos/opciones"), HttpStatusCode.OK);
         Assert.False(opciones.TryGetProperty("zonas", out _));
         Assert.False(opciones.TryGetProperty("exigeZonas", out _));
     }
@@ -222,22 +222,22 @@ public sealed class PuntosAccesoTests(ApiFactory api) : IClassFixture<ApiFactory
         await Punto(admin, _sedeA, "Acceso a planta");
         var puntoOtraSede = await Punto(admin, _sedeA2, "Portería A2");
 
-        var (autorizacion, visita) = await VisitaAutorizadaAsync(admin);
-        var detalleAutorizacion = await Leer(await admin.GetAsync($"/api/autorizaciones-acceso/{autorizacion}"), HttpStatusCode.OK);
-        Assert.False(detalleAutorizacion.TryGetProperty("zonas", out _));
+        var acceso = await AccesoAprobadoAsync(admin);
+        var detalleAcceso = await Leer(await admin.GetAsync($"/api/accesos/{acceso}"), HttpStatusCode.OK);
+        Assert.False(detalleAcceso.TryGetProperty("zonas", out _));
 
-        await Leer(await Movimiento(admin, visita, "entrada", puntoOtraSede), HttpStatusCode.BadRequest);
-        await Leer(await Movimiento(admin, visita, "entrada", porteria), HttpStatusCode.OK);
-        Assert.Equal(porteria, await api.ScalarAsync<int>("SELECT id_punto_acceso FROM movimiento_acceso WHERE id_visita = @p0 AND tipo_movimiento = 'Entrada'", visita));
-        Assert.Equal(_sedeA, await api.ScalarAsync<int>("SELECT id_sede FROM movimiento_acceso WHERE id_visita = @p0 AND tipo_movimiento = 'Entrada'", visita));
+        await Leer(await Movimiento(admin, $"/api/accesos/{acceso}/entrada", puntoOtraSede), HttpStatusCode.BadRequest);
+        await Leer(await Movimiento(admin, $"/api/accesos/{acceso}/entrada", porteria), HttpStatusCode.OK);
+        Assert.Equal(porteria, await api.ScalarAsync<int>("SELECT id_punto_acceso FROM movimiento_acceso WHERE id_autorizacion = @p0 AND tipo_movimiento = 'Entrada'", acceso));
+        Assert.Equal(_sedeA, await api.ScalarAsync<int>("SELECT id_sede FROM movimiento_acceso WHERE id_autorizacion = @p0 AND tipo_movimiento = 'Entrada'", acceso));
+        var permanencia = await api.ScalarAsync<int>("SELECT p.id_permanencia FROM permanencia p JOIN visita v ON v.id_visita = p.id_visita WHERE v.id_autorizacion = @p0", acceso);
 
         // Inactivar el punto no altera el historial; ya no se usa en nuevos movimientos ni puede eliminarse.
         await Leer(await admin.PostAsync($"/api/puntos-acceso/{porteria}/inactivar", null), HttpStatusCode.OK);
-        await Leer(await Movimiento(admin, visita, "salida", porteria), HttpStatusCode.BadRequest);
+        await Leer(await Movimiento(admin, $"/api/accesos/permanencias/{permanencia}/salida", porteria), HttpStatusCode.BadRequest);
         await Leer(await admin.DeleteAsync($"/api/puntos-acceso/{porteria}"), HttpStatusCode.Conflict);
-        var detalle = await Leer(await admin.GetAsync($"/api/visitas/{visita}"), HttpStatusCode.OK);
+        var detalle = await Leer(await admin.GetAsync($"/api/accesos/{acceso}"), HttpStatusCode.OK);
         var movimiento = Assert.Single(detalle.GetProperty("movimientos").EnumerateArray());
         Assert.Equal("Portería principal", movimiento.GetProperty("puntoAcceso").GetString());
-        Assert.Equal(JsonValueKind.Null, movimiento.GetProperty("zonaHistorica").ValueKind);
     }
 }

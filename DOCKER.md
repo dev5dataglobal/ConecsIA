@@ -56,6 +56,17 @@ Las semillas de verificación (`backend/scripts/*.sql`) no se ejecutan solas. Pa
 docker compose exec -T postgres psql -U conecsia -d conecsia < backend/scripts/seed-permisos-perfil-1.sql
 ```
 
+## Levantar en otro PC
+
+1. Instala Docker Desktop y Git.
+2. Clona el repositorio y cambia a la rama con estos archivos (deben estar commiteados y subidos).
+3. `cp .env.example .env` y define `POSTGRES_PASSWORD` y `JWT_KEY` propios.
+4. `docker compose up -d --build`.
+
+La base nace vacía. Para llevar los datos de otro equipo, en el **origen**:
+`docker compose exec -T postgres pg_dump -U conecsia -d conecsia -Fc --no-owner --no-privileges > conecsia.dump`;
+copia el archivo y en el **destino** sigue los pasos de restauración de la sección siguiente (desde `stop api web`).
+
 ## Copiar la base local a Docker
 
 La base de Docker nace vacía. Para usar los usuarios y datos del PostgreSQL local (el de `dotnet run`),

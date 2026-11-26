@@ -1,6 +1,5 @@
 using ConecsIA.Application.Seguridad;
 using ApiConecsia.Helpers;
-using ConecsIA.Application.Interfaces.Repositories;
 using ConecsIA.Application.DTOs;
 using ConecsIA.Domain.Entities;
 using ConecsIA.Infrastructure.Data;
@@ -14,13 +13,11 @@ namespace ApiConecsia.Controllers;
 [Route("api/[controller]")]
 public class UsuarioController : BaseApiController
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ConecsiaDbContext _db;
     private readonly IPasswordHasher<Usuario> _passwordHasher;
 
-    public UsuarioController(IUnitOfWork unitOfWork, ConecsiaDbContext db, IPasswordHasher<Usuario> passwordHasher)
+    public UsuarioController(ConecsiaDbContext db, IPasswordHasher<Usuario> passwordHasher)
     {
-        _unitOfWork = unitOfWork;
         _db = db;
         _passwordHasher = passwordHasher;
     }
@@ -73,99 +70,4 @@ public class UsuarioController : BaseApiController
     }
 
     private static UsuarioPerfilDto MapPerfil(Usuario usuario) => new() { IdUsuario = usuario.IdUsuario, Correo = usuario.Correo, Activo = usuario.Activo, UltimoAcceso = usuario.UltimoAcceso, CreadoEn = usuario.CreadoEn };
-
-    [HttpGet]
-    [RequiereModulo(CodigosModulo.Usuarios)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Usuario>>> Get()
-    {
-        var usuarios = await _unitOfWork.UsuarioRepository.GetAllAsync();
-
-        return Ok(usuarios);
-    }
-
-    [HttpGet("{id:int}")]
-    [RequiereModulo(CodigosModulo.Usuarios)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Usuario>> Get(int id)
-    {
-        try
-        {
-            var usuario = await _unitOfWork.UsuarioRepository.GetByIdAsync(id);
-
-            return Ok(usuario);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound($"Usuario with id {id} was not found.");
-        }
-    }
-
-    [HttpPost]
-    [RequiereModulo(CodigosModulo.Usuarios)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Usuario>> Post([FromBody] Usuario entity)
-    {
-        if (entity == null)
-        {
-            return BadRequest();
-        }
-
-        _unitOfWork.UsuarioRepository.Add(entity);
-        await _unitOfWork.SaveAsync();
-
-        return CreatedAtAction(nameof(Get), new { id = 0 }, entity);
-    }
-
-    [HttpPut("{id:int}")]
-    [RequiereModulo(CodigosModulo.Usuarios)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Put(int id, [FromBody] Usuario entity)
-    {
-        if (entity == null)
-        {
-            return BadRequest();
-        }
-
-        try
-        {
-            await _unitOfWork.UsuarioRepository.GetByIdAsync(id);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound($"Usuario with id {id} was not found.");
-        }
-
-        _unitOfWork.UsuarioRepository.Update(entity);
-        await _unitOfWork.SaveAsync();
-
-        return Ok(entity);
-    }
-
-    [HttpDelete("{id:int}")]
-    [RequiereModulo(CodigosModulo.Usuarios)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int id)
-    {
-        Usuario entity;
-
-        try
-        {
-            entity = await _unitOfWork.UsuarioRepository.GetByIdAsync(id);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound($"Usuario with id {id} was not found.");
-        }
-
-        _unitOfWork.UsuarioRepository.Remove(entity);
-        await _unitOfWork.SaveAsync();
-
-        return NoContent();
-    }
 }

@@ -48,3 +48,30 @@ export const crearArea = (data: AreaEntrada) => apiFetch<AreaAdmin>('/api/areas'
 export const editarArea = (id: number, data: AreaEntrada) => apiFetch<AreaAdmin>(`/api/areas/${id}`, json('PUT', data))
 export const cambiarEstadoArea = (id: number, activo: boolean) =>
   apiFetch<AreaAdmin>(`/api/areas/${id}/${activo ? 'activar' : 'inactivar'}`, { method: 'POST' })
+
+/*
+ * Responsables y autorizadores por destino (RF-04). Con designados activos, solo ellos pueden ser anfitriones de los
+ * accesos de ese destino; la marca de autorizador queda registrada pero no otorga por sí permiso de decidir (D-04, D-56).
+ */
+export interface ResponsableArea {
+  idArea: number
+  idMembresia: number
+  usuario: string
+  usuarioActivo: boolean
+  esAutorizador: boolean
+  activo: boolean
+  asignadoEn: string
+  asignadoPor: string | null
+  actualizadoEn: string | null
+  actualizadoPor: string | null
+}
+export interface MiembroOrganizacion { idMembresia: number; usuario: string }
+
+export const consultarResponsablesArea = (idArea: number) => apiFetch<ResponsableArea[]>(`/api/areas/${idArea}/responsables`)
+export const consultarMiembrosOrganizacion = () => apiFetch<MiembroOrganizacion[]>('/api/areas/miembros')
+export const asignarResponsableArea = (idArea: number, idMembresia: number, esAutorizador: boolean) =>
+  apiFetch<ResponsableArea>(`/api/areas/${idArea}/responsables`, json('POST', { idMembresia, esAutorizador }))
+export const cambiarResponsableArea = (idArea: number, idMembresia: number, esAutorizador: boolean) =>
+  apiFetch<ResponsableArea>(`/api/areas/${idArea}/responsables/${idMembresia}`, json('PUT', { idMembresia, esAutorizador }))
+export const retirarResponsableArea = (idArea: number, idMembresia: number) =>
+  apiFetch<ResponsableArea>(`/api/areas/${idArea}/responsables/${idMembresia}/retirar`, { method: 'POST' })

@@ -400,3 +400,14 @@
 
 /* Puntos de acceso: quién creó y modificó el registro. */
 .ad-traza { color: var(--ui-texto-3); font-size: 0.78rem; line-height: 1.4; }
+
+/* Responsables y autorizadores por destino (RF-04). */
+.ad-responsables { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.ad-responsables li { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; padding: 0.65rem 0.85rem; border: 1px solid var(--ui-linea); border-radius: var(--ui-radio-sm); background: var(--ui-superficie); }
+.ad-responsables li > div { display: grid; gap: 0.15rem; flex: 1 1 14rem; min-width: 0; }
+.ad-responsables li > div strong { overflow-wrap: anywhere; }
+.ad-responsables small { color: var(--ui-texto-3); font-size: 0.8rem; }
+.ad-responsables li[data-inactivo] { opacity: 0.75; }
+.ad-responsables .ad-etiqueta[data-tono='violeta'] { border-color: #c9c2f5; background: var(--ui-violeta-tenue); color: var(--ui-violeta); font-weight: 600; }
+.ad-responsables-retirados { margin-top: 0.75rem; }
+.ad-responsables-retirados summary { cursor: pointer; color: var(--ui-texto-2); font-weight: 600; margin-bottom: 0.5rem; }

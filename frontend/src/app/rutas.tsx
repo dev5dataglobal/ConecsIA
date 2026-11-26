@@ -4,8 +4,6 @@ import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { AdministracionInicio, AdministracionPage } from '../features/administracion/AdministracionPage'
 import { SECCIONES } from '../features/administracion/secciones'
 import { PersonasPage } from '../features/personas/PersonasPage'
-import { AutorizacionesPage } from '../features/autorizaciones/AutorizacionesPage'
-import { VisitasPage } from '../features/visitas/VisitasPage'
 import { ControlAccesosPage } from '../features/control-accesos/ControlAccesosPage'
 import { IngresarPage } from '../features/sesion/IngresarPage'
 import { PresentacionPage } from '../features/presentacion/PresentacionPage'
@@ -36,8 +34,9 @@ export const rutas: RouteObject[] = [
     children: [
       { path: 'dashboard', element: <RutaModulo codigo="dashboard"><DashboardPage /></RutaModulo> },
       { path: 'personas', element: <RutaModulo codigo="personas"><PersonasPage /></RutaModulo> },
-      { path: 'autorizaciones', element: <RutaModulo codigo="autorizaciones"><AutorizacionesPage /></RutaModulo> },
-      { path: 'visitas', element: <RutaModulo codigo="visitas"><VisitasPage /></RutaModulo> },
+      // Visitas y Autorizaciones se unificaron en Control de accesos (ADR-029): las rutas anteriores redirigen.
+      { path: 'visitas', element: <Navigate to="/control-accesos" replace /> },
+      { path: 'autorizaciones', element: <Navigate to="/control-accesos" replace /> },
       { path: 'control-accesos', element: <RutaModulo codigo="control_accesos"><ControlAccesosPage /></RutaModulo> },
       { path: 'administracion', element: <AdministracionInicio /> },
       ...SECCIONES.map((s) => ({

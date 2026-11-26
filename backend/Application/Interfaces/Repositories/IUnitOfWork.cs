@@ -27,8 +27,6 @@ public interface IUnitOfWork : IDisposable
     IModuloRepository ModuloRepository { get; }
     IModuloPermisoRepository ModuloPermisoRepository { get; }
     IMovimientoAccesoRepository MovimientoAccesoRepository { get; }
-    IMovimientoDispositivoRepository MovimientoDispositivoRepository { get; }
-    IMovimientoVehiculoRepository MovimientoVehiculoRepository { get; }
     INotificacionRepository NotificacionRepository { get; }
     INotificacionDestinatarioRepository NotificacionDestinatarioRepository { get; }
     IOrganizacionRepository OrganizacionRepository { get; }

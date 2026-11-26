@@ -36,8 +36,6 @@ public sealed class MappingProfiles : Profile
         CreateMap<Organizacion, OrganizacionDto>().ReverseMap();
         CreateMap<Notificacion, NotificacionDto>().ReverseMap();
         CreateMap<NotificacionDestinatario, NotificacionDestinatarioDto>().ReverseMap();
-        CreateMap<MovimientoVehiculo, MovimientoVehiculoDto>().ReverseMap();
-        CreateMap<MovimientoDispositivo, MovimientoDispositivoDto>().ReverseMap();
         CreateMap<MovimientoAcceso, MovimientoAccesoDto>().ReverseMap();
         CreateMap<Modulo, ModuloDto>().ReverseMap();
         CreateMap<MembresiaSede, MembresiaSedeDto>().ReverseMap();
@@ -52,7 +50,6 @@ public sealed class MappingProfiles : Profile
         CreateMap<Autorizacion, AutorizacionDto>().ReverseMap();
         CreateMap<AutorizacionDispositivo, AutorizacionDispositivoDto>().ReverseMap();
         CreateMap<Auditoria, AuditoriaDto>().ReverseMap();
-        CreateMap<AreaResponsable, AreaResponsableDto>().ReverseMap();
         CreateMap<Area, AreaDto>().ReverseMap();
         CreateMap<Archivo, ArchivoDto>().ReverseMap();
         CreateMap<AlertaTransicion, AlertaTransicionDto>().ReverseMap();
